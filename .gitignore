@@ -1,0 +1,4 @@
+*.o
+*.so
+py/coho/*.c
+libcoho.a

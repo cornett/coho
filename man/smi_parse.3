@@ -1,0 +1,243 @@
+.Dd July 5, 2017
+.Dt SMI_PARSE 3
+.Os
+.Sh NAME
+.Nm smi_free ,
+.Nm smi_init ,
+.Nm smi_parse
+.Nd parse SMILES
+.Sh LIBRARY
+.Lb libcoho
+.Sh SYNOPSIS
+.In coho/smi.h
+.Ft void
+.Fn smi_free "struct smi *"
+.Ft void
+.Fn smi_init "struct smi *"
+.Ft int
+.Fn smi_parse "struct smi *, const char *smiles, size_t sz"
+.Sh DESCRIPTION
+These functions parse SMILES as specified by the
+.Lk http://opensmiles.org/ "OpenSMILES"
+specification.
+.Pp
+.Fn smi_init
+initializes a parsing context, which has type
+.Vt struct smi .
+Once initialized,
+a context can be used with
+.Fn smi_parse
+to parse one or more SMILES strings.
+The
+.Fa sz
+parameter to
+.Fn smi_parse
+controls how much of
+.Fa smiles
+is read.
+If
+.Fa sz
+is zero, the entire string is parsed.
+.Pp
+After all parsing is complete,
+.Fn smi_free
+should be called to release acquired resources.
+.Pp
+Note that the data structures contained in the context
+are intended to represent parsed SMILES strings, not molecules.
+Conformance of a particular string to the SMILES grammar does
+not imply description of a chemically-meaningful structure.
+.Pp
+The following fields of the context can be used to examine
+the results of a call to
+.Fn smi_parse .
+.Bd -literal
+struct smi {
+	char			*err;
+	int			 errpos;
+	struct smi_atom		*atoms;
+	size_t			 atoms_sz;
+	struct smi_bond		*bonds;
+	size_t			 bonds_sz;
+}
+.Ed
+.Bl -tag -width atoms_sz
+.It Fa err
+If
+.Fn smi_parse
+fails,
+.Fa err
+will point to an error message, otherwise it will be
+.Dv NULL .
+.It Fa errpos
+If
+.Fn smi_parse
+fails,
+.Fa errpos
+will contain the offset into the SMILES string where the
+error was detected, otherwise it will be -1.
+.It Fa atoms
+Each parsed atom is represented by an instance of
+.Vt "struct smi_atom" ,
+described below.
+.It Fa atoms_sz
+Length of
+.Fa atoms .
+.It Fa bonds
+Each parsed bond is represented by an instance of
+.Vt "struct smi_bond" ,
+described below.
+.It Fa bonds_sz
+Length of
+.Fa bonds .
+.El
+.Pp
+If
+.Fn smi_parse
+fails, the only valid access is to the
+.Fa err
+and
+.Fa errpos
+fields.
+.Ss ATOMS
+Each atom parsed from the input is represented
+by an instance of
+.Vt struct smi_atom .
+Its fields are described below.
+.Bd -literal
+struct smi_atom {
+	int			 atomic_number;
+	char			 symbol[4];
+	int			 charge;
+	int			 hcount;
+	int			 isotope;
+	char			 chirality[8];
+	int			 organic;
+	int			 aromatic;
+	int			 aclass;
+	int			 pos;
+	int			 len;
+};
+.Ed
+.Bl -tag -width atomic_number
+.It Fa atomic_number
+The atom's atomic number, deduced from the symbol.
+.It Fa symbol
+Element symbol as it appears in the SMILES string.
+Atoms designated as aromatic will have lowercase symbols.
+.It Fa charge
+Formal charge, or 0 if none was specified.
+.It Fa hcount
+Number of explicit hydrogens, or -1 if none were specified.
+.It Fa isotope
+Isotope, or -1 if unspecified.
+Note that the OpenSMILES specification states that zero is a
+valid isotope and that [0S] is not the same as [S].
+.It Fa chirality
+The chirality label, if provided, else the empty string.
+Currently, parsing is limited to @ and @@.
+Use of other chirality designators will result in a parsing error.
+.It Fa organic
+1 if the atom was specified using the
+organic subset nomenclature, else 0.
+Zero implies the atom was specified using bracket ([]) notation.
+.It Fa aromatic
+1 if the atom's symbol is lowercase, indicating that it is aromatic,
+else 0.
+.It Fa aclass
+Positive integer atom class if specified, else -1.
+.It Fa pos
+Offset of the atom's token in the SMILES string.
+.It Fa len
+Length of the atom's token.
+.El
+.Ss BONDS
+Each bond parsed from the input produces an instance of
+.Vt struct smi_bond .
+Its fields are described below.
+.Bd -literal
+struct smi_bond {
+	int			 a0;
+	int			 a1;
+	int			 order;
+	int			 stereo;
+	int			 implicit;
+	int			 ring;
+	int			 pos;
+	int			 len;
+};
+.Ed
+.Bl -tag -width implicit
+.It Fa a0
+The atom number (offset into
+.Fa atoms )
+of the first member of the bond pair.
+.It Fa a1
+The atom number (offset in
+.Fa atoms )
+of the second member of the bond pair.
+.It Fa order
+Bond order, with values from the following enumeration:
+.Bl -compact -tag
+.It SMI_BOND_SINGLE
+.It SMI_BOND_DOUBLE
+.It SMI_BOND_TRIPLE
+.It SMI_BOND_QUAD
+.It SMI_BOND_AROMATIC
+.El
+.It Fa stereo
+Used to indicate the cis/trans configuration of atoms around double bonds.
+Takes values from the following enumeration:
+.Bl -compact -tag -width SMI_BOND_STEREO_UNSPECIFIED
+.It SMI_BOND_STEREO_UNSPECIFIED
+Bond has no stereochemistry
+.It SMI_BOND_STEREO_UP
+Atom
+.Fa a1
+lies "up" from
+.Fa a0
+.It SMI_BOND_STEREO_DOWN
+Atom
+.Fa a1
+lies "down" from
+.Fa a0
+.El
+.It Fa implicit
+1 if bond was produced implicitly by the presence of two adjacent atoms
+without an intervening bond symbol, else 0.
+Implicit bonds do not have a token position or length.
+.It Fa ring
+1 if the bond was produced using the ring bond nomenclature, else 0.
+This does not imply anything about the number of rings in the molecule
+described by the SMILES string.
+.It Fa pos
+Offset of the bond's token in the SMILES string, or -1 if the bond is
+implicit.
+.It Fa len
+Length of the bond's token, or zero if implicit.
+.El
+.Sh RETURN VALUES
+.Fn smi_init
+and
+.Fn smi_free
+do not return values.
+.Fn smi_parse
+returns 0 on success, -1 on failure.
+.Sh EXAMPLES
+The following example shows how to parse a SMILES string.
+.Bd -literal -offset indent
+
+#include <coho/smi.h>
+
+int
+main(void)
+{
+	struct smi smi;
+
+	smi_init(&smi);
+	smi_parse(&smi, "CC(CCCO)C", 0);
+	smi_free(&smi);
+
+	return 0;
+}
+.Ed

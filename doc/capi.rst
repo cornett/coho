@@ -1,0 +1,293 @@
+.. default-domain:: c
+.. highlight:: c
+
+C API
+=====
+
+SMILES
+------
+
+The :func:`smi_parse()` function parses
+`SMILES <https://en.wikipedia.org/wiki/Simplified_molecular-input_line-entry_system>`_
+as specified by the
+`OpenSMILES <http://opensmiles.org/>`_ standard.
+
+Parsing requires a context, which has type
+:type:`struct smi <smi>` and
+is initialized using :func:`smi_init()`.
+Once initialized, a context can be used with :func:`smi_parse()`
+to parse one or more SMILES strings.
+:func:`smi_free()` releases any resources acquired during parsing.
+
+Note that the data structures contained in the context
+are intended to represent parsed SMILES strings, not molecules.
+Conformance of a particular string to the SMILES grammar does
+not imply description of a chemically-meaningful structure.
+
+
+.. type:: struct smi
+
+    ::
+
+        struct smi {
+                char                        *err;
+                int                          errpos;
+                struct smi_atom             *atoms;
+                size_t                       atoms_sz;
+                struct smi_bond             *bonds;
+                size_t                       bonds_sz;
+        }
+
+    The following fields of the context are public and can
+    be used to examine the results of a
+    call to :func:`smi_parse()`:
+
+    .. member:: char \*err
+
+        If :func:`smi_parse()` fails, ``err``
+        will point to an error message, otherwise it will be ``NULL``.
+
+    .. member:: int errpos
+
+        If :func:`smi_parse()` fails, ``errpos`` will contain the offset
+        into the SMILES string where the
+        error was detected, otherwise it will be -1.
+
+    .. member:: struct smi_atom \*atoms
+
+        Each parsed atom is represented by an instance of
+        :type:`struct smi_atom <smi_atom>`
+        described below.
+
+    .. member:: size_t atoms_sz
+
+        Length of :member:`atoms <smi.atoms>`.
+
+    .. member:: struct smi_bond \*bonds
+
+        Each parsed bond is represented by an instance of
+        :type:`struct smi_bond <smi_bond>`
+        described below.
+
+    .. member:: size_t bonds_sz
+
+        Length of :member:`bonds <smi.bonds>`.
+
+If :func:`smi_parse()` fails, the only valid access is to the
+:member:`err <smi.err>` and :member:`errpos <smi.errpos>`
+fields.
+
+
+.. type:: struct smi_atom
+
+    ::
+
+        struct smi_atom {
+                int                      atomic_number;
+                char                     symbol[4];
+                int                      charge;
+                int                      hcount;
+                int                      isotope;
+                char                     chirality[8];
+                int                      organic;
+                int                      aromatic;
+                int                      aclass;
+                int                      pos;
+                int                      len;
+        };
+
+    Each atom parsed from the input is represented
+    by an instance of :type:`struct smi_atom <smi_atom>`.
+    Its fields are described below:
+
+    .. member:: int atomic_number
+
+        The atom's atomic number, deduced from the symbol.
+
+    .. member:: char symbol[4]
+
+        Element symbol as it appears in the SMILES string.
+        Atoms designated as aromatic will have lowercase symbols.
+
+    .. member:: int charge
+
+        Formal charge, or 0 if none was specified.
+
+    .. member:: int hcount
+
+        Number of explicit hydrogens, or -1 if none were specified.
+
+    .. member:: int isotope
+
+        Isotope, or -1 if unspecified.
+        Note that the `OpenSMILES <http://opensmiles.org/>`_ specification
+        states that zero is a valid isotope and that
+        ``[0S]`` is not the same as ``[S]``.
+
+    .. member:: char chirality[8]
+
+        The chirality label, if provided, else the empty string.
+        Currently, parsing is limited to ``@`` and ``@@``.
+        Use of other chirality designators will result in a parsing error.
+
+    .. member:: int organic
+
+        1 if the atom was specified using the
+        organic subset nomenclature, else 0.
+        Zero implies the atom was specified using bracket
+        (``[]``) notation.
+
+    .. member:: int aromatic
+
+        1 if the atom's symbol is lowercase, indicating that it is
+        aromatic, else 0.
+
+    .. member:: int aclass
+
+        Positive integer atom class if specified, else -1.
+
+    .. member:: int pos
+
+        Offset of the atom's token in the SMILES string.
+
+    .. member:: int len
+
+        Length of the atom's token.
+
+
+.. type:: struct smi_bond
+
+    ::
+
+        struct smi_bond {
+                int                      a0;
+                int                      a1;
+                int                      order;
+                int                      stereo;
+                int                      implicit;
+                int                      ring;
+                int                      pos;
+                int                      len;
+        };
+
+    Each bond parsed from the input produces an
+    instance of :type:`struct smi_bond <smi_bond>`.
+    Its fields are described below:
+
+    .. member:: int a0
+
+        The atom number (offset into :member:`atoms <smi.atoms>`)
+        of the first member of the bond pair.
+
+    .. member:: int a1
+
+        The atom number (offset into :member:`atoms <smi.atoms>`)
+        of the second member of the bond pair.
+
+    .. member:: int order
+
+        Bond order, with values from the following enumeration:
+
+        * SMI_BOND_SINGLE
+        * SMI_BOND_DOUBLE
+        * SMI_BOND_TRIPLE
+        * SMI_BOND_QUAD
+        * SMI_BOND_AROMATIC
+
+    .. member:: int stereo
+
+        Used to indicate the cis/trans configuration of atoms
+        around double bonds.
+        Takes values from the following enumeration:
+
+        ``SMI_BOND_STEREO_UNSPECIFIED``
+            Bond has no stereochemistry
+        ``SMI_BOND_STEREO_UP``
+            lies "up" from :member:`a0 <smi_bond.a0>`
+        ``SMI_BOND_STEREO_DOWN``
+            lies "down" from :member:`a0 <smi_bond.a0>`
+
+    .. member:: int implicit
+
+        1 if bond was produced implicitly by the presence of two
+        adjacent atoms without an intervening bond symbol, else 0.
+        Implicit bonds do not have a token position or length.
+
+    .. member:: int ring
+
+        1 if the bond was produced using the ring bond nomenclature,
+        else 0.
+        This does not imply anything about the number of rings
+        in the molecule described by the SMILES string.
+
+    .. member:: int pos
+
+        Offset of the bond's token in the SMILES string, or -1 if the
+        bond is implicit.
+
+    .. member:: int len
+
+        Length of the bond's token, or zero if implicit.
+
+
+.. function:: void smi_init(struct smi \*)
+
+    Initializes a SMILES parsing context.
+
+.. function:: void smi_free(struct smi \*)
+
+    Releases resources held by the context.
+    This only needs to be called once, after all parsing is complete.
+
+.. function:: int smi_parse(struct smi \*smi, const char \*str, size_t sz)
+
+    Parses a SMILES string.
+    If successful, the fields of :type:`smi <smi>` will contain
+    the results.
+
+    :param smi: Parsing context
+    :param str: SMILES string
+    :param sz: Amount of string to read.  If zero, the entire string is parsed.
+    :return: Returns 0 on success, -1 on failure
+
+Example
+^^^^^^^
+
+The following example shows how to parse a SMILES string::
+
+    #include <stdio.h>
+    #include <coho/smi.h>
+
+    int
+    main(void)
+    {
+            size_t i;
+            struct smi smi;
+
+            smi_init(&smi);
+
+            if (smi_parse(&smi, "CNCC", 0)) {
+                    fprintf(stderr, "failed: %s\n", smi.err);
+                    smi_free(&smi);
+                    return 1;
+            }
+
+            printf("# atoms: %zi\n", smi.atoms_sz);
+            printf("# bonds: %zi\n", smi.bonds_sz);
+            printf("\n");
+
+            for (i = 0; i < smi.atoms_sz; i++) {
+                    printf("%zi: %s\n", i, smi.atoms[i].symbol);
+            }
+            printf("\n");
+
+            for (i = 0; i < smi.bonds_sz; i++) {
+                    printf("%zi-%zi %i\n",
+                           smi.bonds[i].a0,
+                           smi.bonds[i].a1,
+                           smi.bonds[i].order);
+            }
+
+            return 0;
+    }
+
