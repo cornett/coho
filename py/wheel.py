@@ -16,13 +16,34 @@
 
 import base64
 import csv
+import distutils.util
 import hashlib
 import io
 import os
+import re
 import sys
+import sysconfig
 import zipfile
 
-import wheeltag
+# Wheel compatiblity tags.  See PEP 425, 427.
+
+def py_tag():
+    return 'cp' + sysconfig.get_config_var('py_version_nodot')
+
+
+def abi_tag():
+    soabi = sysconfig.get_config_var('SOABI')
+    assert soabi.startswith('cpython')
+    return 'cp' + soabi.split('-')[1]
+
+
+def plat_tag():
+    return re.sub('[-.]', '_', distutils.util.get_platform())
+
+
+def wheel_compat_tag():
+    return '{}-{}-{}'.format(py_tag(), abi_tag(), plat_tag())
+
 
 WHEEL = '''\
 Wheel-Version: 1.0
@@ -57,7 +78,7 @@ def content_hash(data):
 
 def main():
     version, *objects = sys.argv[1:]
-    tag = wheeltag.wheel_compat_tag()
+    tag = wheel_compat_tag()
     whlpath = 'py/dist/coho-{}-{}.whl'.format(version, tag)
     distdir = 'coho-{}.dist-info/'.format(version)
 
@@ -76,7 +97,7 @@ def main():
                     rw.writerow((zfpath, content_hash(data), len(data)))
 
             path = distdir + 'WHEEL'
-            data = WHEEL.format(version, wheeltag.wheel_compat_tag())
+            data = WHEEL.format(version, wheel_compat_tag())
             data = data.encode()
             zf.writestr(path, data)
             rw.writerow((path, content_hash(data), len(data)))
@@ -95,7 +116,6 @@ def main():
             zf.close()
             os.remove(whlpath)
             raise
-
 
 
 if __name__ == '__main__':

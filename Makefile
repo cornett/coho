@@ -45,7 +45,7 @@ install:			all
 
 wheel:				$(PY.MOD)
 	@mkdir -p py/dist
-	$(PYTHON) py/mkwheel.py $(VERSION) $(PY.MOD)
+	$(PYTHON) py/wheel.py $(VERSION) $(PY.MOD)
 
 
 compat/reallocarray.o:		compat/reallocarray.c \
