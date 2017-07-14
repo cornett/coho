@@ -20,6 +20,7 @@ import distutils.util
 import hashlib
 import io
 import os
+import platform
 import re
 import sys
 import sysconfig
@@ -38,6 +39,13 @@ def abi_tag():
 
 
 def plat_tag():
+    # distutils.util.get_platform() is not accurate on osx
+    # Workaround taken from pip code.
+    if sys.platform == 'darwin':
+        release, _, machine = platform.mac_ver()
+        ver = release.split('.')
+        return 'macosx_{}_{}_{}'.format(ver[0], ver[1], machine)
+
     return re.sub('[-.]', '_', distutils.util.get_platform())
 
 
