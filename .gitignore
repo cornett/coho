@@ -2,3 +2,5 @@
 *.so
 py/coho/*.c
 libcoho.a
+
+test/smi

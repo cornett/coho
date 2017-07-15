@@ -10,21 +10,26 @@ LIB.OBJ		= smi.o \
 PY.MOD		= py/coho/__init__.so \
 		  py/coho/smi.so
 
+TEST		= test/smi
+
 COMP		= $(CC) $(CFLAGS) $(CPPFLAGS) -I. -o $@ -c $(@:.o=.c)
 CY.COMP		= $(CYTHON) -X embedsignature=True -I py/coho -3 $(@:.c=.pyx)
 PY.COMP		= $(CC) $(PY.CFLAGS) -I. -o $@ -c $(@:.o=.c)
 PY.LINK		= $(CC) -shared $(PY.LDFLAGS) -o $@ $(@:.so=.o) \
 		  libcoho.a $(PY.LDLIBS)
+TEST.COMP	= $(CC) $(CFLAGS) -I. -o $@ $@.c libcoho.a
 
 
 all:				libcoho.a \
+				$(TEST) \
 				$(PY.MOD)
 
 
 clean:
-	rm -f *.o *.core
+	rm -f *.o
 	rm -f util/*.o compat/*.o
 	rm -f libcoho.a
+	rm -f $(TEST)
 	rm -f py/coho/*.[co] $(PY.MOD)
 	rm -rf py/dist py/__pycache__
 	rm -rf doc/_build
@@ -41,6 +46,10 @@ install:			all
 	install -m 0444 libcoho.a $(DESTDIR)$(PREFIX)/lib
 	install -m 0444 smi.h $(DESTDIR)$(PREFIX)/include/coho
 	install -m 0444 man/smi_parse.3 $(DESTDIR)$(MANPREFIX)/man3
+
+
+test:				$(TEST)
+	@sh test/run.sh
 
 
 wheel:				$(PY.MOD)
@@ -96,6 +105,13 @@ smi.o:				smi.c \
 				util.h
 	$(COMP)
 
+$(TEST):			libcoho.a
+
+test/smi:			test/smi.c \
+				smi.h
+	$(TEST.COMP)
+
+
 
 util/vec.o:			util/vec.c \
 				util.h \
@@ -107,6 +123,7 @@ util/vec.o:			util/vec.c \
 				doc \
 				clean \
 				install \
+				test \
 				wheel
 
 
