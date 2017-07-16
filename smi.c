@@ -186,43 +186,63 @@ add_atom(struct smi *x, struct smi_atom *a)
 
 /*
  * Saves a new bond to the bond list and returns its index.
- * If the bond is already in the list, sets x->err and return -1.
- * Bonds are added so that bond->a0 < bond->a1.
+ * Returns new length of bond list on success.
+ * If the bond is already in the list, sets x->err and returns -1.
+ * Bonds are added so that bond->a0 < bond->a1 and the entire bond list
+ * remains sorted.
  */
 static int
 add_bond(struct smi *x, struct smi_bond *bond)
 {
-	size_t i;
-	struct smi_bond *nb, *b;
+	size_t i, move;
+	struct smi_bond nb, *b;
 
-	XVEC_ENSURE_APPEND(x->bonds, 1);
-	nb = &x->bonds[x->bonds_sz];
-
-	*nb = *bond;
+	nb = *bond;
 
 	/* Flip so a0 < a1
 	 */
 	if (bond->a0 > bond->a1) {
-		nb->a0 = bond->a1;
-		nb->a1 = bond->a0;
+		nb.a0 = bond->a1;
+		nb.a1 = bond->a0;
 
 		if (bond->stereo == SMI_BOND_STEREO_UP)
-			nb->stereo = SMI_BOND_STEREO_DOWN;
+			nb.stereo = SMI_BOND_STEREO_DOWN;
 		else if (bond->stereo == SMI_BOND_STEREO_DOWN)
-			nb->stereo = SMI_BOND_STEREO_UP;
+			nb.stereo = SMI_BOND_STEREO_UP;
 	}
 
-	/* Check for duplicate bonds
+	/* Find position to insert and check for duplicates.
+	 * Start search from end, since bonds are
+	 * mostly generated in the correct order.
 	 */
-	for (i = 0; i < x->bonds_sz; i++) {
-		b = &x->bonds[i];
-		if (b->a0 == nb->a0 && b->a1 == nb->a1) {
+	for (i = x->bonds_sz; i > 0; i--) {
+		b = &x->bonds[i-1];
+
+		if (nb.a0 > b->a0)
+			break;
+		else if (nb.a0 < b->a0)
+			continue;
+		else if (nb.a1 > b->a1)
+			break;
+		else if (nb.a1 < b->a1)
+			continue;
+		else {
 			x->err = strdup("duplicate bond");
-			x->errpos = nb->pos;
+			x->errpos = nb.pos;
 			return -1;
 		}
 	}
 
+	XVEC_ENSURE_APPEND(x->bonds, 1);
+
+	move = x->bonds_sz - i;			/* # elements to shift */
+	if (move) {
+		memmove(x->bonds + i + 1,
+			x->bonds + i,
+			move * sizeof(x->bonds[0]));
+	}
+
+	x->bonds[i] = nb;
 	return x->bonds_sz++;
 }
 
