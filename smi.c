@@ -355,6 +355,11 @@ aromatic_organic(struct smi *x, struct smi_atom *a)
 }
 
 
+/*
+ * Matches an atom or returns 0 if not found.
+ * If successful, saves the new atom to the atom list and returns 1.
+ * On error, sets x->err and returns -1.
+ */
 static int
 atom(struct smi *x, int *anum)
 {
@@ -374,6 +379,12 @@ atom(struct smi *x, int *anum)
 }
 
 
+/*
+ * Matches a bond or returns 0 if not found.
+ * If found, sets fields of *b and returns 1.
+ * Only sets fields that can be determined by the matching bond
+ * token (order, stereo, pos, and len).
+ */
 static int
 bond(struct smi *x, struct smi_bond *b)
 {
@@ -390,6 +401,11 @@ bond(struct smi *x, struct smi_bond *b)
 }
 
 
+/*
+ * Matches a bracket atom or returns 0 if not found.
+ * If found, initializes the atom, sets its fields, and returns 1.
+ * On error, sets x->err and returns -1.
+ */
 static int
 bracket_atom(struct smi *x, struct smi_atom *a)
 {
@@ -648,6 +664,10 @@ chirality(struct smi *x, struct smi_atom *a)
 }
 
 
+/*
+ * Matches dot, the no-bond specifier.
+ * Returns 1 on success, 0 if there was no match.
+ */
 static int
 dot(struct smi *x)
 {
@@ -729,6 +749,12 @@ isotope(struct smi *x, struct smi_atom *a)
 }
 
 
+/*
+ * Reads the next token and checks if its type is among those
+ * requested.
+ * If so, consumes token and returns 1.
+ * If not, returns 0 and parsing position remains unchanged.
+ */
 static int
 match(struct smi *x, struct token *t, int inbracket, unsigned int ttype)
 {
