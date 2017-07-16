@@ -122,6 +122,7 @@ struct smi_atom {
 .Bl -tag -width atomic_number
 .It Fa atomic_number
 The atom's atomic number, deduced from the symbol.
+The wildcard atom is assigned an atomic_number of zero.
 .It Fa symbol
 Element symbol as it appears in the SMILES string.
 Atoms designated as aromatic will have lowercase symbols.

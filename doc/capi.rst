@@ -103,6 +103,7 @@ fields.
     .. member:: int atomic_number
 
         The atom's atomic number, deduced from the symbol.
+        The wildcard atom is assigned an atomic number of zero.
 
     .. member:: char symbol[4]
 
