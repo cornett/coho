@@ -69,6 +69,7 @@ cdef class Parser:
                 'hcount':           a.hcount if a.hcount != -1 else None,
                 'isotope':          a.isotope if a.isotope != -1 else None,
                 'chirality':        a.chirality.decode() or None,
+                'bracket':          bool(a.bracket),
                 'organic':          bool(a.organic),
                 'aromatic':         bool(a.aromatic),
                 'aclass':           a.aclass if a.aclass != -1 else None,

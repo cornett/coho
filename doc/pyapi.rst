@@ -78,11 +78,16 @@ This module contains a parser for the
             Currently, parsing is limited to ``@`` and ``@@``.
             Use of other chirality designators will result in a parsing error.
 
+        ``bracket``
+            True if the atom was specified using bracket(``[]``) notation,
+            else False.
+
         ``organic``
             True if the atom was specified using the
             organic subset nomenclature, else False.
-            False implies the atom was specified using bracket
-            (``[]``) notation.
+            Wildcard atoms are not considered part of the organic subset.
+            If they occur outside of a bracket, their ``bracket``
+            and ``organic`` fields will both be False.
 
         ``aromatic``
             True if the atom's symbol is lowercase, indicating that it is

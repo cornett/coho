@@ -415,6 +415,7 @@ bracket_atom(struct smi *x, struct smi_atom *a)
 		return 0;
 
 	smi_atom_init(a);
+	a->bracket = 1;
 	a->pos = t.pos;
 	a->len = t.n;
 
@@ -821,6 +822,7 @@ smi_atom_init(struct smi_atom *x)
 	x->hcount = -1;
 	x->isotope = -1;
 	x->chirality[0] = '\0';
+	x->bracket = 0;
 	x->organic = 0;
 	x->aromatic = 0;
 	x->aclass = -1;

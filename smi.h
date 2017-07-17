@@ -39,6 +39,7 @@ struct smi_atom {
 	int			 hcount;
 	int			 isotope;
 	char			 chirality[8];
+	int			 bracket;
 	int			 organic;
 	int			 aromatic;
 	int			 aclass;

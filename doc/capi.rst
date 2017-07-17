@@ -89,6 +89,7 @@ fields.
                 int                      hcount;
                 int                      isotope;
                 char                     chirality[8];
+                int                      bracket;
                 int                      organic;
                 int                      aromatic;
                 int                      aclass;
@@ -131,12 +132,17 @@ fields.
         Currently, parsing is limited to ``@`` and ``@@``.
         Use of other chirality designators will result in a parsing error.
 
+    .. member:: int bracket
+
+        1 if the atom was specified using bracket(``[]``) notation, else 0.
+
     .. member:: int organic
 
         1 if the atom was specified using the
         organic subset nomenclature, else 0.
-        Zero implies the atom was specified using bracket
-        (``[]``) notation.
+        Wildcard atoms are not considered part of the organic subset.
+        If they occur outside of a bracket, their ``bracket`` and
+        ``organic`` fields will both be 0.
 
     .. member:: int aromatic
 

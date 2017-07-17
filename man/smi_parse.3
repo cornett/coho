@@ -112,6 +112,7 @@ struct smi_atom {
 	int			 hcount;
 	int			 isotope;
 	char			 chirality[8];
+	int			 bracket;
 	int			 organic;
 	int			 aromatic;
 	int			 aclass;
@@ -138,10 +139,17 @@ valid isotope and that [0S] is not the same as [S].
 The chirality label, if provided, else the empty string.
 Currently, parsing is limited to @ and @@.
 Use of other chirality designators will result in a parsing error.
+.It Fa bracket
+1 if the atom was specified using bracket([]) notation, else 0.
 .It Fa organic
 1 if the atom was specified using the
 organic subset nomenclature, else 0.
-Zero implies the atom was specified using bracket ([]) notation.
+Wildcard atoms are not considered part of the organic subset.
+If they occur outside of a bracket, their
+.Fa bracket
+and
+.Fa organic
+fields will both be 0.
 .It Fa aromatic
 1 if the atom's symbol is lowercase, indicating that it is aromatic,
 else 0.
