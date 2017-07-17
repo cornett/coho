@@ -108,13 +108,13 @@ Its fields are described below.
 struct smi_atom {
 	int			 atomic_number;
 	char			 symbol[4];
+	int			 isotope;
 	int			 charge;
 	int			 hcount;
-	int			 isotope;
-	char			 chirality[8];
 	int			 bracket;
 	int			 organic;
 	int			 aromatic;
+	char			 chirality[8];
 	int			 aclass;
 	int			 pos;
 	int			 len;
@@ -127,18 +127,14 @@ The wildcard atom is assigned an atomic_number of zero.
 .It Fa symbol
 Element symbol as it appears in the SMILES string.
 Atoms designated as aromatic will have lowercase symbols.
-.It Fa charge
-Formal charge, or 0 if none was specified.
-.It Fa hcount
-Number of explicit hydrogens, or -1 if none were specified.
 .It Fa isotope
 Isotope, or -1 if unspecified.
 Note that the OpenSMILES specification states that zero is a
 valid isotope and that [0S] is not the same as [S].
-.It Fa chirality
-The chirality label, if provided, else the empty string.
-Currently, parsing is limited to @ and @@.
-Use of other chirality designators will result in a parsing error.
+.It Fa charge
+Formal charge, or 0 if none was specified.
+.It Fa hcount
+Number of explicit hydrogens, or -1 if none were specified.
 .It Fa bracket
 1 if the atom was specified using bracket([]) notation, else 0.
 .It Fa organic
@@ -153,6 +149,10 @@ fields will both be 0.
 .It Fa aromatic
 1 if the atom's symbol is lowercase, indicating that it is aromatic,
 else 0.
+.It Fa chirality
+The chirality label, if provided, else the empty string.
+Currently, parsing is limited to @ and @@.
+Use of other chirality designators will result in a parsing error.
 .It Fa aclass
 Positive integer atom class if specified, else -1.
 .It Fa pos

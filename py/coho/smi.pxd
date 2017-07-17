@@ -28,13 +28,13 @@ cdef extern from "smi.h":
     struct smi_atom:
         int              atomic_number
         char             symbol[4]
+        int              isotope
         int              charge
         int              hcount
-        int              isotope
-        char             chirality[8]
         int              bracket
         int              organic
         int              aromatic
+        char             chirality[8]
         int              aclass
         int              pos
         int              len

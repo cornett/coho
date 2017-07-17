@@ -61,22 +61,17 @@ This module contains a parser for the
             Element symbol as it appears in the SMILES string.
             Atoms designated as aromatic will have lowercase symbols.
 
-        ``charge``
-            Formal charge, or 0 if none was specified.
-
-        ``hcount``
-            Number of explicit hydrogens, or -1 if none were specified.
-
         ``isotope``
             Isotope, or ``None`` if unspecified.
             Note that the `OpenSMILES <http://opensmiles.org/>`_ specification
             states that zero is a valid isotope and that
             ``[0S]`` is not the same as ``[S]``.
 
-        ``chirality``
-            The chirality label, if provided, else ``None``.
-            Currently, parsing is limited to ``@`` and ``@@``.
-            Use of other chirality designators will result in a parsing error.
+        ``charge``
+            Formal charge, or 0 if none was specified.
+
+        ``hcount``
+            Number of explicit hydrogens, or -1 if none were specified.
 
         ``bracket``
             True if the atom was specified using bracket(``[]``) notation,
@@ -92,6 +87,11 @@ This module contains a parser for the
         ``aromatic``
             True if the atom's symbol is lowercase, indicating that it is
             aromatic, else False.
+
+        ``chirality``
+            The chirality label, if provided, else ``None``.
+            Currently, parsing is limited to ``@`` and ``@@``.
+            Use of other chirality designators will result in a parsing error.
 
         ``aclass``
             Integer atom class if specified, else ``None``.

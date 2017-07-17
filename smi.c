@@ -818,13 +818,13 @@ smi_atom_init(struct smi_atom *x)
 {
 	x->atomic_number = 0;
 	x->symbol[0] = '\0';
+	x->isotope = -1;
 	x->charge = 0;
 	x->hcount = -1;
-	x->isotope = -1;
-	x->chirality[0] = '\0';
 	x->bracket = 0;
 	x->organic = 0;
 	x->aromatic = 0;
+	x->chirality[0] = '\0';
 	x->aclass = -1;
 	x->pos = -1;
 	x->len = 0;

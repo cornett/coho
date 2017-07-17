@@ -85,13 +85,13 @@ fields.
         struct smi_atom {
                 int                      atomic_number;
                 char                     symbol[4];
+                int                      isotope;
                 int                      charge;
                 int                      hcount;
-                int                      isotope;
-                char                     chirality[8];
                 int                      bracket;
                 int                      organic;
                 int                      aromatic;
+                char                     chirality[8];
                 int                      aclass;
                 int                      pos;
                 int                      len;
@@ -111,14 +111,6 @@ fields.
         Element symbol as it appears in the SMILES string.
         Atoms designated as aromatic will have lowercase symbols.
 
-    .. member:: int charge
-
-        Formal charge, or 0 if none was specified.
-
-    .. member:: int hcount
-
-        Number of explicit hydrogens, or -1 if none were specified.
-
     .. member:: int isotope
 
         Isotope, or -1 if unspecified.
@@ -126,11 +118,13 @@ fields.
         states that zero is a valid isotope and that
         ``[0S]`` is not the same as ``[S]``.
 
-    .. member:: char chirality[8]
+    .. member:: int charge
 
-        The chirality label, if provided, else the empty string.
-        Currently, parsing is limited to ``@`` and ``@@``.
-        Use of other chirality designators will result in a parsing error.
+        Formal charge, or 0 if none was specified.
+
+    .. member:: int hcount
+
+        Number of explicit hydrogens, or -1 if none were specified.
 
     .. member:: int bracket
 
@@ -148,6 +142,12 @@ fields.
 
         1 if the atom's symbol is lowercase, indicating that it is
         aromatic, else 0.
+
+    .. member:: char chirality[8]
+
+        The chirality label, if provided, else the empty string.
+        Currently, parsing is limited to ``@`` and ``@@``.
+        Use of other chirality designators will result in a parsing error.
 
     .. member:: int aclass
 
