@@ -3,4 +3,5 @@
 py/coho/*.c
 libcoho.a
 
+afl/smi/smi
 test/smi

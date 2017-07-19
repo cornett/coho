@@ -10,6 +10,8 @@ LIB.OBJ		= smi.o \
 PY.MOD		= py/coho/__init__.so \
 		  py/coho/smi.so
 
+AFL		= afl/smi/smi
+
 TEST		= test/smi
 
 COMP		= $(CC) $(CFLAGS) $(CPPFLAGS) -I. -o $@ -c $(@:.o=.c)
@@ -17,6 +19,7 @@ CY.COMP		= $(CYTHON) -X embedsignature=True -I py/coho -3 $(@:.c=.pyx)
 PY.COMP		= $(CC) $(PY.CFLAGS) -I. -o $@ -c $(@:.o=.c)
 PY.LINK		= $(CC) -shared $(PY.LDFLAGS) -o $@ $(@:.so=.o) \
 		  libcoho.a $(PY.LDLIBS)
+AFL.COMP	= $(CC) $(CFLAGS) -I. -o $@ $@.c libcoho.a
 TEST.COMP	= $(CC) $(CFLAGS) -I. -o $@ $@.c libcoho.a
 
 
@@ -29,7 +32,7 @@ clean:
 	rm -f *.o
 	rm -f util/*.o compat/*.o
 	rm -f libcoho.a
-	rm -f $(TEST)
+	rm -f $(AFL) $(TEST)
 	rm -f py/coho/*.[co] $(PY.MOD)
 	rm -rf py/dist py/__pycache__
 	rm -rf doc/_build
@@ -59,6 +62,14 @@ test:				$(TEST)
 wheel:				$(PY.MOD)
 	@mkdir -p py/dist
 	$(PYTHON) py/wheel.py $(VERSION) $(PY.MOD)
+
+
+$(AFL):				libcoho.a
+
+
+afl/smi/smi:			afl/smi/smi.c \
+				smi.h
+	$(AFL.COMP)
 
 
 compat/reallocarray.o:		compat/reallocarray.c \
