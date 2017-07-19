@@ -10,18 +10,18 @@ LIB.OBJ		= smi.o \
 PY.MOD		= py/coho/__init__.so \
 		  py/coho/smi.so
 
-REGRESS		= regress/smi
+TEST		= test/smi
 
 COMP		= $(CC) $(CFLAGS) $(CPPFLAGS) -I. -o $@ -c $(@:.o=.c)
 CY.COMP		= $(CYTHON) -X embedsignature=True -I py/coho -3 $(@:.c=.pyx)
 PY.COMP		= $(CC) $(PY.CFLAGS) -I. -o $@ -c $(@:.o=.c)
 PY.LINK		= $(CC) -shared $(PY.LDFLAGS) -o $@ $(@:.so=.o) \
 		  libcoho.a $(PY.LDLIBS)
-REGRESS.COMP	= $(CC) $(CFLAGS) -I. -o $@ $@.c libcoho.a
+TEST.COMP	= $(CC) $(CFLAGS) -I. -o $@ $@.c libcoho.a
 
 
 all:				libcoho.a \
-				$(REGRESS) \
+				$(TEST) \
 				$(PY.MOD)
 
 
@@ -29,7 +29,7 @@ clean:
 	rm -f *.o
 	rm -f util/*.o compat/*.o
 	rm -f libcoho.a
-	rm -f $(REGRESS)
+	rm -f $(TEST)
 	rm -f py/coho/*.[co] $(PY.MOD)
 	rm -rf py/dist py/__pycache__
 	rm -rf doc/_build
@@ -48,10 +48,10 @@ install:			all
 	install -m 0444 man/smi_parse.3 $(DESTDIR)$(MANPREFIX)/man3
 
 
-regress:			$(REGRESS)
-	@for r in $(REGRESS); do \
-		echo -n "./$${r}... " ; \
-		./$$r >/dev/null 2>&1 || { echo "fail"; exit 1; }; \
+test:				$(TEST)
+	@for t in $(TEST); do \
+		echo -n "./$${t}... " ; \
+		./$$t >/dev/null 2>&1 || { echo "fail"; exit 1; }; \
 		echo "ok"; \
 	done
 
@@ -103,19 +103,19 @@ py/coho/__init__.so:		py/coho/__init__.o \
 	$(PY.LINK)
 
 
-$(REGRESS):			libcoho.a
-
-
-regress/smi:			regress/smi.c \
-				smi.h
-	$(REGRESS.COMP)
-
-
 smi.o:				smi.c \
 				smi.h \
 				compat.h \
 				util.h
 	$(COMP)
+
+
+$(TEST):			libcoho.a
+
+
+test/smi:			test/smi.c \
+				smi.h
+	$(TEST.COMP)
 
 
 util/vec.o:			util/vec.c \
@@ -128,7 +128,7 @@ util/vec.o:			util/vec.c \
 				doc \
 				clean \
 				install \
-				regress \
+				test \
 				wheel
 
 

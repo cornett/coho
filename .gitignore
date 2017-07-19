@@ -3,4 +3,4 @@
 py/coho/*.c
 libcoho.a
 
-regress/smi
+test/smi
