@@ -32,7 +32,6 @@ The default file looks like this::
     PY.LDFLAGS  = `$(PY.CONFIG) --ldflags`
     PY.LDLIBS   = `$(PY.CONFIG) --libs`
 
-    COMPAT.OBJ  =
 
 These variables are explained below.
 
@@ -103,20 +102,6 @@ These variables are explained below.
     Library flags (-lfoo) to pass to the C compiler when linking
     Python extension modules.
     The default should work if ``PY.CONFIG`` is set correctly.
-
-``COMPAT.OBJ``
-    Coho uses a small number of library functions that are not included
-    by default on all target platforms.
-    Source code for these functions is included under the ``compat``
-    directory.
-    If a particular function is lacking on your system, you will need
-    to add its object file to ``COMPAT.OBJ``.
-
-    On Linux, this should be set as follows::
-
-        COMPAT.OBJ = compat/reallocarray.o \
-                     compat/strlcpy.o
-
 
 .. _Cython: http://cython.org/
 .. _venv: https://docs.python.org/3/library/venv.html

@@ -5,7 +5,8 @@ include $(CONFIG)
 
 LIB.OBJ		= smi.o \
 		  util/vec.o \
-		  $(COMPAT.OBJ)
+		  compat/reallocarray.o \
+		  compat/strlcpy.o
 
 PY.MOD		= py/coho/__init__.so \
 		  py/coho/smi.so
