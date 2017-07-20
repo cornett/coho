@@ -3,10 +3,12 @@ VERSION		= 0.1
 CONFIG		= config.mk
 include $(CONFIG)
 
+COMPAT.OBJ	= reallocarray.o \
+		  strlcpy.o
+
 LIB.OBJ		= smi.o \
-		  compat/reallocarray.o \
-		  compat/strlcpy.o \
-		  vec.o
+		  vec.o \
+		  $(COMPAT.OBJ)
 
 PY.MOD		= py/coho/__init__.so \
 		  py/coho/smi.so
@@ -31,7 +33,6 @@ all:				libcoho.a \
 
 clean:
 	rm -f *.o
-	rm -f compat/*.o
 	rm -f libcoho.a
 	rm -f $(AFL) $(TEST)
 	rm -f py/coho/*.[co] $(PY.MOD)
@@ -73,16 +74,6 @@ afl/smi/smi:			afl/smi/smi.c \
 	$(AFL.COMP)
 
 
-compat/reallocarray.o:		compat/reallocarray.c \
-				compat.h
-	$(COMP)
-
-
-compat/strlcpy.o:		compat/strlcpy.c \
-				compat.h
-	$(COMP)
-
-
 libcoho.a:			$(LIB.OBJ)
 	$(AR) -r $@ $?
 
@@ -115,10 +106,20 @@ py/coho/__init__.so:		py/coho/__init__.o \
 	$(PY.LINK)
 
 
+reallocarray.o:			reallocarray.c \
+				compat.h
+	$(COMP)
+
+
 smi.o:				smi.c \
 				smi.h \
 				compat.h \
 				vec.h
+	$(COMP)
+
+
+strlcpy.o:			strlcpy.c \
+				compat.h
 	$(COMP)
 
 
