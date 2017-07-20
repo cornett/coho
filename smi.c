@@ -23,7 +23,7 @@
 
 #include "smi.h"
 #include "compat.h"
-#include "util.h"
+#include "vec.h"
 
 #define ALIPHATIC_ORGANIC	0x00001
 #define AROMATIC		0x00002

@@ -17,7 +17,7 @@
 #include <err.h>
 #include <stdlib.h>
 
-#include "util.h"
+#include "vec.h"
 #include "compat.h"
 
 

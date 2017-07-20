@@ -4,9 +4,9 @@ CONFIG		= config.mk
 include $(CONFIG)
 
 LIB.OBJ		= smi.o \
-		  util/vec.o \
 		  compat/reallocarray.o \
-		  compat/strlcpy.o
+		  compat/strlcpy.o \
+		  vec.o
 
 PY.MOD		= py/coho/__init__.so \
 		  py/coho/smi.so
@@ -31,7 +31,7 @@ all:				libcoho.a \
 
 clean:
 	rm -f *.o
-	rm -f util/*.o compat/*.o
+	rm -f compat/*.o
 	rm -f libcoho.a
 	rm -f $(AFL) $(TEST)
 	rm -f py/coho/*.[co] $(PY.MOD)
@@ -118,7 +118,7 @@ py/coho/__init__.so:		py/coho/__init__.o \
 smi.o:				smi.c \
 				smi.h \
 				compat.h \
-				util.h
+				vec.h
 	$(COMP)
 
 
@@ -130,8 +130,8 @@ test/smi:			test/smi.c \
 	$(TEST.COMP)
 
 
-util/vec.o:			util/vec.c \
-				util.h \
+vec.o:				vec.c \
+				vec.h \
 				compat.h
 	$(COMP)
 
