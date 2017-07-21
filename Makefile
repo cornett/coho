@@ -16,10 +16,9 @@ PY.LDLIBS	= `$(PY.CONFIG) --libs`
 
 -include config.mk
 
-LIB.C		= reallocarray.c \
-		  smi.c \
-		  strlcpy.c \
-		  vec.c
+LIB.C		= smi.c \
+		  vec.c \
+		  compat.c
 
 LIB.O		= $(LIB.C:.c=.o)
 
@@ -93,9 +92,8 @@ py/version.txt:			Makefile
 
 
 $(LIB.O):		compat.h
-reallocarray.o:		reallocarray.c
+compat.o:		compat.c
 smi.o:			smi.c smi.h vec.h
-strlcpy.o:		strlcpy.c
 vec.o:			vec.c vec.h
 $(LIB.O):
 	$(CC) $(CFLAGS) $(CPPFLAGS) -I. -o $@ -c $(@:.o=.c)

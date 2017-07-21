@@ -38,9 +38,9 @@ ext = [
         sources = [
             'coho/smi.c',
             'src/smi.c',
-            'src/reallocarray.c',
-            'src/strlcpy.c',
-            'src/vec.c']
+            'src/vec.c',
+            'src/compat.c',
+        ]
     ),
 
 ]
