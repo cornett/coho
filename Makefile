@@ -64,9 +64,14 @@ install:			all
 	install -m 0444 man/smi_parse.3 $(DESTDIR)$(MANPREFIX)/man3
 
 
-py.sdist:			$(PY.C) \
+sdist:				$(PY.C) \
 				py/version.txt
 	$(PYTHON) py/setup.py sdist
+
+
+wheel:				$(PY.C) \
+				py/version.txt
+	$(PYTHON) py/setup.py bdist_wheel
 
 
 test:				$(TEST)
@@ -77,9 +82,6 @@ test:				$(TEST)
 	done
 
 
-wheel:				$(PY.SO)
-	@mkdir -p py/dist
-	$(PYTHON) py/wheel.py $(VERSION) $(PY.SO)
 
 
 libcoho.a:			$(LIB.O)
@@ -129,7 +131,7 @@ $(BIN):
 				doc \
 				clean \
 				install \
-				py.sdist
+				sdist
 				test \
 				wheel
 
