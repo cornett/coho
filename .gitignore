@@ -1,7 +1,11 @@
 *.o
 *.so
-py/coho/*.c
-libcoho.a
-
 afl/smi/smi
+libcoho.a
+py/__pycache__
+py/coho.egg-info
+py/coho/*.c
+py/dist
+py/src
+py/version.txt
 test/smi

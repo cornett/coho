@@ -1,0 +1,3 @@
+include coho/*.c
+include src/*.[ch]
+include version.txt
