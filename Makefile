@@ -20,6 +20,10 @@ LIB.C		= smi.c \
 		  vec.c \
 		  compat.c
 
+LIB.H		= smi.h \
+		  vec.h \
+		  compat.h
+
 LIB.O		= $(LIB.C:.c=.o)
 
 PY.PYX		= py/coho/__init__.pyx \
@@ -65,6 +69,9 @@ install:			all
 
 sdist:				$(PY.C) \
 				py/version.txt
+	rm -rf py/src
+	install -d py/src
+	install -m 0644 $(LIB.C) $(LIB.H) py/src
 	$(PYTHON) py/setup.py sdist
 
 
