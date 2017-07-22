@@ -154,3 +154,21 @@ This module contains a parser for the
 
         ``len``
             Length of the bond's token, or zero if implicit.
+
+Example
+^^^^^^^
+
+The following example shows how to parse a SMILES string::
+
+    import coho.smi
+    from pprint import pprint
+
+    p = coho.smi.Parser()
+    try:
+        p.parse('CNCC')
+    except ValueError as e:
+        print(e)
+    else:
+        pprint(p.atoms)
+        print()
+        pprint(p.bonds)
