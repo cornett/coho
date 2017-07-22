@@ -19,6 +19,7 @@
 #include <errno.h>
 #include <stdint.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "compat.h"
 
@@ -58,9 +59,6 @@ reallocarray(void *optr, size_t nmemb, size_t size)
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
-
-#include <sys/types.h>
-#include <string.h>
 
 /*
  * Copy string src to buffer dst of size dsize.  At most dsize-1
