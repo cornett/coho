@@ -67,17 +67,19 @@ install:			all
 	install -m 0444 man/smi_parse.3 $(DESTDIR)$(MANPREFIX)/man3
 
 
-sdist:				$(PY.C) \
-				py/version.txt
-	rm -rf py/src
-	install -d py/src
-	install -m 0644 $(LIB.C) $(LIB.H) py/src
+sdist:				pre.setup.py
 	$(PYTHON) py/setup.py sdist
 
 
-wheel:				$(PY.C) \
-				py/version.txt
+wheel:				pre.setup.py
 	$(PYTHON) py/setup.py bdist_wheel
+
+
+pre.setup.py:			$(PY.C)
+	echo $(VERSION) > py/version.txt
+	rm -rf py/src
+	install -d py/src
+	install -m 0644 $(LIB.C) $(LIB.H) py/src
 
 
 test:				$(TEST)
@@ -88,14 +90,8 @@ test:				$(TEST)
 	done
 
 
-
-
 libcoho.a:			$(LIB.O)
 	$(AR) -r $@ $?
-
-
-py/version.txt:			Makefile
-	echo $(VERSION) > $@
 
 
 $(LIB.O):		compat.h
@@ -136,6 +132,7 @@ $(BIN):
 				doc \
 				clean \
 				install \
+				pre.setup.py \
 				sdist
 				test \
 				wheel
