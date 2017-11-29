@@ -4,25 +4,21 @@ PREFIX		= /usr/local
 MANPREFIX	= $(PREFIX)/share/man
 
 CPPFLAGS	=
-CFLAGS		= -Wall -Wextra -Werror -O2 -fPIC
+CFLAGS		= -Wall -Wextra -Werror -std=c99 -pedantic -O2
 
 PYTHON		= python3
-CYTHON		= cython
+CYTHON		= cython -X embedsignature=True -I py/coho -3
 
 PY.CONFIG	= $(PYTHON)-config
-PY.CFLAGS	= `$(PY.CONFIG) --cflags`
-PY.LDFLAGS	= `$(PY.CONFIG) --ldflags`
-PY.LDLIBS	= `$(PY.CONFIG) --libs`
+CFLAGS.PY	= `$(PY.CONFIG) --cflags` -I.
+LDFLAGS.PY	= `$(PY.CONFIG) --ldflags`
+LDLIBS.PY	= `$(PY.CONFIG) --libs`
 
 -include config.mk
 
-LIB.C		= smi.c \
-		  vec.c \
-		  compat.c
-
-LIB.H		= smi.h \
-		  vec.h \
-		  compat.h
+LIB.C		= compat.c \
+		  smi.c \
+		  vec.c
 
 LIB.O		= $(LIB.C:.c=.o)
 
@@ -33,24 +29,26 @@ PY.C		= $(PY.PYX:.pyx=.c)
 PY.O		= $(PY.PYX:.pyx=.o)
 PY.SO		= $(PY.PYX:.pyx=.so)
 
+
 AFL		= afl/smi/smi
 
 TEST		= test/smi
 
-BIN		= $(AFL) \
-		  $(TEST)
+CCO	= $(CC) $(CFLAGS) -fPIC $(CPPFLAGS) -I. -o $@ -c $(@:.o=.c)
+CCPYO	= $(CC) $(CFLAGS.PY) -o $@ -c $(@:.o=.c)
+CCPYSO	= $(CC) -shared $(LDFLAGS.PY) -o $@ $(@:.so=.o) libcoho.a $(LDLIBS.PY)
+CYTHONC	= $(CYTHON) $(@:.c=.pyx)
+CCEXE	= $(CC) $(CFLAGS) $(CPPFLAGS) -I. -o $@ $@.c libcoho.a
 
 
-all:				libcoho.a \
-				$(TEST) \
-				$(PY.SO)
+all:	libcoho.a $(TEST) $(PY.SO)
 
 
 clean:
-	rm -f $(BIN) $(LIB.O) libcoho.a
-	rm -f $(PY.C) $(PY.O) $(PY.SO)
-	rm -rf py/dist py/__pycache__ py/coho.egg-info
-	rm -rf py/src py/version.txt
+	rm -f *.o libcoho.a
+	rm -f test/smi afl/smi/smi
+	rm -f py/coho/*.[co] py/coho/*.so py/version.txt
+	rm -rf py/dist py/__pycache__ py/coho.egg-info py/src
 	rm -rf doc/_build
 
 
@@ -58,7 +56,7 @@ doc:
 	$(PYTHON) -m sphinx -M html doc doc/_build
 
 
-install:			all
+install: libcoho.a
 	install -d $(DESTDIR)$(PREFIX)/lib
 	install -d $(DESTDIR)$(PREFIX)/include/coho
 	install -d $(DESTDIR)$(MANPREFIX)/man3
@@ -67,22 +65,18 @@ install:			all
 	install -m 0444 man/smi_parse.3 $(DESTDIR)$(MANPREFIX)/man3
 
 
-sdist:				pre.setup.py
-	$(PYTHON) py/setup.py sdist
-
-
-wheel:				pre.setup.py
-	$(PYTHON) py/setup.py bdist_wheel
-
-
-pre.setup.py:			$(PY.C)
+pre.setup.py:
 	echo $(VERSION) > py/version.txt
 	rm -rf py/src
 	install -d py/src
-	install -m 0644 $(LIB.C) $(LIB.H) py/src
+	install -m 0644 compat.[ch] smi.[ch] vec.[ch] py/src
 
 
-test:				$(TEST)
+sdist: pre.setup.py $(PY.C)
+	$(PYTHON) py/setup.py sdist
+
+
+test: $(TEST)
 	@for t in $(TEST); do \
 		echo -n "./$${t}... " ; \
 		./$$t >/dev/null 2>&1 || { echo "fail"; exit 1; }; \
@@ -90,51 +84,63 @@ test:				$(TEST)
 	done
 
 
-libcoho.a:			$(LIB.O)
+wheel: pre.setup.py $(PY.C)
+	$(PYTHON) py/setup.py bdist_wheel
+
+
+$(LIB.O): compat.h
+$(AFL) $(TEST) $(PY.SO): libcoho.a
+
+
+afl/smi/smi: afl/smi/smi.c smi.h
+	$(CCEXE)
+
+
+compat.o: compat.c compat.h
+	$(CCO)
+
+
+libcoho.a: $(LIB.O)
 	$(AR) -r $@ $?
 
 
-$(LIB.O):		compat.h
-compat.o:		compat.c
-smi.o:			smi.c smi.h vec.h
-vec.o:			vec.c vec.h
-$(LIB.O):
-	$(CC) $(CFLAGS) $(CPPFLAGS) -I. -o $@ -c $(@:.o=.c)
+py/coho/__init__.c: py/coho/__init__.pyx
+	$(CYTHONC)
 
 
-py/coho/__init__.c:	py/coho/__init__.pyx
-py/coho/smi.c:		py/coho/smi.pyx py/coho/smi.pxd
-$(PY.C):
-	$(CYTHON) -X embedsignature=True -I py/coho -3 $(@:.c=.pyx)
+py/coho/__init__.o: py/coho/__init__.c
+	$(CC) $(CFLAGS.PY) -DVERSION='"$(VERSION)"' -o $@ -c py/coho/__init__.c
 
 
-py/coho/__init__.o:	py/coho/__init__.c
-py/coho/smi.o:		py/coho/smi.c smi.h
-$(PY.O):
-	$(CC) $(PY.CFLAGS) -DVERSION='"$(VERSION)"' -I. -o $@ -c $(@:.o=.c)
+py/coho/__init__.so: py/coho/__init__.o
+	$(CCPYSO)
 
 
-$(PY.SO):		libcoho.a
-py/coho/__init__.so:	py/coho/__init__.o
-py/coho/smi.so:		py/coho/smi.o
-$(PY.SO):
-	$(CC) -shared $(PY.LDFLAGS) -o $@ $(@:.so=.o) libcoho.a $(PY.LDLIBS)
+py/coho/smi.c: py/coho/smi.pyx py/coho/smi.pxd
+	$(CYTHONC)
 
 
-$(BIN):			libcoho.a
-afl/smi/smi:		afl/smi/smi.c smi.h
-test/smi:		test/smi.c smi.h
-$(BIN):
-	$(CC) $(CFLAGS) -I. -o $@ $@.c libcoho.a
+py/coho/smi.o: py/coho/smi.c smi.h
+	$(CCPYO)
 
 
-.PHONY:				all \
-				doc \
-				clean \
-				install \
-				pre.setup.py \
-				sdist
-				test \
-				wheel
+py/coho/smi.so: py/coho/smi.o
+	$(CCPYSO)
+
+
+smi.o: smi.c smi.h vec.h
+	$(CCO)
+
+
+test/smi: test/smi.c smi.h
+	$(CCEXE)
+
+
+vec.o: vec.c vec.h
+	$(CCO)
+
+
+.PHONY:	all doc clean install pre.setup.py sdist test wheel
+
 
 .SUFFIXES:
