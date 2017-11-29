@@ -7,12 +7,12 @@ works with recent releases of Python 3.
 The API is contained under a top-level package called ``coho``.
 
 
-SMILES
-------
+coho.smi
+--------
 
-.. :module:: coho.smi
+.. :py:module:: coho.smi
 
-This module contains a parser for the
+The ``coho.smi`` module contains a parser for the
 `OpenSMILES <http://opensmiles.org/>`_ language.
 
 .. class:: Parser

@@ -252,7 +252,7 @@ fields.
     If successful, the fields of :type:`smi <smi>` will contain
     the results.
 
-    :param smi: Parsing context
+    :param smi: Parsing context, initialized by :func:`smi_init()`
     :param str: SMILES string
     :param sz: Amount of string to read.  If zero, the entire string is parsed.
     :return: Returns 0 on success, -1 on failure
@@ -295,6 +295,7 @@ The following example shows how to parse a SMILES string::
                            smi.bonds[i].order);
             }
 
+            smi_free(&smi);
+
             return 0;
     }
-
