@@ -4,6 +4,11 @@ ChangeLog
 `Unreleased`_
 -------------
 
+Changed
+^^^^^^^
+* Revise Makefile.
+* Improve documentation.
+
 `v0.2`_ - 2017-07-21
 --------------------
 
