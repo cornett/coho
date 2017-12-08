@@ -519,15 +519,15 @@ branched_atom(struct smi *x, int *anum)
 
 
 static int
-chain(struct smi *x, struct smi_bond *prev)
+chain(struct smi *x, struct smi_bond *prev_bond)
 {
 	struct smi_bond b;
 	int n;
 	int state = -1;
 	int open_bond = 0;
 
-	if (prev) {
-		b = *prev;
+	if (prev_bond) {
+		b = *prev_bond;
 		open_bond = 1;
 	}
 
