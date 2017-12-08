@@ -173,7 +173,7 @@ aclass(struct smi *x, struct smi_atom *a)
 
 
 /*
- * Saves a completed atom returns its index.
+ * Saves a completed atom and returns its index.
  */
 static int
 add_atom(struct smi *x, struct smi_atom *a)
@@ -314,7 +314,7 @@ add_ringbond(struct smi *x, int rnum, struct smi_bond *b)
 
 /*
  * Matches an aliphatic organic atom (C, N, O, etc.).
- * Returns 1 on match, 0 if no match, and -1 on error.
+ * Returns 1 on match, 0 if no match, or -1 on error.
  */
 static int
 aliphatic_organic(struct smi *x, struct smi_atom *a)
@@ -335,7 +335,7 @@ aliphatic_organic(struct smi *x, struct smi_atom *a)
 
 /*
  * Matches an aromatic organic atom (c, n, o, etc.).
- * Returns 1 on match, 0 if no match, and -1 on error.
+ * Returns 1 on match, 0 if no match, or -1 on error.
  */
 static int
 aromatic_organic(struct smi *x, struct smi_atom *a)
@@ -446,7 +446,6 @@ bracket_atom(struct smi *x, struct smi_atom *a)
 	a->len += t.n;
 	return 1;
 }
-
 
 static int
 branch(struct smi *x, struct smi_bond *prev)
