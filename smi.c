@@ -64,7 +64,7 @@ static int aromatic_organic(struct smi *, struct smi_atom *);
 static int atom(struct smi *, int *);
 static int bond(struct smi *, struct smi_bond *b);
 static int bracket_atom(struct smi *, struct smi_atom *);
-static int branch(struct smi *, struct smi_bond *);
+static int branch(struct smi *, int);
 static int branched_atom(struct smi *, int *);
 static int chain(struct smi *, struct smi_bond *);
 static int charge(struct smi *, struct smi_atom *);
@@ -447,19 +447,28 @@ bracket_atom(struct smi *x, struct smi_atom *a)
 	return 1;
 }
 
+
+/*
+ * Matches a branch or returns 0 if one is not found.
+ * On error, sets x->err and returns -1.
+ * The prev_atom atom will be bonded to the first atom of the branch,
+ * unless the branch begins with a dot.
+ * Note that prev_atom must exist, since SMILES strings
+ * are not allowed to begin with branches.
+ */
 static int
-branch(struct smi *x, struct smi_bond *prev)
+branch(struct smi *x, int prev_atom)
 {
 	struct token t;
 	struct smi_bond b;
 	int open_bond = 1;
 
-	assert(prev);
-	b = *prev;
-	b.order = SMI_BOND_UNSPECIFIED;
-
 	if (!match(x, &t, 0, PAREN_OPEN))
 		return 0;
+
+	smi_bond_init(&b);
+	b.a0 = prev_atom;
+	b.order = SMI_BOND_UNSPECIFIED;
 
 	/*
 	 * Read optional bond or dot
@@ -492,8 +501,6 @@ branch(struct smi *x, struct smi_bond *prev)
 static int
 branched_atom(struct smi *x, int *anum)
 {
-	struct smi_bond b;
-
 	if (atom(x, anum)) {
 		if (x->err)
 			return -1;
@@ -504,10 +511,7 @@ branched_atom(struct smi *x, int *anum)
 		if (x->err)
 			return -1;
 
-	smi_bond_init(&b);
-	b.a0 = *anum;
-
-	while (branch(x, &b))
+	while (branch(x, *anum))
 		if (x->err)
 			return -1;
 	return 1;
