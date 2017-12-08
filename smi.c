@@ -84,7 +84,7 @@ static void smi_atom_init(struct smi_atom *);
 static void smi_bond_init(struct smi_bond *);
 static void smi_reinit(struct smi *, const char *, size_t);
 static int symbol(struct smi *, struct smi_atom *);
-static size_t tokcpy(char *, struct token *, size_t);
+static void tokcpy(char *, struct token *, size_t);
 static int wildcard(struct smi *, struct smi_atom *);
 
 
@@ -934,17 +934,21 @@ symbol(struct smi *x, struct smi_atom *a)
 }
 
 
-static size_t
+static void
 tokcpy(char *dst, struct token *t, size_t dstsz)
 {
 	size_t i;
 
-	if (t->n >= dstsz)
-		return strlcpy(dst, t->s, dstsz);
-	for (i = 0; i < t->n; i++)
+	if (dstsz == 0)
+		return;
+
+	for (i = 0; i < t->n; i++) {
+		if (i == dstsz - 1)
+			break;
 		dst[i] = t->s[i];
-	dst[i] = '\0';
-	return t->n;
+	}
+
+	dst[i] = 0;
 }
 
 
