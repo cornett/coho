@@ -8,6 +8,7 @@ Changed
 ^^^^^^^
 * Revise Makefile.
 * Improve documentation.
+* Improve positioning info for integer-too-large errors
 
 `v0.2`_ - 2017-07-21
 --------------------
