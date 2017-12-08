@@ -694,9 +694,10 @@ charge(struct smi *x, struct smi_atom *a)
 
 
 /*
- * Parses optional chirality inside a bracket atom.
+ * Parses chirality inside a bracket atom.
  * If successful, sets a->chirality and increments a->len.
  * Returns 1 if chirality was read, else 0.
+ * TODO: Currently, this only understands @ and @@.
  */
 static int
 chirality(struct smi *x, struct smi_atom *a)
@@ -725,9 +726,11 @@ dot(struct smi *x)
 
 
 /*
- * Parses optional hydrogen count inside a bracket atom.
+ * Parses hydrogen count inside a bracket atom.
  * If successful, sets a->hcount and increments a->len.
  * Returns 1 if hcount was read, else 0.
+ *
+ * hcount ::= 'H' | 'H' DIGIT
  */
 static int
 hcount(struct smi *x, struct smi_atom *a)
@@ -780,7 +783,7 @@ integer(struct smi *x, size_t maxdigit, int *dst)
 
 
 /*
- * Parses optional isotope inside a bracket atom.
+ * Parses isotope inside a bracket atom.
  * If successful, sets a->isotope and increments a->len.
  * Returns 1 if isotope was read, else 0.
  * On error, returns -1 and sets x->err.
@@ -800,10 +803,9 @@ isotope(struct smi *x, struct smi_atom *a)
 
 
 /*
- * Reads the next token and checks if its type is among those
- * requested.
- * If so, consumes token and returns 1.
- * If not, returns 0 and parsing position remains unchanged.
+ * Reads next token and checks if its type is among those requested.
+ * If so, consumes the token and returns 1.
+ * If not, returns 0 and the parsing position remains unchanged.
  */
 static int
 match(struct smi *x, struct token *t, int inbracket, unsigned int ttype)
@@ -816,6 +818,17 @@ match(struct smi *x, struct token *t, int inbracket, unsigned int ttype)
 }
 
 
+/*
+ * Matches a ring bond or returns 0 if not found.
+ * On error, sets x->err and returns -1.
+ * On success, uses atom anum to open or close a ring
+ * bond and then returns 1.
+ * If the parsed ring bond ID is in use, closes it and adds a new bond
+ * to the bond list.
+ * Otherwise, marks the ring ID as open.
+ *
+ * ringbond ::= bond? DIGIT | bond? '%' DIGIT DIGIT
+ */
 static int
 ringbond(struct smi *x, int anum)
 {
@@ -862,6 +875,9 @@ ringbond(struct smi *x, int anum)
 }
 
 
+/*
+ * Initializes struct smi_atom.
+ */
 static void
 smi_atom_init(struct smi_atom *x)
 {
@@ -880,6 +896,9 @@ smi_atom_init(struct smi_atom *x)
 }
 
 
+/*
+ * Initializes struct smi_bond.
+ */
 static void
 smi_bond_init(struct smi_bond *x)
 {
@@ -894,6 +913,10 @@ smi_bond_init(struct smi_bond *x)
 }
 
 
+/*
+ * Reinitializes struct smi prior to parsing a new SMILES.
+ * The given number of bytes of smi will be parsed.
+ */
 static void
 smi_reinit(struct smi *x, const char *smi, size_t end)
 {
@@ -916,8 +939,10 @@ smi_reinit(struct smi *x, const char *smi, size_t end)
 
 /*
  * Parses atom symbol inside a bracket atom.
- * If successful, sets a->symbol and increments a->len.
+ * If successful, sets a->symbol, a->aromatic, and increments a->len.
  * Returns 1 if symbol was read, else 0.
+ *
+ * symbol ::= element_symbols | aromatic_symbols | '*'
  */
 static int
 symbol(struct smi *x, struct smi_atom *a)
@@ -934,6 +959,10 @@ symbol(struct smi *x, struct smi_atom *a)
 }
 
 
+/*
+ * Copies up to dstsz - 1 bytes from the token to dst, NUL-terminating
+ * dst if dstsz is not 0.
+ */
 static void
 tokcpy(char *dst, struct token *t, size_t dstsz)
 {
@@ -951,7 +980,11 @@ tokcpy(char *dst, struct token *t, size_t dstsz)
 	dst[i] = 0;
 }
 
-
+/*
+ * Matches a wildcard atom (*) or returns 0 if not found.
+ * If found, initializes the atom, sets its fields, and returns 1.
+ * On error, sets x->err and returns -1.
+ */
 static int
 wildcard(struct smi *x, struct smi_atom *a)
 {
