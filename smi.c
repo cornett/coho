@@ -673,12 +673,9 @@ charge(struct smi *x, struct smi_atom *a)
 	if ((n = integer(x, 2, &a->charge)) == -1) {
 		x->err = strdup("charge too large");
 		return -1;
-	} else {
-		len += n;
-	}
-
-	if (n) {
+	} else if (n) {
 		a->charge *= sign;
+		len += n;
 	} else {
 		a->charge = sign;
 
