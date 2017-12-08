@@ -236,15 +236,39 @@ returns 0 on success, -1 on failure.
 The following example shows how to parse a SMILES string.
 .Bd -literal -offset indent
 
+#include <stdio.h>
 #include <coho/smi.h>
 
 int
 main(void)
 {
+	size_t i;
 	struct smi smi;
 
 	smi_init(&smi);
-	smi_parse(&smi, "CC(CCCO)C", 0);
+
+	if (smi_parse(&smi, "CNCC", 0)) {
+		fprintf(stderr, "failed: %s\n", smi.err);
+		smi_free(&smi);
+		return 1;
+	}
+
+	printf("# atoms: %zi\n", smi.atoms_sz);
+	printf("# bonds: %zi\n", smi.bonds_sz);
+	printf("\n");
+
+	for (i = 0; i < smi.atoms_sz; i++) {
+		printf("%zi: %s\n", i, smi.atoms[i].symbol);
+	}
+	printf("\n");
+
+	for (i = 0; i < smi.bonds_sz; i++) {
+		printf("%zi-%zi %i\n",
+		       smi.bonds[i].a0,
+		       smi.bonds[i].a1,
+		       smi.bonds[i].order);
+	}
+
 	smi_free(&smi);
 
 	return 0;
