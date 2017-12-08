@@ -754,7 +754,7 @@ hcount(struct smi *x, struct smi_atom *a)
 
 
 /*
- * Parses an integer up to maxdigit long.
+ * Matches an integer up to maxdigit long.
  * On success, stores the integer in *dst and returns number of digits.
  * Returns 0 if no digits are available.
  * Returns -1 if maxdigit is exceeded.
@@ -764,11 +764,14 @@ integer(struct smi *x, size_t maxdigit, int *dst)
 {
 	size_t i;
 	int n = 0;
+	int saved = x->pos;
 	struct token t;
 
 	for (i = 0; lex(x, &t, 0) & DIGIT; i++) {
-		if (maxdigit && i == maxdigit)
+		if (maxdigit && i == maxdigit) {
+			x->pos = saved;
 			return -1;
+		}
 		x->pos += t.n;
 		n = n * 10 + t.intval;
 	}
