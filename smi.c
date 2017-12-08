@@ -14,6 +14,9 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+/*
+ * Parses SMILES as specified by the OpenSMILES standard.
+ */
 
 #include <assert.h>
 #include <stdio.h>
@@ -147,6 +150,8 @@ err:
  * If successful, sets a->aclass and increments a->len.
  * Returns 1 if atom class was read, else 0.
  * On error, returns -1 and sets x->err.
+ *
+ * class ::= ':' NUMBER
  */
 static int
 aclass(struct smi *x, struct smi_atom *a)
@@ -357,8 +362,10 @@ aromatic_organic(struct smi *x, struct smi_atom *a)
 
 /*
  * Matches an atom or returns 0 if not found.
- * If successful, saves the new atom to the atom list and returns 1.
+ * If successful, stores the index of the new atom in *anum and returns 1.
  * On error, sets x->err and returns -1.
+ *
+ * atom ::= bracket_atom | aliphatic_organic | aromatic_organic | '*'
  */
 static int
 atom(struct smi *x, int *anum)
@@ -384,6 +391,9 @@ atom(struct smi *x, int *anum)
  * If found, sets fields of *b and returns 1.
  * Only sets fields that can be determined by the matching bond
  * token (order, stereo, pos, and len).
+ * Doesn't set bond atoms.
+ *
+ * bond ::= '-' | '=' | '#' | '$' | ':' | '/' | '\'
  */
 static int
 bond(struct smi *x, struct smi_bond *b)
@@ -405,6 +415,8 @@ bond(struct smi *x, struct smi_bond *b)
  * Matches a bracket atom or returns 0 if not found.
  * If found, initializes the atom, sets its fields, and returns 1.
  * On error, sets x->err and returns -1.
+ *
+ * bracket_atom ::= '[' isotope? symbol chiral? hcount? charge? class? ']'
  */
 static int
 bracket_atom(struct smi *x, struct smi_atom *a)
@@ -449,12 +461,15 @@ bracket_atom(struct smi *x, struct smi_atom *a)
 
 
 /*
- * Matches a branch or returns 0 if one is not found.
+ * Matches a branch or returns 0 if not found.
  * On error, sets x->err and returns -1.
- * The prev_atom atom will be bonded to the first atom of the branch,
+ * On success, conditionally bonds prev_atom and returns 1.
+ * The prev_atom atom will be bonded to the first atom of the branch
  * unless the branch begins with a dot.
  * Note that prev_atom must exist, since SMILES strings
  * are not allowed to begin with branches.
+ *
+ * branch ::= '(' chain ')' | '(' bond chain ')' | '(' dot chain ')'
  */
 static int
 branch(struct smi *x, int prev_atom)
@@ -497,7 +512,14 @@ branch(struct smi *x, int prev_atom)
 	return 1;
 }
 
-
+/*
+ * Matches a branched atom or returns 0 if not found.
+ * If successful, stores the index of the new atom in *anum and
+ * returns 1.
+ * On error, sets x->err and returns -1.
+ *
+ * branched_atom ::= atom ringbond* branch*
+ */
 static int
 branched_atom(struct smi *x, int *anum)
 {
@@ -517,7 +539,20 @@ branched_atom(struct smi *x, int *anum)
 	return 1;
 }
 
-
+/*
+ * Matches a chain or returns 0 if not found.
+ * On error, sets x->err and returns -1.
+ * On success, conditionally completes prev_bond and returns 1.
+ * If non-NULL, the prev_bond bond will be completed using
+ * the first atom of the new chain.
+ * prev_bond will be NULL, for example, when chain() is called
+ * to begin parsing of a SMILES.
+ *
+ * chain ::=   branched_atom
+ *           | chain branched_atom
+ *           | chain bond branched_atom
+ *           | chain dot branched_atom
+ */
 static int
 chain(struct smi *x, struct smi_bond *prev_bond)
 {
@@ -584,6 +619,10 @@ chain(struct smi *x, struct smi_bond *prev_bond)
 }
 
 
+/*
+ * Returns 1 if all rings have been closed.
+ * Otherwise, sets an error and returns 0.
+ */
 static int
 check_ring_closures(struct smi *x)
 {
@@ -609,7 +648,14 @@ check_ring_closures(struct smi *x)
  * Parses optional charge inside a bracket atom.
  * If successful, sets a->charge and increments a->len.
  * Returns 1 if charge was read, else 0.
- * On error, returns -1 and sets x->err.
+ * On error, sets x->err and returns -1.
+ *
+ * charge ::=   '-'
+ *            | '-' DIGIT? DIGIT
+ *            | '+'
+ *            | '+' DIGIT? DIGIT
+ *            | '--' deprecated
+ *            | '++' deprecated
  */
 static int
 charge(struct smi *x, struct smi_atom *a)
