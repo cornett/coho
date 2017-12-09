@@ -4,10 +4,10 @@ PREFIX		= /usr/local
 MANPREFIX	= $(PREFIX)/share/man
 
 CPPFLAGS	=
-CFLAGS		= -Wall -Wextra -Werror -std=c99 -pedantic -O2
+CFLAGS		= -Wall -O2
 
 PYTHON		= python3
-CYTHON		= cython -X embedsignature=True -I py/coho -3
+CYTHON		= cython
 
 PY.CONFIG	= $(PYTHON)-config
 CFLAGS.PY	= `$(PY.CONFIG) --cflags` -I.
@@ -37,7 +37,7 @@ TEST		= test/smi
 CCO	= $(CC) $(CFLAGS) -fPIC $(CPPFLAGS) -I. -o $@ -c $(@:.o=.c)
 CCPYO	= $(CC) $(CFLAGS.PY) -o $@ -c $(@:.o=.c)
 CCPYSO	= $(CC) -shared $(LDFLAGS.PY) -o $@ $(@:.so=.o) libcoho.a $(LDLIBS.PY)
-CYTHONC	= $(CYTHON) $(@:.c=.pyx)
+CYTHONC	= $(CYTHON) -X embedsignature=True -I py/coho -3 $(@:.c=.pyx)
 CCEXE	= $(CC) $(CFLAGS) $(CPPFLAGS) -I. -o $@ $@.c libcoho.a
 
 
