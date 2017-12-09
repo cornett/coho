@@ -17,12 +17,15 @@ Requirements
 ------------
 
 Building requires ``make`` and a C compiler.
+Compiler requirements are modest: C89 plus a
+few C99 features such as ``<stdint.h>``.
+
 `Cython`_ is required to build the Python bindings.
 
 Coho has been tested on the following platforms, but will likely work
 on any modern unix-like system.
 
-* OpenBSD 6.1
+* OpenBSD 6.2
 * CentOS 7
 * OSX 10.12
 
@@ -60,7 +63,7 @@ variable settings.
     Python bindings.
     This can be ignored if you are only building the C library.
     The following procedure may be useful if Cython is
-    not installed on your system::
+    not already installed on your system::
 
         python3 -m venv pyenv
         ./pyenv/bin/pip install cython
@@ -74,7 +77,7 @@ variable settings.
     Python ships with a ``python-config`` script that can be used to
     determine the compiler and linker flags needed to build
     extension modules.
-    Note that you may need to change the default setting
+    Note that you may need to change the default
     if you set your ``PYTHON`` variable to an executable
     within a virtual env.
     This variable is only used to set the ``PY.CFLAGS``, ``PY.LDFLAGS``,
