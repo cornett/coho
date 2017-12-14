@@ -65,20 +65,22 @@ static int add_ringbond(struct smi *, int, struct smi_bond *);
 static int aliphatic_organic(struct smi *, struct smi_atom *);
 static int aromatic_organic(struct smi *, struct smi_atom *);
 static int atom(struct smi *, int *);
+static int atom_ringbond(struct smi *, int *);
 static int bond(struct smi *, struct smi_bond *b);
 static int bracket_atom(struct smi *, struct smi_atom *);
-static int branch(struct smi *, int);
-static int branched_atom(struct smi *, int *);
-static int chain(struct smi *, struct smi_bond *);
 static int charge(struct smi *, struct smi_atom *);
 static int check_ring_closures(struct smi *);
 static int chirality(struct smi *, struct smi_atom *);
+static int close_paren(struct smi *, struct smi_bond *);
 static int dot(struct smi *);
 static int hcount(struct smi *, struct smi_atom *);
 static int integer(struct smi *, size_t, int *);
 static int isotope(struct smi *, struct smi_atom *);
 static unsigned int lex(struct smi *, struct token *, int);
 static int match(struct smi *, struct token *, int, unsigned int);
+static int open_paren(struct smi *, struct smi_bond *);
+static int pop_paren_stack(struct smi *, int, struct smi_bond *);
+static void push_paren_stack(struct smi *, int, struct smi_bond *);
 static int ringbond(struct smi *, int);
 static void smi_atom_init(struct smi_atom *);
 static void smi_bond_init(struct smi_bond *);
@@ -94,6 +96,7 @@ smi_free(struct smi *x)
 	free(x->err);
 	free(x->atoms);
 	free(x->bonds);
+	free(x->paren_stack);
 }
 
 
@@ -110,6 +113,7 @@ smi_init(struct smi *x)
 
 	VEC_INIT(x->atoms);
 	VEC_INIT(x->bonds);
+	VEC_INIT(x->paren_stack);
 
 	for (i = 0; i < 100; i++)
 		smi_bond_init(&x->rbonds[i]);
@@ -120,28 +124,248 @@ smi_init(struct smi *x)
 int
 smi_parse(struct smi *x, const char *smi, size_t sz)
 {
-	size_t end = sz ? sz : strlen(smi);
+	struct smi_bond b;
+	int anum;			/* index of last atom read */
+	int eos;			/* end-of-string flag */
+	size_t end;
 
+	enum {
+		INIT,
+		ATOM_READ,
+		BOND_READ,
+		DOT_READ,
+		OPEN_PAREN_READ,
+		CLOSE_PAREN_READ,
+	} state;
+
+	end = sz ? sz : strlen(smi);
 	smi_reinit(x, smi, end);
 
-	if (chain(x, NULL) == -1)
+	b.a0 = -1;		/* no previous atom to bond to */
+	anum = -1;
+	state = INIT;
+
+	for (;;) {
+		eos = x->pos == x->end;
+
+		switch (state) {
+
+		/*
+		 * Parsing has just begun.
+		 */
+		case INIT:
+			if (eos) {
+				x->err = strdup("empty SMILES");
+				goto err;
+			}
+
+			else if (atom_ringbond(x, &anum)) {
+				if (x->err)
+					goto err;
+			}
+
+			else {
+				x->err = strdup("atom expected");
+				goto err;
+			}
+			state = ATOM_READ;
+			break;
+
+		/*
+		 * An atom has just been read.
+		 */
+		case ATOM_READ:
+			/*
+			 * If there is an open bond to the previous
+			 * atom, complete it.
+			 */
+			if (b.a0 != -1) {
+				b.a1 = anum;
+				if (add_bond(x, &b) == -1)
+					goto err;
+			}
+
+			/*
+			 * The atom just read may be bonded to
+			 * subsequent atoms.
+			 * Store this state in an incomplete bond.
+			 */
+			smi_bond_init(&b);
+			b.a0 = anum;
+			b.order = SMI_BOND_SINGLE;
+			b.implicit = 1;
+
+			if (eos) {
+				goto done;
+			}
+
+			else if (atom_ringbond(x, &anum)) {
+				if (x->err)
+					goto err;
+			}
+
+			else if (bond(x, &b)) {
+				if (x->err)
+					goto err;
+				state = BOND_READ;
+			}
+
+			else if (dot(x)) {
+				state = DOT_READ;
+			}
+
+			else if (open_paren(x, &b)) {
+				state = OPEN_PAREN_READ;
+			}
+
+			else if (close_paren(x, &b)) {
+				if (x->err)
+					goto err;
+				state = CLOSE_PAREN_READ;
+			}
+
+			else {
+				goto unexpected;
+			}
+
+			break;
+
+		/*
+		 * A dot (.) has just been read.
+		 * An atom is expected.
+		 * If there is a bond to a previous atom awaiting
+		 * completion, it must be cancelled.
+		 */
+		case DOT_READ:
+			/* Invalidate open bond to previous atom. */
+			b.a0 = -1;
+
+			if (atom_ringbond(x, &anum)) {
+				if (x->err)
+					goto err;
+			} else {
+				x->err = strdup("atom must follow dot");
+				goto err;
+			}
+			state = ATOM_READ;
+			break;
+
+		/*
+		 * A bond (-, =, #, etc) has just been read.
+		 * An atom is expected.
+		 */
+		case BOND_READ:
+
+			if (atom_ringbond(x, &anum)) {
+				if (x->err)
+					goto err;
+			} else {
+				x->err = strdup("atom must follow bond");
+				goto err;
+			}
+			state = ATOM_READ;
+			break;
+
+		/*
+		 * An opening parenthesis has just been read
+		 * and the parenthesis stack pushed.
+		 */
+		case OPEN_PAREN_READ:
+
+			if (eos) {
+				x->err = strdup("unbalanced parenthesis");
+				x->errpos = x->pos - 1;
+				goto err;
+			}
+
+			else if (atom_ringbond(x, &anum)) {
+				if (x->err)
+					goto err;
+				state = ATOM_READ;
+			}
+
+			else if (bond(x, &b)) {
+				if (x->err)
+					goto err;
+				state = BOND_READ;
+			}
+
+			else if (dot(x)) {
+				state = DOT_READ;
+			}
+
+			else {
+				x->err = strdup("atom, bond, or dot "
+						"expected");
+				goto err;
+			}
+			break;
+
+		/*
+		 * A closing parenthesis has just been read
+		 * and the parenthesis stack popped.
+		 */
+		case CLOSE_PAREN_READ:
+
+			if (eos) {
+				goto done;
+			}
+
+			else if (atom_ringbond(x, &anum)) {
+				if (x->err)
+					goto err;
+				state = ATOM_READ;
+			}
+
+			else if (bond(x, &b)) {
+				if (x->err)
+					goto err;
+				state = BOND_READ;
+			}
+
+			else if (dot(x)) {
+				state = DOT_READ;
+			}
+
+			else if (open_paren(x, &b)) {
+				state = OPEN_PAREN_READ;
+			}
+
+			else if (close_paren(x, &b)) {
+				if (x->err)
+					goto err;
+				state = CLOSE_PAREN_READ;
+			}
+
+			else {
+				goto unexpected;
+			}
+			break;
+
+		}
+
+	}
+
+done:
+	assert(x->pos == x->end);
+
+	if (check_ring_closures(x))
 		goto err;
 
-	if (check_ring_closures(x) == 0)
-		goto err;
-
-	if (x->pos != x->end) {
-		x->err = strdup("Unexpected character");
+	if (x->paren_stack_sz > 0) {
+		x->err = strdup("unbalanced parenthesis");
+		x->errpos = x->paren_stack[0].pos;
 		goto err;
 	}
 
 	return 0;
 
+unexpected:
+	x->err = strdup("unexpected character");
 err:
 	if (x->errpos == -1)
 		x->errpos = x->pos;
 	return -1;
-
 }
 
 
@@ -149,7 +373,7 @@ err:
  * Parses optional atom class inside a bracket atom (ex: [C:23]).
  * If successful, sets a->aclass and increments a->len.
  * Returns 1 if atom class was read, else 0.
- * On error, returns -1 and sets x->err.
+ * On error, sets x->err and returns -1.
  *
  * class ::= ':' NUMBER
  */
@@ -387,11 +611,37 @@ atom(struct smi *x, int *anum)
 
 
 /*
+ * Matches an atom followed by zero or more ringbonds.
+ * On success, stores the index of the new atom in *anum and returns 1.
+ * Returns 0 if there is no match.
+ * On error, sets x->err and returns -1.
+ */
+static int
+atom_ringbond(struct smi *x, int *anum)
+{
+	if (atom(x, anum)) {
+		if (x->err)
+			return -1;
+	} else {
+		return 0;
+	}
+
+	while (ringbond(x, *anum))
+		if (x->err)
+			return -1;
+
+	return 1;
+}
+
+
+/*
  * Matches a bond or returns 0 if not found.
  * If found, sets fields of *b and returns 1.
  * Only sets fields that can be determined by the matching bond
  * token (order, stereo, pos, and len).
+ * Clears implicit flag.
  * Doesn't set bond atoms.
+ * FIXME:  set implicit = false ?
  *
  * bond ::= '-' | '=' | '#' | '$' | ':' | '/' | '\'
  */
@@ -405,6 +655,7 @@ bond(struct smi *x, struct smi_bond *b)
 
 	b->order = t.intval;
 	b->stereo = t.flags;
+	b->implicit = 0;
 	b->pos = t.pos;
 	b->len = t.n;
 	return 1;
@@ -461,167 +712,8 @@ bracket_atom(struct smi *x, struct smi_atom *a)
 
 
 /*
- * Matches a branch or returns 0 if not found.
- * On error, sets x->err and returns -1.
- * On success, conditionally bonds prev_atom and returns 1.
- * The prev_atom atom will be bonded to the first atom of the branch
- * unless the branch begins with a dot.
- * Note that prev_atom must exist, since SMILES strings
- * are not allowed to begin with branches.
- *
- * branch ::= '(' chain ')' | '(' bond chain ')' | '(' dot chain ')'
- */
-static int
-branch(struct smi *x, int prev_atom)
-{
-	struct token t;
-	struct smi_bond b;
-	int open_bond = 1;
-
-	if (!match(x, &t, 0, PAREN_OPEN))
-		return 0;
-
-	smi_bond_init(&b);
-	b.a0 = prev_atom;
-	b.order = SMI_BOND_UNSPECIFIED;
-
-	/*
-	 * Read optional bond or dot
-	 */
-	if (bond(x, &b)) {
-		if (x->err)
-			return -1;
-	} else if (dot(x)) {
-		if (x->err)
-			return -1;
-		open_bond = 0;
-	}
-
-	if (chain(x, open_bond ? &b : NULL) == 0) {
-		x->err = strdup("chain expected");
-		return -1;
-	} else if (x->err) {
-		return -1;
-	}
-
-	if (!match(x, &t, 0, PAREN_CLOSE)) {
-		x->err = strdup(") expected");
-		return -1;
-	}
-
-	return 1;
-}
-
-/*
- * Matches a branched atom or returns 0 if not found.
- * If successful, stores the index of the new atom in *anum and
- * returns 1.
- * On error, sets x->err and returns -1.
- *
- * branched_atom ::= atom ringbond* branch*
- */
-static int
-branched_atom(struct smi *x, int *anum)
-{
-	if (atom(x, anum)) {
-		if (x->err)
-			return -1;
-	} else
-		return 0;
-
-	while (ringbond(x, *anum))
-		if (x->err)
-			return -1;
-
-	while (branch(x, *anum))
-		if (x->err)
-			return -1;
-	return 1;
-}
-
-/*
- * Matches a chain or returns 0 if not found.
- * On error, sets x->err and returns -1.
- * On success, conditionally completes prev_bond and returns 1.
- * If non-NULL, the prev_bond bond will be completed using
- * the first atom of the new chain.
- * prev_bond will be NULL, for example, when chain() is called
- * to begin parsing of a SMILES.
- *
- * chain ::=   branched_atom
- *           | chain branched_atom
- *           | chain bond branched_atom
- *           | chain dot branched_atom
- */
-static int
-chain(struct smi *x, struct smi_bond *prev_bond)
-{
-	struct smi_bond b;
-	int n;
-	int state = -1;
-	int open_bond = 0;
-
-	if (prev_bond) {
-		b = *prev_bond;
-		open_bond = 1;
-	}
-
-	for (;;) {
-		/*
-		 * Read atom
-		 */
-		if (branched_atom(x, &n)) {
-			if (x->err)
-				return -1;
-			state = 0;
-		} else
-			break;
-
-		/*
-		 * Complete awaiting bond
-		 */
-		if (open_bond) {
-			b.a1 = n;
-			if (add_bond(x, &b) == -1)
-				return -1;
-		}
-
-		smi_bond_init(&b);
-		b.a0 = n;
-
-		/*
-		 * Read optional bond or dot
-		 */
-		if (bond(x, &b)) {
-			if (x->err)
-				return -1;
-			open_bond = 1;
-			state = 1;
-		} else if (dot(x)) {
-			if (x->err)
-				return -1;
-			open_bond = 0;
-			state = 1;
-		} else {
-			b.order = SMI_BOND_SINGLE;
-			b.implicit = 1;
-			open_bond = 1;
-		}
-	}
-
-	if (state == -1)
-		return 0;
-	else if (state == 1) {
-		x->err = strdup("atom expected");
-		return -1;
-	} else
-		return 1;
-}
-
-
-/*
- * Returns 1 if all rings have been closed.
- * Otherwise, sets an error and returns 0.
+ * Returns 0 if all rings have been closed.
+ * Otherwise, sets x->err and returns -1.
  */
 static int
 check_ring_closures(struct smi *x)
@@ -629,9 +721,9 @@ check_ring_closures(struct smi *x)
 	size_t i;
 
 	if (x->open_ring_closures == 0)
-		return 1;
+		return 0;
 
-	x->err = strdup("open ring closure");
+	x->err = strdup("unclosed ring bond");
 
 	for (i = 0; i < 100; i++) {
 		if (x->rbonds[i].a0 != -1) {
@@ -640,7 +732,7 @@ check_ring_closures(struct smi *x)
 		}
 	}
 
-	return 0;
+	return -1;
 }
 
 
@@ -708,6 +800,26 @@ chirality(struct smi *x, struct smi_atom *a)
 		return 0;
 	tokcpy(a->chirality, &t, sizeof(a->chirality));
 	a->len += t.n;
+	return 1;
+}
+
+
+/*
+ * Matches a closing parenthesis that ends a branch.
+ * On success, pops the parenthesis stack and returns 1.
+ * Returns 0 if there was no match.
+ * On error, sets x->err and returns -1.
+ */
+static int
+close_paren(struct smi *x, struct smi_bond *b)
+{
+	struct token t;
+
+	if (!match(x, &t, 0, PAREN_CLOSE))
+		return 0;
+
+	if (pop_paren_stack(x, t.pos, b))
+		return -1;
 	return 1;
 }
 
@@ -815,6 +927,73 @@ match(struct smi *x, struct token *t, int inbracket, unsigned int ttype)
 		return 1;
 	}
 	return 0;
+}
+
+
+/*
+ * Matches an opening parenthesis that begins a branch.
+ * On success, pushes the parenthesis stack and returns 1.
+ * Returns 0 if there was no match.
+ */
+static int
+open_paren(struct smi *x, struct smi_bond *b)
+{
+	struct token t;
+
+	if (!match(x, &t, 0, PAREN_OPEN))
+		return 0;
+
+	push_paren_stack(x, t.pos, b);
+	return 1;
+}
+
+
+/*
+ * Pops the parenthesis stack that holds the open bonds to
+ * "previous" atoms.
+ * Ex: In C(N)=O the closing parenthesis will trigger the popping of
+ * the stack, ensuring that the oxygen is bonded to the carbon instead
+ * of the nitrogen.
+ * The position of the parenthesis triggering the pop is used for
+ * error messages.
+ * Returns 0 on success.
+ * On failure, sets x->err and returns -1.
+ */
+static int
+pop_paren_stack(struct smi *x, int pos, struct smi_bond *b)
+{
+	if (!x->paren_stack_sz) {
+		x->err = strdup("unbalanced parenthesis");
+		x->errpos = pos;
+		return -1;
+	}
+
+	*b = x->paren_stack[--x->paren_stack_sz].bond;
+	return 0;
+}
+
+
+/*
+ * Pushes the parenthesis stack that holds open bonds to
+ * "previous" atoms.
+ * Ex: In C(N)=O the first parenthesis will trigger the pushing of
+ * an open bond to the carbon onto the stack.
+ * The closing parenthesis will pop the stack, ensuring that the carbon
+ * is correctly bonded to the oxygen.
+ * The position of the parenthesis triggering the push is stored
+ * to support error messages.
+ */
+static void
+push_paren_stack(struct smi *x, int pos, struct smi_bond *b)
+{
+	struct smi_paren *p;
+
+	assert(b->a0 != -1);
+
+	XVEC_ENSURE_APPEND(x->paren_stack, 1);
+	p = &x->paren_stack[x->paren_stack_sz++];
+	p->pos = pos;
+	p->bond = *b;
 }
 
 
@@ -930,6 +1109,7 @@ smi_reinit(struct smi *x, const char *smi, size_t end)
 	x->errpos = -1;
 	x->atoms_sz = 0;
 	x->bonds_sz = 0;
+	x->paren_stack_sz = 0;
 
 	for (i = 0; i < 100; i++)
 		smi_bond_init(&x->rbonds[i]);
@@ -980,6 +1160,7 @@ tokcpy(char *dst, struct token *t, size_t dstsz)
 	dst[i] = 0;
 }
 
+
 /*
  * Matches a wildcard atom (*) or returns 0 if not found.
  * If found, initializes the atom, sets its fields, and returns 1.
@@ -999,6 +1180,7 @@ wildcard(struct smi *x, struct smi_atom *a)
 	tokcpy(a->symbol, &t, sizeof(a->symbol));
 	return 1;
 }
+
 
 /*
  * Reads next token from SMILES string.

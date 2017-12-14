@@ -8,7 +8,8 @@ Changed
 ^^^^^^^
 * Revise Makefile.
 * Improve documentation.
-* Improve positioning info for integer-too-large errors
+* Improve positioning info for SMILES integer-too-large errors
+* Allow parsing of deeply-nested SMILES.
 
 `v0.2`_ - 2017-07-21
 --------------------

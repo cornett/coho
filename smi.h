@@ -60,6 +60,12 @@ struct smi_bond {
 };
 
 
+struct smi_paren {
+	int			 pos;
+	struct smi_bond		 bond;
+};
+
+
 struct smi {
 	const char		*smi;
 	int			 pos;
@@ -77,6 +83,10 @@ struct smi {
 
 	struct smi_bond		 rbonds[100];
 	size_t			 open_ring_closures;
+
+	struct smi_paren	*paren_stack;
+	size_t			 paren_stack_sz;
+	size_t			 paren_stack_alloc;
 };
 
 
