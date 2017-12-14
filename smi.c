@@ -641,7 +641,6 @@ atom_ringbond(struct smi *x, int *anum)
  * token (order, stereo, pos, and len).
  * Clears implicit flag.
  * Doesn't set bond atoms.
- * FIXME:  set implicit = false ?
  *
  * bond ::= '-' | '=' | '#' | '$' | ':' | '/' | '\'
  */
