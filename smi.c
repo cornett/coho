@@ -181,6 +181,17 @@ smi_parse(struct smi *x, const char *smi, size_t sz)
 			 */
 			if (b.a0 != -1) {
 				b.a1 = anum;
+				/*
+				 * Finalize order of implicit bonds, which
+				 * depends on atom aromaticity.
+				 */
+				if (b.implicit) {
+					if (x->atoms[b.a0].aromatic &&
+					    x->atoms[b.a1].aromatic)
+						b.order = SMI_BOND_AROMATIC;
+					else
+						b.order = SMI_BOND_SINGLE;
+				}
 				if (add_bond(x, &b) == -1)
 					goto err;
 			}
@@ -192,7 +203,6 @@ smi_parse(struct smi *x, const char *smi, size_t sz)
 			 */
 			smi_bond_init(&b);
 			b.a0 = anum;
-			b.order = SMI_BOND_SINGLE;
 			b.implicit = 1;
 
 			if (eos) {
