@@ -219,6 +219,8 @@ fields.
         1 if bond was produced implicitly by the presence of two
         adjacent atoms without an intervening bond symbol, else 0.
         Implicit bonds do not have a token position or length.
+        An aromatic bond is implied by two adjacent aromatic atoms,
+        otherwise implicit bonds are single.
 
     .. member:: int ring
 

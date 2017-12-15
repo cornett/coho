@@ -141,6 +141,8 @@ The ``coho.smi`` module contains a parser for the
             True if bond was produced implicitly by the presence of two
             adjacent atoms without an intervening bond symbol, else False.
             Implicit bonds do not have a token position or length.
+            An aromatic bond is implied by two adjacent aromatic atoms,
+            otherwise implicit bonds are single.
 
         ``ring``
             True if the bond was produced using the ring bond nomenclature,
