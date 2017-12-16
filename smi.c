@@ -712,7 +712,7 @@ bracket_atom(struct smi *x, struct smi_atom *a)
 		return -1;
 
 	if (!match(x, &t, 0, BRACKET_CLOSE)) {
-		x->err = strdup("] expected");
+		x->err = strdup("bracket atom syntax error");
 		return -1;
 	}
 	a->len += t.n;
