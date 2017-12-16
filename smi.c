@@ -22,6 +22,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
+#include <limits.h>
 #include <stdlib.h>
 
 #include "smi.h"
@@ -139,6 +140,10 @@ smi_parse(struct smi *x, const char *smi, size_t sz)
 	} state;
 
 	end = sz ? sz : strlen(smi);
+	if (sz > INT_MAX) {
+		x->err = strdup("SMILES too long");
+		return -1;
+	}
 	smi_reinit(x, smi, end);
 
 	b.a0 = -1;		/* no previous atom to bond to */
