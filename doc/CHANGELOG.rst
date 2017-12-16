@@ -4,6 +4,9 @@ ChangeLog
 `Unreleased`_
 -------------
 
+`v0.3`_ - 2017-12-16
+--------------------
+
 Changed
 ^^^^^^^
 * Revise Makefile.
