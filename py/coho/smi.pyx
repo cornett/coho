@@ -60,19 +60,21 @@ cdef class Parser:
         if self._x.err != NULL:
             return None
         x = []
+        def noneif(x, mark):
+            return None if x == mark else x
         for i in range(self._x.atoms_sz):
             a = self._x.atoms[i]
             x.append({
                 'atomic_number':    a.atomic_number,
                 'symbol':           a.symbol.decode(),
                 'charge':           a.charge,
-                'hcount':           a.hcount if a.hcount != -1 else None,
-                'isotope':          a.isotope if a.isotope != -1 else None,
+                'hcount':           noneif(a.hcount, -1),
+                'isotope':          noneif(a.isotope, -1),
                 'chirality':        a.chirality.decode() or None,
                 'bracket':          bool(a.bracket),
                 'organic':          bool(a.organic),
                 'aromatic':         bool(a.aromatic),
-                'aclass':           a.aclass if a.aclass != -1 else None,
+                'aclass':           noneif(a.aclass, -1),
                 'pos':              a.pos,
                 'len':              a.len,
             })
