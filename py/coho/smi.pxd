@@ -1,4 +1,4 @@
-# Copyright (c) 2017 Ben Cornett <ben@lantern.is>
+# Copyright (c) 2017-2018 Ben Cornett <ben@lantern.is>
 #
 # Permission to use, copy, modify, and distribute this software for any
 # purpose with or without fee is hereby granted, provided that the above
