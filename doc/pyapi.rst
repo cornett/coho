@@ -71,7 +71,7 @@ The ``coho.smi`` module contains a parser for the
             Formal charge, or 0 if none was specified.
 
         ``hcount``
-            Number of explicit hydrogens, or -1 if none were specified.
+            Number of explicit hydrogens, or ``None`` if none were specified.
 
         ``implicit_hcount``
             Number of implicit hydrogens required to bring atom to its
