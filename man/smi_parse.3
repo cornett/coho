@@ -111,6 +111,7 @@ struct smi_atom {
 	int			 isotope;
 	int			 charge;
 	int			 hcount;
+	int			 implicit_hcount;
 	int			 bracket;
 	int			 organic;
 	int			 aromatic;
@@ -135,6 +136,11 @@ valid isotope and that [0S] is not the same as [S].
 Formal charge, or 0 if none was specified.
 .It Fa hcount
 Number of explicit hydrogens, or -1 if none were specified.
+.It Fa implicit_hcount
+Number of implicit hydrogens required to bring atom to its
+next standard valence state.
+Set to -1 for atoms not specified using the organic
+subset nomenclature.
 .It Fa bracket
 1 if the atom was specified using bracket([]) notation, else 0.
 .It Fa organic

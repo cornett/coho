@@ -65,8 +65,10 @@ static int add_bond(struct smi *, struct smi_bond *);
 static int add_ringbond(struct smi *, int, struct smi_bond *);
 static int aliphatic_organic(struct smi *, struct smi_atom *);
 static int aromatic_organic(struct smi *, struct smi_atom *);
+static int assign_implicit_hcount(struct smi *);
 static int atom(struct smi *, int *);
 static int atom_ringbond(struct smi *, int *);
+static int atom_valence(struct smi *, size_t);
 static int bond(struct smi *, struct smi_bond *b);
 static int bracket_atom(struct smi *, struct smi_atom *);
 static int charge(struct smi *, struct smi_atom *);
@@ -83,12 +85,32 @@ static int open_paren(struct smi *, struct smi_bond *);
 static int pop_paren_stack(struct smi *, int, struct smi_bond *);
 static void push_paren_stack(struct smi *, int, struct smi_bond *);
 static int ringbond(struct smi *, int);
+static int round_valence(int, int, int);
 static void smi_atom_init(struct smi_atom *);
 static void smi_bond_init(struct smi_bond *);
 static void smi_reinit(struct smi *, const char *, size_t);
 static int symbol(struct smi *, struct smi_atom *);
 static void tokcpy(char *, struct token *, size_t);
 static int wildcard(struct smi *, struct smi_atom *);
+
+
+/*
+ * Table of standard atom valences.
+ * <atomic number> <valence>...
+ */
+static int standard_valences[][4] = {
+	{5,	3,	-1,	-1},	/* B */
+	{6,	4,	-1,	-1},	/* C */
+	{7,	3,	5,	-1},	/* N */
+	{8,	2,	-1,	-1},	/* O */
+	{9,	1,	-1,	-1},	/* F */
+	{15,	3,	5,	-1},	/* P */
+	{16,	2,	4,	6},	/* S */
+	{17,	1,	-1,	-1},	/* Cl */
+	{35,	1,	-1,	-1},	/* Br */
+	{53,	1,	-1,	-1},	/* I */
+	{-1,	-1,	-1,	-1},
+};
 
 
 void
@@ -373,6 +395,9 @@ done:
 		goto err;
 	}
 
+	if (assign_implicit_hcount(x))
+		goto err;
+
 	return 0;
 
 unexpected:
@@ -600,6 +625,36 @@ aromatic_organic(struct smi *x, struct smi_atom *a)
 
 
 /*
+ * Assigns implicit hydrogen counts for all atoms that were
+ * specified using the organic-subset shorthand.
+ */
+static int
+assign_implicit_hcount(struct smi *x)
+{
+	size_t i;
+	int valence, std;
+	struct smi_atom *a;
+
+	for (i = 0; i < x->atoms_sz; i++) {
+		a = &x->atoms[i];
+
+		if (!a->organic)
+			continue;
+
+		valence = atom_valence(x, i);
+		std = round_valence(a->atomic_number, valence, a->aromatic);
+
+		if (std == -1)
+			a->implicit_hcount = 0;
+		else
+			a->implicit_hcount = std - valence;
+	}
+
+	return 0;
+}
+
+
+/*
  * Matches an atom or returns 0 if not found.
  * If successful, stores the index of the new atom in *anum and returns 1.
  * On error, sets x->err and returns -1.
@@ -646,6 +701,51 @@ atom_ringbond(struct smi *x, int *anum)
 			return -1;
 
 	return 1;
+}
+
+
+/*
+ * Computes the valence of an atom by summing the orders
+ * of its bonds.
+ * Treats aromatic atoms as a special case in an attempt to
+ * properly derive implicit hydrogen count.
+ */
+static int
+atom_valence(struct smi *x, size_t idx)
+{
+	size_t i;
+	int valence, neighbors;
+	struct smi_bond *b;
+
+	valence = 0;
+	neighbors = 0;
+
+	for (i = 0; i < x->bonds_sz; i++) {
+		b = &x->bonds[i];
+		if (b->a0 > (int)idx)
+			break;
+		else if (b->a0 != (int)idx && b->a1 != (int)idx)
+			continue;
+
+		if (b->order == SMI_BOND_SINGLE)
+			valence += 1;
+		else if (b->order == SMI_BOND_AROMATIC)
+			valence += 1;
+		else if (b->order == SMI_BOND_DOUBLE)
+			valence += 2;
+		else if (b->order == SMI_BOND_TRIPLE)
+			valence += 3;
+		else if (b->order == SMI_BOND_QUAD)
+			valence += 4;
+
+		neighbors += 1;
+	}
+
+	if (x->atoms[idx].aromatic && valence == neighbors) {
+		valence += 1;
+	}
+
+	return valence;
 }
 
 
@@ -1069,6 +1169,35 @@ ringbond(struct smi *x, int anum)
 
 
 /*
+ * Rounds an atom's current valence to its next standard one.
+ * Returns its current valence if it among the standard ones.
+ * Otherwise, returns the next higher standard one or -1 if
+ * none are found.
+ * Setting lowest_only to true causes the search to stop after
+ * the first standard valence, disregarding higher valences.
+ */
+static int
+round_valence(int atomic_number, int valence, int lowest_only)
+{
+	int i, j, anum;
+
+	for (i = 0; (anum = standard_valences[i][0]) != -1; i++) {
+		if (anum > atomic_number)
+			break;
+		else if (anum == atomic_number) {
+			for (j = 1; j < 4; j++) {
+				if (valence <= standard_valences[i][j])
+					return standard_valences[i][j];
+				if (lowest_only)
+					break;
+			}
+		}
+	}
+	return -1;
+}
+
+
+/*
  * Initializes struct smi_atom.
  */
 static void
@@ -1079,6 +1208,7 @@ smi_atom_init(struct smi_atom *x)
 	x->isotope = -1;
 	x->charge = 0;
 	x->hcount = -1;
+	x->implicit_hcount = -1;
 	x->bracket = 0;
 	x->organic = 0;
 	x->aromatic = 0;

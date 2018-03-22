@@ -73,6 +73,12 @@ The ``coho.smi`` module contains a parser for the
         ``hcount``
             Number of explicit hydrogens, or -1 if none were specified.
 
+        ``implicit_hcount``
+            Number of implicit hydrogens required to bring atom to its
+            next standard valence state.
+            Set to ``None`` for atoms not specified using the organic
+            subset nomenclature.
+
         ``bracket``
             True if the atom was specified using bracket(``[]``) notation,
             else False.

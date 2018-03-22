@@ -69,6 +69,7 @@ cdef class Parser:
                 'symbol':           a.symbol.decode(),
                 'charge':           a.charge,
                 'hcount':           noneif(a.hcount, -1),
+                'implicit_hcount':  noneif(a.implicit_hcount, -1),
                 'isotope':          noneif(a.isotope, -1),
                 'chirality':        a.chirality.decode() or None,
                 'bracket':          bool(a.bracket),

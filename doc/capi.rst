@@ -88,6 +88,7 @@ fields.
                 int                      isotope;
                 int                      charge;
                 int                      hcount;
+                int                      implicit_hcount;
                 int                      bracket;
                 int                      organic;
                 int                      aromatic;
@@ -125,6 +126,13 @@ fields.
     .. member:: int hcount
 
         Number of explicit hydrogens, or -1 if none were specified.
+
+    .. member:: int implicit_hcount
+
+        Number of implicit hydrogens required to bring atom to its
+        next standard valence state.
+        Set to -1 for atoms not specified using the organic
+        subset nomenclature.
 
     .. member:: int bracket
 

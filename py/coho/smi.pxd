@@ -31,6 +31,7 @@ cdef extern from "smi.h":
         int              isotope
         int              charge
         int              hcount
+        int              implicit_hcount
         int              bracket
         int              organic
         int              aromatic
