@@ -50,8 +50,8 @@ cdef class Parser:
         """Parse SMILES string."""
         cdef bytes s = smi.encode()
         if smi_parse(&self._x, s, len(s)) == -1:
-            lead = '-' * self.errpos
-            msg = f'{self.err}\n{smi}\n{lead}^\n'
+            lead = "-" * self.errpos
+            msg = f"{self.err}\n{smi}\n{lead}^\n"
             x = ValueError(msg)
             raise x
 
@@ -65,19 +65,19 @@ cdef class Parser:
         for i in range(self._x.atoms_sz):
             a = self._x.atoms[i]
             x.append({
-                'atomic_number':    a.atomic_number,
-                'symbol':           a.symbol.decode(),
-                'charge':           a.charge,
-                'hcount':           noneif(a.hcount, -1),
-                'implicit_hcount':  noneif(a.implicit_hcount, -1),
-                'isotope':          noneif(a.isotope, -1),
-                'chirality':        a.chirality.decode() or None,
-                'bracket':          bool(a.bracket),
-                'organic':          bool(a.organic),
-                'aromatic':         bool(a.aromatic),
-                'aclass':           noneif(a.aclass, -1),
-                'pos':              a.pos,
-                'len':              a.len,
+                "atomic_number": a.atomic_number,
+                "symbol": a.symbol.decode(),
+                "charge": a.charge,
+                "hcount": noneif(a.hcount, -1),
+                "implicit_hcount": noneif(a.implicit_hcount, -1),
+                "isotope": noneif(a.isotope, -1),
+                "chirality": a.chirality.decode() or None,
+                "bracket": bool(a.bracket),
+                "organic": bool(a.organic),
+                "aromatic": bool(a.aromatic),
+                "aclass": noneif(a.aclass, -1),
+                "pos": a.pos,
+                "len": a.len,
             })
         return x
 
@@ -91,14 +91,14 @@ cdef class Parser:
         for i in range(self._x.bonds_sz):
             b = self._x.bonds[i]
             x.append({
-                'a0':               b.a0,
-                'a1':               b.a1,
-                'order':            b.order,
-                'stereo':           b.stereo,
-                'implicit':         bool(b.implicit),
-                'ring':             bool(b.ring),
-                'pos':              b.pos if b.pos >= 0 else None,
-                'len':              b.len,
+                "a0": b.a0,
+                "a1": b.a1,
+                "order": b.order,
+                "stereo": b.stereo,
+                "implicit": bool(b.implicit),
+                "ring": bool(b.ring),
+                "pos": b.pos if b.pos >= 0 else None,
+                "len": b.len,
             })
         return x
 
