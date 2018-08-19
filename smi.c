@@ -48,7 +48,6 @@
 #define PLUS			0x10000
 #define WILDCARD		0x20000
 
-
 struct token {
 	int		 type;
 	int		 pos;
@@ -57,7 +56,6 @@ struct token {
 	int		 intval;
 	int		 flags;
 };
-
 
 static int aclass(struct smi *, struct smi_atom *);
 static int add_atom(struct smi *, struct smi_atom *);
@@ -93,7 +91,6 @@ static int symbol(struct smi *, struct smi_atom *);
 static void tokcpy(char *, struct token *, size_t);
 static int wildcard(struct smi *, struct smi_atom *);
 
-
 /*
  * Table of standard atom valences.
  * <atomic number> <valence>...
@@ -112,7 +109,6 @@ static int standard_valences[][4] = {
 	{-1,	-1,	-1,	-1},
 };
 
-
 void
 smi_free(struct smi *x)
 {
@@ -121,7 +117,6 @@ smi_free(struct smi *x)
 	free(x->bonds);
 	free(x->paren_stack);
 }
-
 
 void
 smi_init(struct smi *x)
@@ -142,7 +137,6 @@ smi_init(struct smi *x)
 		smi_bond_init(&x->rbonds[i]);
 	x->open_ring_closures = 0;
 }
-
 
 int
 smi_parse(struct smi *x, const char *smi, size_t sz)
@@ -408,7 +402,6 @@ err:
 	return -1;
 }
 
-
 /*
  * Parses optional atom class inside a bracket atom (ex: [C:23]).
  * If successful, sets a->aclass and increments a->len.
@@ -440,7 +433,6 @@ aclass(struct smi *x, struct smi_atom *a)
 	return 1;
 }
 
-
 /*
  * Saves a completed atom and returns its index.
  */
@@ -451,7 +443,6 @@ add_atom(struct smi *x, struct smi_atom *a)
 	x->atoms[x->atoms_sz] = *a;
 	return x->atoms_sz++;
 }
-
 
 /*
  * Saves a new bond to the bond list and returns its index.
@@ -514,7 +505,6 @@ add_bond(struct smi *x, struct smi_bond *bond)
 	x->bonds[i] = nb;
 	return x->bonds_sz++;
 }
-
 
 /*
  * Adds a ring bond closure.
@@ -580,7 +570,6 @@ add_ringbond(struct smi *x, int rnum, struct smi_bond *b)
 	return 0;
 }
 
-
 /*
  * Matches an aliphatic organic atom (C, N, O, etc.).
  * Returns 1 on match, 0 if no match, or -1 on error.
@@ -600,7 +589,6 @@ aliphatic_organic(struct smi *x, struct smi_atom *a)
 	tokcpy(a->symbol, &t, sizeof(a->symbol));
 	return 1;
 }
-
 
 /*
  * Matches an aromatic organic atom (c, n, o, etc.).
@@ -622,7 +610,6 @@ aromatic_organic(struct smi *x, struct smi_atom *a)
 	tokcpy(a->symbol, &t, sizeof(a->symbol));
 	return 1;
 }
-
 
 /*
  * Assigns implicit hydrogen counts for all atoms that were
@@ -653,7 +640,6 @@ assign_implicit_hcount(struct smi *x)
 	return 0;
 }
 
-
 /*
  * Matches an atom or returns 0 if not found.
  * If successful, stores the index of the new atom in *anum and returns 1.
@@ -679,7 +665,6 @@ atom(struct smi *x, int *anum)
 	return 1;
 }
 
-
 /*
  * Matches an atom followed by zero or more ringbonds.
  * On success, stores the index of the new atom in *anum and returns 1.
@@ -702,7 +687,6 @@ atom_ringbond(struct smi *x, int *anum)
 
 	return 1;
 }
-
 
 /*
  * Computes the valence of an atom by summing the orders
@@ -748,7 +732,6 @@ atom_valence(struct smi *x, size_t idx)
 	return valence;
 }
 
-
 /*
  * Matches a bond or returns 0 if not found.
  * If found, sets fields of *b and returns 1.
@@ -774,7 +757,6 @@ bond(struct smi *x, struct smi_bond *b)
 	b->len = t.n;
 	return 1;
 }
-
 
 /*
  * Matches a bracket atom or returns 0 if not found.
@@ -824,7 +806,6 @@ bracket_atom(struct smi *x, struct smi_atom *a)
 	return 1;
 }
 
-
 /*
  * Returns 0 if all rings have been closed.
  * Otherwise, sets x->err and returns -1.
@@ -848,7 +829,6 @@ check_ring_closures(struct smi *x)
 
 	return -1;
 }
-
 
 /*
  * Parses optional charge inside a bracket atom.
@@ -898,7 +878,6 @@ charge(struct smi *x, struct smi_atom *a)
 	return 1;
 }
 
-
 /*
  * Parses chirality inside a bracket atom.
  * If successful, sets a->chirality and increments a->len.
@@ -916,7 +895,6 @@ chirality(struct smi *x, struct smi_atom *a)
 	a->len += t.n;
 	return 1;
 }
-
 
 /*
  * Matches a closing parenthesis that ends a branch.
@@ -937,7 +915,6 @@ close_paren(struct smi *x, struct smi_bond *b)
 	return 1;
 }
 
-
 /*
  * Matches dot, the no-bond specifier.
  * Returns 1 on success, 0 if there was no match.
@@ -949,7 +926,6 @@ dot(struct smi *x)
 
 	return match(x, &t, 0, DOT);
 }
-
 
 /*
  * Parses hydrogen count inside a bracket atom.
@@ -977,7 +953,6 @@ hcount(struct smi *x, struct smi_atom *a)
 
 	return 1;
 }
-
 
 /*
  * Matches an integer up to maxdigit long.
@@ -1007,7 +982,6 @@ integer(struct smi *x, size_t maxdigit, int *dst)
 	return i;
 }
 
-
 /*
  * Parses isotope inside a bracket atom.
  * If successful, sets a->isotope and increments a->len.
@@ -1027,7 +1001,6 @@ isotope(struct smi *x, struct smi_atom *a)
 	return 0;
 }
 
-
 /*
  * Reads next token and checks if its type is among those requested.
  * If so, consumes the token and returns 1.
@@ -1042,7 +1015,6 @@ match(struct smi *x, struct token *t, int inbracket, unsigned int ttype)
 	}
 	return 0;
 }
-
 
 /*
  * Matches an opening parenthesis that begins a branch.
@@ -1060,7 +1032,6 @@ open_paren(struct smi *x, struct smi_bond *b)
 	push_paren_stack(x, t.pos, b);
 	return 1;
 }
-
 
 /*
  * Pops the parenthesis stack that holds the open bonds to
@@ -1086,7 +1057,6 @@ pop_paren_stack(struct smi *x, int pos, struct smi_bond *b)
 	return 0;
 }
 
-
 /*
  * Pushes the parenthesis stack that holds open bonds to
  * "previous" atoms.
@@ -1109,7 +1079,6 @@ push_paren_stack(struct smi *x, int pos, struct smi_bond *b)
 	p->pos = pos;
 	p->bond = *b;
 }
-
 
 /*
  * Matches a ring bond or returns 0 if not found.
@@ -1167,7 +1136,6 @@ ringbond(struct smi *x, int anum)
 	return 1;
 }
 
-
 /*
  * Rounds an atom's current valence to its next standard one.
  * Returns its current valence if it among the standard ones.
@@ -1196,7 +1164,6 @@ round_valence(int atomic_number, int valence, int lowest_only)
 	return -1;
 }
 
-
 /*
  * Initializes struct smi_atom.
  */
@@ -1218,7 +1185,6 @@ smi_atom_init(struct smi_atom *x)
 	x->len = 0;
 }
 
-
 /*
  * Initializes struct smi_bond.
  */
@@ -1234,7 +1200,6 @@ smi_bond_init(struct smi_bond *x)
 	x->pos = -1;
 	x->len = 0;
 }
-
 
 /*
  * Reinitializes struct smi prior to parsing a new SMILES.
@@ -1260,7 +1225,6 @@ smi_reinit(struct smi *x, const char *smi, size_t end)
 	x->open_ring_closures = 0;
 }
 
-
 /*
  * Parses atom symbol inside a bracket atom.
  * If successful, sets a->symbol, a->aromatic, and increments a->len.
@@ -1281,7 +1245,6 @@ symbol(struct smi *x, struct smi_atom *a)
 	tokcpy(a->symbol, &t, sizeof(a->symbol));
 	return 1;
 }
-
 
 /*
  * Copies up to dstsz - 1 bytes from the token to dst, NUL-terminating
@@ -1304,7 +1267,6 @@ tokcpy(char *dst, struct token *t, size_t dstsz)
 	dst[i] = 0;
 }
 
-
 /*
  * Matches a wildcard atom (*) or returns 0 if not found.
  * If found, initializes the atom, sets its fields, and returns 1.
@@ -1324,7 +1286,6 @@ wildcard(struct smi *x, struct smi_atom *a)
 	tokcpy(a->symbol, &t, sizeof(a->symbol));
 	return 1;
 }
-
 
 /*
  * Reads next token from SMILES string.
