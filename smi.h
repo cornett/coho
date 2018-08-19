@@ -14,7 +14,6 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-
 enum {
 	SMI_BOND_UNSPECIFIED		= 0,
 	SMI_BOND_SINGLE			= 1,
@@ -24,13 +23,11 @@ enum {
 	SMI_BOND_AROMATIC		= 5,
 };
 
-
 enum {
 	SMI_BOND_STEREO_UNSPECIFIED,
 	SMI_BOND_STEREO_UP,
 	SMI_BOND_STEREO_DOWN,
 };
-
 
 struct smi_atom {
 	int			 atomic_number;
@@ -48,7 +45,6 @@ struct smi_atom {
 	int			 len;
 };
 
-
 struct smi_bond {
 	int			 a0;
 	int			 a1;
@@ -60,12 +56,10 @@ struct smi_bond {
 	int			 len;
 };
 
-
 struct smi_paren {
 	int			 pos;
 	struct smi_bond		 bond;
 };
-
 
 struct smi {
 	const char		*smi;
@@ -89,7 +83,6 @@ struct smi {
 	size_t			 paren_stack_sz;
 	size_t			 paren_stack_alloc;
 };
-
 
 void	smi_free(struct smi *);
 void	smi_init(struct smi *);
