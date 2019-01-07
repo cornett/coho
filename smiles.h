@@ -30,58 +30,58 @@ enum {
 };
 
 struct smiles_atom {
-	int			 atomic_number;
-	char			 symbol[4];
-	int			 isotope;
-	int			 charge;
-	int			 hcount;
-	int			 implicit_hcount;
-	int			 bracket;
-	int			 organic;
-	int			 aromatic;
-	char			 chirality[8];
-	int			 aclass;
-	int			 pos;
-	int			 len;
+	int				 atomic_number;
+	char				 symbol[4];
+	int				 isotope;
+	int				 charge;
+	int				 hcount;
+	int				 implicit_hcount;
+	int				 bracket;
+	int				 organic;
+	int				 aromatic;
+	char				 chirality[8];
+	int				 aclass;
+	int				 pos;
+	int				 len;
 };
 
 struct smiles_bond {
-	int			 a0;
-	int			 a1;
-	int			 order;
-	int			 stereo;
-	int			 implicit;
-	int			 ring;
-	int			 pos;
-	int			 len;
+	int				 a0;
+	int				 a1;
+	int				 order;
+	int				 stereo;
+	int				 implicit;
+	int				 ring;
+	int				 pos;
+	int				 len;
 };
 
 struct smiles_paren {
-	int			 pos;
-	struct smiles_bond	 bond;
+	int				 pos;
+	struct smiles_bond		 bond;
 };
 
 struct smiles {
-	const char		*smi;
-	int			 pos;
-	int			 end;
-	char			*err;
-	int			 errpos;
+	const char			*smi;
+	int				 pos;
+	int				 end;
+	char				*err;
+	int				 errpos;
 
-	struct smiles_atom	*atoms;
-	size_t			 atoms_sz;
-	size_t			 atoms_alloc;
+	struct smiles_atom		*atoms;
+	size_t				 atoms_sz;
+	size_t				 atoms_alloc;
 
-	struct smiles_bond	*bonds;
-	size_t			 bonds_sz;
-	size_t			 bonds_alloc;
+	struct smiles_bond		*bonds;
+	size_t				 bonds_sz;
+	size_t				 bonds_alloc;
 
-	struct smiles_bond	 rbonds[100];
-	size_t			 open_ring_closures;
+	struct smiles_bond		 rbonds[100];
+	size_t				 open_ring_closures;
 
-	struct smiles_paren	*paren_stack;
-	size_t			 paren_stack_sz;
-	size_t			 paren_stack_alloc;
+	struct smiles_paren		*paren_stack;
+	size_t				 paren_stack_sz;
+	size_t				 paren_stack_alloc;
 };
 
 void	smiles_free(struct smiles *);
