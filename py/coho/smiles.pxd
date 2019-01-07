@@ -12,20 +12,20 @@
 # ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 # OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
-cdef extern from "smi.h":
+cdef extern from "smiles.h":
 
     enum:
-        SMI_BOND_SINGLE
-        SMI_BOND_DOUBLE
-        SMI_BOND_TRIPLE
-        SMI_BOND_QUAD
-        SMI_BOND_AROMATIC
+        SMILES_BOND_SINGLE
+        SMILES_BOND_DOUBLE
+        SMILES_BOND_TRIPLE
+        SMILES_BOND_QUAD
+        SMILES_BOND_AROMATIC
 
     enum:
-        SMI_BOND_STEREO_UP
-        SMI_BOND_STEREO_DOWN
+        SMILES_BOND_STEREO_UP
+        SMILES_BOND_STEREO_DOWN
 
-    struct smi_atom:
+    struct smiles_atom:
         int              atomic_number
         char             symbol[4]
         int              isotope
@@ -40,7 +40,7 @@ cdef extern from "smi.h":
         int              pos
         int              len
 
-    struct smi_bond:
+    struct smiles_bond:
         int              a0
         int              a1
         int              order
@@ -50,14 +50,14 @@ cdef extern from "smi.h":
         int              pos
         int              len
 
-    struct smi:
-        smi_atom        *atoms
+    struct smiles:
+        smiles_atom     *atoms
         size_t           atoms_sz
-        smi_bond        *bonds
+        smiles_bond     *bonds
         size_t           bonds_sz
         char            *err
         int              errpos
 
-    void smi_free(smi *)
-    int smi_init(smi *)
-    int smi_parse(smi *, const char *, size_t)
+    void smiles_free(smiles *)
+    int smiles_init(smiles *)
+    int smiles_parse(smiles *, const char *, size_t)

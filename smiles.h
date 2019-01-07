@@ -15,21 +15,21 @@
  */
 
 enum {
-	SMI_BOND_UNSPECIFIED		= 0,
-	SMI_BOND_SINGLE			= 1,
-	SMI_BOND_DOUBLE			= 2,
-	SMI_BOND_TRIPLE			= 3,
-	SMI_BOND_QUAD			= 4,
-	SMI_BOND_AROMATIC		= 5,
+	SMILES_BOND_UNSPECIFIED		= 0,
+	SMILES_BOND_SINGLE		= 1,
+	SMILES_BOND_DOUBLE		= 2,
+	SMILES_BOND_TRIPLE		= 3,
+	SMILES_BOND_QUAD		= 4,
+	SMILES_BOND_AROMATIC		= 5,
 };
 
 enum {
-	SMI_BOND_STEREO_UNSPECIFIED,
-	SMI_BOND_STEREO_UP,
-	SMI_BOND_STEREO_DOWN,
+	SMILES_BOND_STEREO_UNSPECIFIED,
+	SMILES_BOND_STEREO_UP,
+	SMILES_BOND_STEREO_DOWN,
 };
 
-struct smi_atom {
+struct smiles_atom {
 	int			 atomic_number;
 	char			 symbol[4];
 	int			 isotope;
@@ -45,7 +45,7 @@ struct smi_atom {
 	int			 len;
 };
 
-struct smi_bond {
+struct smiles_bond {
 	int			 a0;
 	int			 a1;
 	int			 order;
@@ -56,34 +56,34 @@ struct smi_bond {
 	int			 len;
 };
 
-struct smi_paren {
+struct smiles_paren {
 	int			 pos;
-	struct smi_bond		 bond;
+	struct smiles_bond	 bond;
 };
 
-struct smi {
+struct smiles {
 	const char		*smi;
 	int			 pos;
 	int			 end;
 	char			*err;
 	int			 errpos;
 
-	struct smi_atom		*atoms;
+	struct smiles_atom	*atoms;
 	size_t			 atoms_sz;
 	size_t			 atoms_alloc;
 
-	struct smi_bond		*bonds;
+	struct smiles_bond	*bonds;
 	size_t			 bonds_sz;
 	size_t			 bonds_alloc;
 
-	struct smi_bond		 rbonds[100];
+	struct smiles_bond	 rbonds[100];
 	size_t			 open_ring_closures;
 
-	struct smi_paren	*paren_stack;
+	struct smiles_paren	*paren_stack;
 	size_t			 paren_stack_sz;
 	size_t			 paren_stack_alloc;
 };
 
-void	smi_free(struct smi *);
-void	smi_init(struct smi *);
-int	smi_parse(struct smi *, const char *, size_t);
+void	smiles_free(struct smiles *);
+void	smiles_init(struct smiles *);
+int	smiles_parse(struct smiles *, const char *, size_t);

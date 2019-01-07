@@ -18,9 +18,9 @@ ext = [
         sources=["coho/__init__.c"],
     ),
     Extension(
-        "coho.smi",
+        "coho.smiles",
         extra_compile_args=["-I", "src"],
-        sources=["coho/smi.c", "src/smi.c", "src/vec.c", "src/compat.c"],
+        sources=["coho/smiles.c", "src/smiles.c", "src/vec.c", "src/compat.c"],
     ),
 ]
 

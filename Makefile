@@ -16,13 +16,13 @@ PYTHON_LIBS	= $(shell $(PYTHON_CONFIG) --libs)
 -include config.mk
 
 SRC_C		= compat.c \
-		  smi.c \
+		  smiles.c \
 		  vec.c
 
 SRC_H		= $(SRC_C:.c=.h)
 
 PYTHON_SRC_PYX	= py/coho/__init__.pyx \
-		  py/coho/smi.pyx
+		  py/coho/smiles.pyx
 
 OBJ_O		= $(SRC_C:.c=.o)
 
@@ -38,9 +38,9 @@ OBJ		= libcoho.a \
 		  $(OBJ_O) \
 		  $(PYTHON_OBJ)
 
-AFL		= afl/smi/smi
+AFL		= afl/smiles/smiles
 
-TEST		= test/smi
+TEST		= test/smiles
 
 
 all:				libcoho.a \
@@ -62,8 +62,8 @@ install:			libcoho.a
 	install -d $(DESTDIR)$(PREFIX)/include/coho
 	install -d $(DESTDIR)$(MANPREFIX)/man3
 	install -m 0444 libcoho.a $(DESTDIR)$(PREFIX)/lib
-	install -m 0444 smi.h $(DESTDIR)$(PREFIX)/include/coho
-	install -m 0444 man/smi_parse.3 $(DESTDIR)$(MANPREFIX)/man3
+	install -m 0444 smiles.h $(DESTDIR)$(PREFIX)/include/coho
+	install -m 0444 man/smiles_parse.3 $(DESTDIR)$(MANPREFIX)/man3
 
 
 $(AFL) $(TEST):			libcoho.a
@@ -71,7 +71,7 @@ $(AFL) $(TEST):			libcoho.a
 
 
 $(OBJ_O):			compat.h
-smi.o: 				smi.h \
+smiles.o:			smiles.h \
 				vec.h
 vec.o:				vec.h
 
@@ -110,8 +110,8 @@ python.wheel:			python.pre.setup.py \
 	$(PYTHON) py/setup.py bdist_wheel
 
 
-py/coho/smi.c:			py/coho/smi.pxd
-py/coho/smi.o:			smi.h
+py/coho/smiles.c:		py/coho/smiles.pxd
+py/coho/smiles.o:		smiles.h
 
 py/coho/__init__.o:		PYTHON_CFLAGS += -DVERSION='"$(VERSION)"'
 

@@ -25,7 +25,7 @@
 #include <limits.h>
 #include <stdlib.h>
 
-#include "smi.h"
+#include "smiles.h"
 #include "compat.h"
 #include "vec.h"
 
@@ -57,39 +57,39 @@ struct token {
 	int		 flags;
 };
 
-static int aclass(struct smi *, struct smi_atom *);
-static int add_atom(struct smi *, struct smi_atom *);
-static int add_bond(struct smi *, struct smi_bond *);
-static int add_ringbond(struct smi *, int, struct smi_bond *);
-static int aliphatic_organic(struct smi *, struct smi_atom *);
-static int aromatic_organic(struct smi *, struct smi_atom *);
-static int assign_implicit_hcount(struct smi *);
-static int atom(struct smi *, int *);
-static int atom_ringbond(struct smi *, int *);
-static int atom_valence(struct smi *, size_t);
-static int bond(struct smi *, struct smi_bond *b);
-static int bracket_atom(struct smi *, struct smi_atom *);
-static int charge(struct smi *, struct smi_atom *);
-static int check_ring_closures(struct smi *);
-static int chirality(struct smi *, struct smi_atom *);
-static int close_paren(struct smi *, struct smi_bond *);
-static int dot(struct smi *);
-static int hcount(struct smi *, struct smi_atom *);
-static int integer(struct smi *, size_t, int *);
-static int isotope(struct smi *, struct smi_atom *);
-static unsigned int lex(struct smi *, struct token *, int);
-static int match(struct smi *, struct token *, int, unsigned int);
-static int open_paren(struct smi *, struct smi_bond *);
-static int pop_paren_stack(struct smi *, int, struct smi_bond *);
-static void push_paren_stack(struct smi *, int, struct smi_bond *);
-static int ringbond(struct smi *, int);
+static int aclass(struct smiles *, struct smiles_atom *);
+static int add_atom(struct smiles *, struct smiles_atom *);
+static int add_bond(struct smiles *, struct smiles_bond *);
+static int add_ringbond(struct smiles *, int, struct smiles_bond *);
+static int aliphatic_organic(struct smiles *, struct smiles_atom *);
+static int aromatic_organic(struct smiles *, struct smiles_atom *);
+static int assign_implicit_hcount(struct smiles *);
+static int atom(struct smiles *, int *);
+static int atom_ringbond(struct smiles *, int *);
+static int atom_valence(struct smiles *, size_t);
+static int bond(struct smiles *, struct smiles_bond *b);
+static int bracket_atom(struct smiles *, struct smiles_atom *);
+static int charge(struct smiles *, struct smiles_atom *);
+static int check_ring_closures(struct smiles *);
+static int chirality(struct smiles *, struct smiles_atom *);
+static int close_paren(struct smiles *, struct smiles_bond *);
+static int dot(struct smiles *);
+static int hcount(struct smiles *, struct smiles_atom *);
+static int integer(struct smiles *, size_t, int *);
+static int isotope(struct smiles *, struct smiles_atom *);
+static unsigned int lex(struct smiles *, struct token *, int);
+static int match(struct smiles *, struct token *, int, unsigned int);
+static int open_paren(struct smiles *, struct smiles_bond *);
+static int pop_paren_stack(struct smiles *, int, struct smiles_bond *);
+static void push_paren_stack(struct smiles *, int, struct smiles_bond *);
+static int ringbond(struct smiles *, int);
 static int round_valence(int, int, int);
-static void smi_atom_init(struct smi_atom *);
-static void smi_bond_init(struct smi_bond *);
-static void smi_reinit(struct smi *, const char *, size_t);
-static int symbol(struct smi *, struct smi_atom *);
+static void smiles_atom_init(struct smiles_atom *);
+static void smiles_bond_init(struct smiles_bond *);
+static void smiles_reinit(struct smiles *, const char *, size_t);
+static int symbol(struct smiles *, struct smiles_atom *);
 static void tokcpy(char *, struct token *, size_t);
-static int wildcard(struct smi *, struct smi_atom *);
+static int wildcard(struct smiles *, struct smiles_atom *);
 
 /*
  * Table of standard atom valences.
@@ -110,7 +110,7 @@ static int standard_valences[][4] = {
 };
 
 void
-smi_free(struct smi *x)
+smiles_free(struct smiles *x)
 {
 	free(x->err);
 	free(x->atoms);
@@ -119,7 +119,7 @@ smi_free(struct smi *x)
 }
 
 void
-smi_init(struct smi *x)
+smiles_init(struct smiles *x)
 {
 	size_t i;
 
@@ -134,14 +134,14 @@ smi_init(struct smi *x)
 	VEC_INIT(x->paren_stack);
 
 	for (i = 0; i < 100; i++)
-		smi_bond_init(&x->rbonds[i]);
+		smiles_bond_init(&x->rbonds[i]);
 	x->open_ring_closures = 0;
 }
 
 int
-smi_parse(struct smi *x, const char *smi, size_t sz)
+smiles_parse(struct smiles *x, const char *smi, size_t sz)
 {
-	struct smi_bond b;
+	struct smiles_bond b;
 	int anum;			/* index of last atom read */
 	int eos;			/* end-of-string flag */
 	size_t end;
@@ -160,7 +160,7 @@ smi_parse(struct smi *x, const char *smi, size_t sz)
 		x->err = strdup("SMILES too long");
 		return -1;
 	}
-	smi_reinit(x, smi, end);
+	smiles_reinit(x, smi, end);
 
 	b.a0 = -1;		/* no previous atom to bond to */
 	anum = -1;
@@ -209,9 +209,9 @@ smi_parse(struct smi *x, const char *smi, size_t sz)
 				if (b.implicit) {
 					if (x->atoms[b.a0].aromatic &&
 					    x->atoms[b.a1].aromatic)
-						b.order = SMI_BOND_AROMATIC;
+						b.order = SMILES_BOND_AROMATIC;
 					else
-						b.order = SMI_BOND_SINGLE;
+						b.order = SMILES_BOND_SINGLE;
 				}
 				if (add_bond(x, &b) == -1)
 					goto err;
@@ -222,7 +222,7 @@ smi_parse(struct smi *x, const char *smi, size_t sz)
 			 * subsequent atoms.
 			 * Store this state in an incomplete bond.
 			 */
-			smi_bond_init(&b);
+			smiles_bond_init(&b);
 			b.a0 = anum;
 			b.implicit = 1;
 
@@ -411,7 +411,7 @@ err:
  * class ::= ':' NUMBER
  */
 static int
-aclass(struct smi *x, struct smi_atom *a)
+aclass(struct smiles *x, struct smiles_atom *a)
 {
 	struct token t;
 	int n;
@@ -437,7 +437,7 @@ aclass(struct smi *x, struct smi_atom *a)
  * Saves a completed atom and returns its index.
  */
 static int
-add_atom(struct smi *x, struct smi_atom *a)
+add_atom(struct smiles *x, struct smiles_atom *a)
 {
 	XVEC_ENSURE_APPEND(x->atoms, 1);
 	x->atoms[x->atoms_sz] = *a;
@@ -452,10 +452,10 @@ add_atom(struct smi *x, struct smi_atom *a)
  * remains sorted.
  */
 static int
-add_bond(struct smi *x, struct smi_bond *bond)
+add_bond(struct smiles *x, struct smiles_bond *bond)
 {
 	size_t i, move;
-	struct smi_bond nb, *b;
+	struct smiles_bond nb, *b;
 
 	nb = *bond;
 
@@ -465,10 +465,10 @@ add_bond(struct smi *x, struct smi_bond *bond)
 		nb.a0 = bond->a1;
 		nb.a1 = bond->a0;
 
-		if (bond->stereo == SMI_BOND_STEREO_UP)
-			nb.stereo = SMI_BOND_STEREO_DOWN;
-		else if (bond->stereo == SMI_BOND_STEREO_DOWN)
-			nb.stereo = SMI_BOND_STEREO_UP;
+		if (bond->stereo == SMILES_BOND_STEREO_UP)
+			nb.stereo = SMILES_BOND_STEREO_DOWN;
+		else if (bond->stereo == SMILES_BOND_STEREO_DOWN)
+			nb.stereo = SMILES_BOND_STEREO_UP;
 	}
 
 	/* Find position to insert and check for duplicates.
@@ -515,14 +515,14 @@ add_bond(struct smi *x, struct smi_bond *bond)
  * On failure, sets x->err and returns -1.
  */
 static int
-add_ringbond(struct smi *x, int rnum, struct smi_bond *b)
+add_ringbond(struct smiles *x, int rnum, struct smiles_bond *b)
 {
-	struct smi_bond *rb;
+	struct smiles_bond *rb;
 
 	assert(rnum < 100);
 
-	if (b->order == SMI_BOND_UNSPECIFIED)
-		assert(b->stereo == SMI_BOND_STEREO_UNSPECIFIED);
+	if (b->order == SMILES_BOND_UNSPECIFIED)
+		assert(b->stereo == SMILES_BOND_STEREO_UNSPECIFIED);
 
 	rb = &x->rbonds[rnum];
 
@@ -546,24 +546,24 @@ add_ringbond(struct smi *x, int rnum, struct smi_bond *b)
 		return -1;
 	}
 
-	if (rb->order == SMI_BOND_UNSPECIFIED)
+	if (rb->order == SMILES_BOND_UNSPECIFIED)
 		rb->order = b->order;
-	else if (b->order == SMI_BOND_UNSPECIFIED)
+	else if (b->order == SMILES_BOND_UNSPECIFIED)
 		; /* pass */
 	else if (rb->order != b->order) {
 		x->err = strdup("conflicting ring bond orders");
 		x->errpos = x->atoms[b->a0].pos;
 		return -1;
 	}
-	if (rb->order == SMI_BOND_UNSPECIFIED)
-		rb->order = SMI_BOND_SINGLE;
+	if (rb->order == SMILES_BOND_UNSPECIFIED)
+		rb->order = SMILES_BOND_SINGLE;
 
 	rb->a1 = b->a0;
 
 	if (add_bond(x, rb) == -1)
 		return -1;
 
-	smi_bond_init(rb);
+	smiles_bond_init(rb);
 	rb->a0 = -1; ;		/* mark slot open again */
 	x->open_ring_closures--;
 
@@ -575,13 +575,13 @@ add_ringbond(struct smi *x, int rnum, struct smi_bond *b)
  * Returns 1 on match, 0 if no match, or -1 on error.
  */
 static int
-aliphatic_organic(struct smi *x, struct smi_atom *a)
+aliphatic_organic(struct smiles *x, struct smiles_atom *a)
 {
 	struct token t;
 
 	if (!match(x, &t, 0, ALIPHATIC_ORGANIC))
 		return 0;
-	smi_atom_init(a);
+	smiles_atom_init(a);
 	a->pos = t.pos;
 	a->atomic_number = t.intval;
 	a->organic = 1;
@@ -595,13 +595,13 @@ aliphatic_organic(struct smi *x, struct smi_atom *a)
  * Returns 1 on match, 0 if no match, or -1 on error.
  */
 static int
-aromatic_organic(struct smi *x, struct smi_atom *a)
+aromatic_organic(struct smiles *x, struct smiles_atom *a)
 {
 	struct token t;
 
 	if (!match(x, &t, 0, AROMATIC_ORGANIC))
 		return 0;
-	smi_atom_init(a);
+	smiles_atom_init(a);
 	a->pos = t.pos;
 	a->atomic_number = t.intval;
 	a->organic = 1;
@@ -616,11 +616,11 @@ aromatic_organic(struct smi *x, struct smi_atom *a)
  * specified using the organic-subset shorthand.
  */
 static int
-assign_implicit_hcount(struct smi *x)
+assign_implicit_hcount(struct smiles *x)
 {
 	size_t i;
 	int valence, std;
-	struct smi_atom *a;
+	struct smiles_atom *a;
 
 	for (i = 0; i < x->atoms_sz; i++) {
 		a = &x->atoms[i];
@@ -648,9 +648,9 @@ assign_implicit_hcount(struct smi *x)
  * atom ::= bracket_atom | aliphatic_organic | aromatic_organic | '*'
  */
 static int
-atom(struct smi *x, int *anum)
+atom(struct smiles *x, int *anum)
 {
-	struct smi_atom a;
+	struct smiles_atom a;
 
 	if (bracket_atom(x, &a) ||
 	    aliphatic_organic(x, &a) ||
@@ -672,7 +672,7 @@ atom(struct smi *x, int *anum)
  * On error, sets x->err and returns -1.
  */
 static int
-atom_ringbond(struct smi *x, int *anum)
+atom_ringbond(struct smiles *x, int *anum)
 {
 	if (atom(x, anum)) {
 		if (x->err)
@@ -695,11 +695,11 @@ atom_ringbond(struct smi *x, int *anum)
  * properly derive implicit hydrogen count.
  */
 static int
-atom_valence(struct smi *x, size_t idx)
+atom_valence(struct smiles *x, size_t idx)
 {
 	size_t i;
 	int valence, neighbors;
-	struct smi_bond *b;
+	struct smiles_bond *b;
 
 	valence = 0;
 	neighbors = 0;
@@ -711,15 +711,15 @@ atom_valence(struct smi *x, size_t idx)
 		else if (b->a0 != (int)idx && b->a1 != (int)idx)
 			continue;
 
-		if (b->order == SMI_BOND_SINGLE)
+		if (b->order == SMILES_BOND_SINGLE)
 			valence += 1;
-		else if (b->order == SMI_BOND_AROMATIC)
+		else if (b->order == SMILES_BOND_AROMATIC)
 			valence += 1;
-		else if (b->order == SMI_BOND_DOUBLE)
+		else if (b->order == SMILES_BOND_DOUBLE)
 			valence += 2;
-		else if (b->order == SMI_BOND_TRIPLE)
+		else if (b->order == SMILES_BOND_TRIPLE)
 			valence += 3;
-		else if (b->order == SMI_BOND_QUAD)
+		else if (b->order == SMILES_BOND_QUAD)
 			valence += 4;
 
 		neighbors += 1;
@@ -743,7 +743,7 @@ atom_valence(struct smi *x, size_t idx)
  * bond ::= '-' | '=' | '#' | '$' | ':' | '/' | '\'
  */
 static int
-bond(struct smi *x, struct smi_bond *b)
+bond(struct smiles *x, struct smiles_bond *b)
 {
 	struct token t;
 
@@ -766,14 +766,14 @@ bond(struct smi *x, struct smi_bond *b)
  * bracket_atom ::= '[' isotope? symbol chiral? hcount? charge? class? ']'
  */
 static int
-bracket_atom(struct smi *x, struct smi_atom *a)
+bracket_atom(struct smiles *x, struct smiles_atom *a)
 {
 	struct token t;
 
 	if (!match(x, &t, 0, BRACKET_OPEN))
 		return 0;
 
-	smi_atom_init(a);
+	smiles_atom_init(a);
 	a->bracket = 1;
 	a->pos = t.pos;
 	a->len = t.n;
@@ -811,7 +811,7 @@ bracket_atom(struct smi *x, struct smi_atom *a)
  * Otherwise, sets x->err and returns -1.
  */
 static int
-check_ring_closures(struct smi *x)
+check_ring_closures(struct smiles *x)
 {
 	size_t i;
 
@@ -844,7 +844,7 @@ check_ring_closures(struct smi *x)
  *            | '++' deprecated
  */
 static int
-charge(struct smi *x, struct smi_atom *a)
+charge(struct smiles *x, struct smiles_atom *a)
 {
 	struct token t;
 	int sign;
@@ -885,7 +885,7 @@ charge(struct smi *x, struct smi_atom *a)
  * TODO: Currently, this only understands @ and @@.
  */
 static int
-chirality(struct smi *x, struct smi_atom *a)
+chirality(struct smiles *x, struct smiles_atom *a)
 {
 	struct token t;
 
@@ -903,7 +903,7 @@ chirality(struct smi *x, struct smi_atom *a)
  * On error, sets x->err and returns -1.
  */
 static int
-close_paren(struct smi *x, struct smi_bond *b)
+close_paren(struct smiles *x, struct smiles_bond *b)
 {
 	struct token t;
 
@@ -920,7 +920,7 @@ close_paren(struct smi *x, struct smi_bond *b)
  * Returns 1 on success, 0 if there was no match.
  */
 static int
-dot(struct smi *x)
+dot(struct smiles *x)
 {
 	struct token t;
 
@@ -935,7 +935,7 @@ dot(struct smi *x)
  * hcount ::= 'H' | 'H' DIGIT
  */
 static int
-hcount(struct smi *x, struct smi_atom *a)
+hcount(struct smiles *x, struct smiles_atom *a)
 {
 	struct token t;
 
@@ -961,7 +961,7 @@ hcount(struct smi *x, struct smi_atom *a)
  * Returns -1 if maxdigit is exceeded.
  */
 static int
-integer(struct smi *x, size_t maxdigit, int *dst)
+integer(struct smiles *x, size_t maxdigit, int *dst)
 {
 	size_t i;
 	int n = 0;
@@ -989,7 +989,7 @@ integer(struct smi *x, size_t maxdigit, int *dst)
  * On error, returns -1 and sets x->err.
  */
 static int
-isotope(struct smi *x, struct smi_atom *a)
+isotope(struct smiles *x, struct smiles_atom *a)
 {
 	int n;
 
@@ -1007,7 +1007,7 @@ isotope(struct smi *x, struct smi_atom *a)
  * If not, returns 0 and the parsing position remains unchanged.
  */
 static int
-match(struct smi *x, struct token *t, int inbracket, unsigned int ttype)
+match(struct smiles *x, struct token *t, int inbracket, unsigned int ttype)
 {
 	if (lex(x, t, inbracket) & ttype) {
 		x->pos += t->n;
@@ -1022,7 +1022,7 @@ match(struct smi *x, struct token *t, int inbracket, unsigned int ttype)
  * Returns 0 if there was no match.
  */
 static int
-open_paren(struct smi *x, struct smi_bond *b)
+open_paren(struct smiles *x, struct smiles_bond *b)
 {
 	struct token t;
 
@@ -1045,7 +1045,7 @@ open_paren(struct smi *x, struct smi_bond *b)
  * On failure, sets x->err and returns -1.
  */
 static int
-pop_paren_stack(struct smi *x, int pos, struct smi_bond *b)
+pop_paren_stack(struct smiles *x, int pos, struct smiles_bond *b)
 {
 	if (!x->paren_stack_sz) {
 		x->err = strdup("unbalanced parenthesis");
@@ -1068,9 +1068,9 @@ pop_paren_stack(struct smi *x, int pos, struct smi_bond *b)
  * to support error messages.
  */
 static void
-push_paren_stack(struct smi *x, int pos, struct smi_bond *b)
+push_paren_stack(struct smiles *x, int pos, struct smiles_bond *b)
 {
-	struct smi_paren *p;
+	struct smiles_paren *p;
 
 	assert(b->a0 != -1);
 
@@ -1092,21 +1092,21 @@ push_paren_stack(struct smi *x, int pos, struct smi_bond *b)
  * ringbond ::= bond? DIGIT | bond? '%' DIGIT DIGIT
  */
 static int
-ringbond(struct smi *x, int anum)
+ringbond(struct smiles *x, int anum)
 {
 	struct token t;
-	struct smi_bond b;
+	struct smiles_bond b;
 	int rnum;
 	int saved = x->pos;
 
-	smi_bond_init(&b);
+	smiles_bond_init(&b);
 	b.a0 = anum;
 
 	if (bond(x, &b)) {
 		if (x->err)
 			return -1;
 	} else {
-		b.order = SMI_BOND_UNSPECIFIED;
+		b.order = SMILES_BOND_UNSPECIFIED;
 		b.pos = x->pos;
 	}
 
@@ -1165,10 +1165,10 @@ round_valence(int atomic_number, int valence, int lowest_only)
 }
 
 /*
- * Initializes struct smi_atom.
+ * Initializes struct smiles_atom.
  */
 static void
-smi_atom_init(struct smi_atom *x)
+smiles_atom_init(struct smiles_atom *x)
 {
 	x->atomic_number = 0;
 	x->symbol[0] = '\0';
@@ -1186,15 +1186,15 @@ smi_atom_init(struct smi_atom *x)
 }
 
 /*
- * Initializes struct smi_bond.
+ * Initializes struct smiles_bond.
  */
 static void
-smi_bond_init(struct smi_bond *x)
+smiles_bond_init(struct smiles_bond *x)
 {
 	x->a0 = -1;
 	x->a1 = -1;
 	x->order = -1;
-	x->stereo = SMI_BOND_STEREO_UNSPECIFIED;
+	x->stereo = SMILES_BOND_STEREO_UNSPECIFIED;
 	x->implicit = 0;
 	x->ring = 0;
 	x->pos = -1;
@@ -1202,11 +1202,11 @@ smi_bond_init(struct smi_bond *x)
 }
 
 /*
- * Reinitializes struct smi prior to parsing a new SMILES.
+ * Reinitializes struct smiles prior to parsing a new SMILES.
  * The given number of bytes of smi will be parsed.
  */
 static void
-smi_reinit(struct smi *x, const char *smi, size_t end)
+smiles_reinit(struct smiles *x, const char *smi, size_t end)
 {
 	size_t i;
 
@@ -1221,7 +1221,7 @@ smi_reinit(struct smi *x, const char *smi, size_t end)
 	x->paren_stack_sz = 0;
 
 	for (i = 0; i < 100; i++)
-		smi_bond_init(&x->rbonds[i]);
+		smiles_bond_init(&x->rbonds[i]);
 	x->open_ring_closures = 0;
 }
 
@@ -1233,7 +1233,7 @@ smi_reinit(struct smi *x, const char *smi, size_t end)
  * symbol ::= element_symbols | aromatic_symbols | '*'
  */
 static int
-symbol(struct smi *x, struct smi_atom *a)
+symbol(struct smiles *x, struct smiles_atom *a)
 {
 	struct token t;
 
@@ -1273,13 +1273,13 @@ tokcpy(char *dst, struct token *t, size_t dstsz)
  * On error, sets x->err and returns -1.
  */
 static int
-wildcard(struct smi *x, struct smi_atom *a)
+wildcard(struct smiles *x, struct smiles_atom *a)
 {
 	struct token t;
 
 	if (!match(x, &t, 0, WILDCARD))
 		return 0;
-	smi_atom_init(a);
+	smiles_atom_init(a);
 	a->pos = t.pos;
 	a->atomic_number = 0;
 	a->len = t.n;
@@ -1297,7 +1297,7 @@ wildcard(struct smi *x, struct smi_atom *a)
  * hydrogen will have type ELEMENT|HYDROGEN.
  */
 static unsigned int
-lex(struct smi *x, struct token *t, int inbracket)
+lex(struct smiles *x, struct token *t, int inbracket)
 {
 	int c0, c1;
 	const char *s;
@@ -2089,40 +2089,40 @@ lex(struct smi *x, struct token *t, int inbracket)
 		goto out;
 	case '-':
 		t->type   = inbracket ? MINUS : BOND;
-		t->intval = inbracket ? -1    : SMI_BOND_SINGLE;
+		t->intval = inbracket ? -1    : SMILES_BOND_SINGLE;
 		goto out;
 	case '%':
 		t->type = PERCENT;
 		goto out;
 	case '=':
 		t->type = BOND;
-		t->intval = SMI_BOND_DOUBLE;
+		t->intval = SMILES_BOND_DOUBLE;
 		goto out;
 	case '#':
 		t->type = BOND;
-		t->intval = SMI_BOND_TRIPLE;
+		t->intval = SMILES_BOND_TRIPLE;
 		goto out;
 	case '$':
 		t->type = BOND;
-		t->intval = SMI_BOND_QUAD;
+		t->intval = SMILES_BOND_QUAD;
 		goto out;
 	case ':':
 		if (inbracket) {
 			t->type = COLON;
 		} else {
 			t->type = BOND;
-			t->intval = SMI_BOND_AROMATIC;
+			t->intval = SMILES_BOND_AROMATIC;
 		}
 		goto out;
 	case '/':
 		t->type = BOND;
-		t->intval = SMI_BOND_SINGLE;
-		t->flags = SMI_BOND_STEREO_UP;
+		t->intval = SMILES_BOND_SINGLE;
+		t->flags = SMILES_BOND_STEREO_UP;
 		goto out;
 	case '\\':
 		t->type = BOND;
-		t->intval = SMI_BOND_SINGLE;
-		t->flags = SMI_BOND_STEREO_DOWN;
+		t->intval = SMILES_BOND_SINGLE;
+		t->flags = SMILES_BOND_STEREO_DOWN;
 		goto out;
 	case '.':
 		t->type = DOT;
