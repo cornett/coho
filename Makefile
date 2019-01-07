@@ -21,8 +21,8 @@ SRC_C		= compat.c \
 
 SRC_H		= $(SRC_C:.c=.h)
 
-PYTHON_SRC_PYX	= py/coho/__init__.pyx \
-		  py/coho/smiles.pyx
+PYTHON_SRC_PYX	= python/coho/__init__.pyx \
+		  python/coho/smiles.pyx
 
 OBJ_O		= $(SRC_C:.c=.o)
 
@@ -87,44 +87,44 @@ libcoho.a:			$(OBJ_O)
 # Python {{{
 
 python.clean:
-	cd py && \
+	cd python && \
 	rm -f version.txt && \
 	rm -rf __pycache__ *.egg-info && \
 	rm -rf dist src
 
 
 python.pre.setup.py:		python.clean
-	echo $(VERSION) > py/version.txt
-	rm -rf py/src
-	install -d py/src
-	install -m 0644 $(SRC_C) $(SRC_H) py/src
+	echo $(VERSION) > python/version.txt
+	rm -rf python/src
+	install -d python/src
+	install -m 0644 $(SRC_C) $(SRC_H) python/src
 
 
 python.sdist:			python.pre.setup.py \
 				$(PYTHON_OBJ_C)
-	$(PYTHON) py/setup.py sdist
+	$(PYTHON) python/setup.py sdist
 
 
 python.wheel:			python.pre.setup.py \
 				$(PYTHON_OBJ_C)
-	$(PYTHON) py/setup.py bdist_wheel
+	$(PYTHON) python/setup.py bdist_wheel
 
 
-py/coho/smiles.c:		py/coho/smiles.pxd
-py/coho/smiles.o:		smiles.h
+python/coho/smiles.c:		python/coho/smiles.pxd
+python/coho/smiles.o:		smiles.h
 
-py/coho/__init__.o:		PYTHON_CFLAGS += -DVERSION='"$(VERSION)"'
-
-
-py/coho/%.c:			py/coho/%.pyx
-	$(CYTHON) -3 -X embedsignature=True -I py/coho $<
+python/coho/__init__.o:		PYTHON_CFLAGS += -DVERSION='"$(VERSION)"'
 
 
-py/coho/%.o:			py/coho/%.c
+python/coho/%.c:		python/coho/%.pyx
+	$(CYTHON) -3 -X embedsignature=True -I python/coho $<
+
+
+python/coho/%.o:		python/coho/%.c
 	$(CC) $(PYTHON_CFLAGS) -I. -o $@ -c $<
 
 
-py/coho/%.so:			py/coho/%.o \
+python/coho/%.so:		python/coho/%.o \
 				libcoho.a
 	$(CC) -shared $(PYTHON_LDFLAGS) -o $@ $^ $(PYTHON_LIBS)
 
