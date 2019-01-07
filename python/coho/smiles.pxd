@@ -26,37 +26,37 @@ cdef extern from "smiles.h":
         SMILES_BOND_STEREO_DOWN
 
     struct smiles_atom:
-        int              atomic_number
-        char             symbol[4]
-        int              isotope
-        int              charge
-        int              hcount
-        int              implicit_hcount
-        int              bracket
-        int              organic
-        int              aromatic
-        char             chirality[8]
-        int              aclass
-        int              pos
-        int              len
+        int                 atomic_number
+        char                symbol[4]
+        int                 isotope
+        int                 charge
+        int                 hcount
+        int                 implicit_hcount
+        int                 bracket
+        int                 organic
+        int                 aromatic
+        char                chirality[8]
+        int                 aclass
+        int                 pos
+        int                 len
 
     struct smiles_bond:
-        int              a0
-        int              a1
-        int              order
-        int              implicit
-        int              ring
-        int              stereo
-        int              pos
-        int              len
+        int                 a0
+        int                 a1
+        int                 order
+        int                 implicit
+        int                 ring
+        int                 stereo
+        int                 pos
+        int                 len
 
     struct smiles:
-        smiles_atom     *atoms
-        size_t           atoms_sz
-        smiles_bond     *bonds
-        size_t           bonds_sz
-        char            *err
-        int              errpos
+        smiles_atom        *atoms
+        size_t              atoms_sz
+        smiles_bond        *bonds
+        size_t              bonds_sz
+        char               *err
+        int                 errpos
 
     void smiles_free(smiles *)
     int smiles_init(smiles *)
