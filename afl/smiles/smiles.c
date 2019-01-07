@@ -6,17 +6,17 @@
 int
 main(void)
 {
-	struct smiles smi;
+	struct coho_smiles smi;
 	char *line = NULL;
 	size_t linesz = 0;
 	ssize_t n;
 
-	smiles_init(&smi);
+	coho_smiles_init(&smi);
 
 	while ((n = getline(&line, &linesz, stdin)) != -1) {
-		smiles_parse(&smi, line, n - 1);
+		coho_smiles_parse(&smi, line, n - 1);
 	}
 
-	smiles_free(&smi);
+	coho_smiles_free(&smi);
 	return 0;
 }

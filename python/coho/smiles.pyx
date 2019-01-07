@@ -12,25 +12,25 @@
 # ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 # OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
-BOND_SINGLE         = SMILES_BOND_SINGLE
-BOND_DOUBLE         = SMILES_BOND_DOUBLE
-BOND_TRIPLE         = SMILES_BOND_TRIPLE
-BOND_QUAD           = SMILES_BOND_QUAD
-BOND_AROMATIC       = SMILES_BOND_AROMATIC
+BOND_SINGLE         = COHO_SMILES_BOND_SINGLE
+BOND_DOUBLE         = COHO_SMILES_BOND_DOUBLE
+BOND_TRIPLE         = COHO_SMILES_BOND_TRIPLE
+BOND_QUAD           = COHO_SMILES_BOND_QUAD
+BOND_AROMATIC       = COHO_SMILES_BOND_AROMATIC
 
-BOND_STEREO_UP      = SMILES_BOND_STEREO_UP
-BOND_STEREO_DOWN    = SMILES_BOND_STEREO_DOWN
+BOND_STEREO_UP      = COHO_SMILES_BOND_STEREO_UP
+BOND_STEREO_DOWN    = COHO_SMILES_BOND_STEREO_DOWN
 
 
 cdef class Parser:
     """Parses SMILES"""
-    cdef smiles _x
+    cdef coho_smiles _x
 
     def __cinit__(self):
-        smiles_init(&self._x)
+        coho_smiles_init(&self._x)
 
     def __dealloc__(self):
-        smiles_free(&self._x)
+        coho_smiles_free(&self._x)
 
     def err(self):
         """Error message if last parse failed"""
@@ -49,7 +49,7 @@ cdef class Parser:
     def parse(self, str smi):
         """Parse SMILES string."""
         cdef bytes s = smi.encode()
-        if smiles_parse(&self._x, s, len(s)) == -1:
+        if coho_smiles_parse(&self._x, s, len(s)) == -1:
             lead = "-" * self.errpos
             msg = f"{self.err}\n{smi}\n{lead}^\n"
             x = ValueError(msg)

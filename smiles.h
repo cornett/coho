@@ -15,21 +15,21 @@
  */
 
 enum {
-	SMILES_BOND_UNSPECIFIED		= 0,
-	SMILES_BOND_SINGLE		= 1,
-	SMILES_BOND_DOUBLE		= 2,
-	SMILES_BOND_TRIPLE		= 3,
-	SMILES_BOND_QUAD		= 4,
-	SMILES_BOND_AROMATIC		= 5,
+	COHO_SMILES_BOND_UNSPECIFIED	= 0,
+	COHO_SMILES_BOND_SINGLE		= 1,
+	COHO_SMILES_BOND_DOUBLE		= 2,
+	COHO_SMILES_BOND_TRIPLE		= 3,
+	COHO_SMILES_BOND_QUAD		= 4,
+	COHO_SMILES_BOND_AROMATIC	= 5,
 };
 
 enum {
-	SMILES_BOND_STEREO_UNSPECIFIED,
-	SMILES_BOND_STEREO_UP,
-	SMILES_BOND_STEREO_DOWN,
+	COHO_SMILES_BOND_STEREO_UNSPECIFIED,
+	COHO_SMILES_BOND_STEREO_UP,
+	COHO_SMILES_BOND_STEREO_DOWN,
 };
 
-struct smiles_atom {
+struct coho_smiles_atom {
 	int				 atomic_number;
 	char				 symbol[4];
 	int				 isotope;
@@ -45,7 +45,7 @@ struct smiles_atom {
 	int				 len;
 };
 
-struct smiles_bond {
+struct coho_smiles_bond {
 	int				 a0;
 	int				 a1;
 	int				 order;
@@ -56,34 +56,34 @@ struct smiles_bond {
 	int				 len;
 };
 
-struct smiles_paren {
+struct coho_smiles_paren {
 	int				 pos;
-	struct smiles_bond		 bond;
+	struct coho_smiles_bond		 bond;
 };
 
-struct smiles {
+struct coho_smiles {
 	const char			*smi;
 	int				 pos;
 	int				 end;
 	char				*err;
 	int				 errpos;
 
-	struct smiles_atom		*atoms;
+	struct coho_smiles_atom		*atoms;
 	size_t				 atoms_sz;
 	size_t				 atoms_alloc;
 
-	struct smiles_bond		*bonds;
+	struct coho_smiles_bond		*bonds;
 	size_t				 bonds_sz;
 	size_t				 bonds_alloc;
 
-	struct smiles_bond		 rbonds[100];
+	struct coho_smiles_bond		 rbonds[100];
 	size_t				 open_ring_closures;
 
-	struct smiles_paren		*paren_stack;
+	struct coho_smiles_paren	*paren_stack;
 	size_t				 paren_stack_sz;
 	size_t				 paren_stack_alloc;
 };
 
-void	smiles_free(struct smiles *);
-void	smiles_init(struct smiles *);
-int	smiles_parse(struct smiles *, const char *, size_t);
+void	coho_smiles_free(struct coho_smiles *);
+void	coho_smiles_init(struct coho_smiles *);
+int	coho_smiles_parse(struct coho_smiles *, const char *, size_t);

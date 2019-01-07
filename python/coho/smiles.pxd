@@ -15,17 +15,17 @@
 cdef extern from "smiles.h":
 
     enum:
-        SMILES_BOND_SINGLE
-        SMILES_BOND_DOUBLE
-        SMILES_BOND_TRIPLE
-        SMILES_BOND_QUAD
-        SMILES_BOND_AROMATIC
+        COHO_SMILES_BOND_SINGLE
+        COHO_SMILES_BOND_DOUBLE
+        COHO_SMILES_BOND_TRIPLE
+        COHO_SMILES_BOND_QUAD
+        COHO_SMILES_BOND_AROMATIC
 
     enum:
-        SMILES_BOND_STEREO_UP
-        SMILES_BOND_STEREO_DOWN
+        COHO_SMILES_BOND_STEREO_UP
+        COHO_SMILES_BOND_STEREO_DOWN
 
-    struct smiles_atom:
+    struct coho_smiles_atom:
         int                 atomic_number
         char                symbol[4]
         int                 isotope
@@ -40,7 +40,7 @@ cdef extern from "smiles.h":
         int                 pos
         int                 len
 
-    struct smiles_bond:
+    struct coho_smiles_bond:
         int                 a0
         int                 a1
         int                 order
@@ -50,14 +50,14 @@ cdef extern from "smiles.h":
         int                 pos
         int                 len
 
-    struct smiles:
-        smiles_atom        *atoms
+    struct coho_smiles:
+        coho_smiles_atom   *atoms
         size_t              atoms_sz
-        smiles_bond        *bonds
+        coho_smiles_bond   *bonds
         size_t              bonds_sz
         char               *err
         int                 errpos
 
-    void smiles_free(smiles *)
-    int smiles_init(smiles *)
-    int smiles_parse(smiles *, const char *, size_t)
+    void coho_smiles_free(coho_smiles *)
+    int coho_smiles_init(coho_smiles *)
+    int coho_smiles_parse(coho_smiles *, const char *, size_t)
