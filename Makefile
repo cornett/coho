@@ -1,6 +1,3 @@
-.POSIX:
-.SUFFIXES:
-
 VERSION		= 0.3
 
 PREFIX		= /usr/local
@@ -11,47 +8,56 @@ CFLAGS		= -Wall -O2
 
 PYTHON		= python3
 CYTHON		= cython
-
-PY.CONFIG	= $(PYTHON)-config
-CFLAGS.PY	= `$(PY.CONFIG) --cflags` -I.
-LDFLAGS.PY	= `$(PY.CONFIG) --ldflags`
-LDLIBS.PY	= `$(PY.CONFIG) --libs`
+PYTHON_CONFIG	= $(PYTHON)-config
+PYTHON_CFLAGS	= $(shell $(PYTHON_CONFIG) --cflags)
+PYTHON_LDFLAGS	= $(shell $(PYTHON_CONFIG) --ldflags)
+PYTHON_LIBS	= $(shell $(PYTHON_CONFIG) --libs)
 
 -include config.mk
 
-LIB.C		= compat.c \
+SRC_C		= compat.c \
 		  smi.c \
 		  vec.c
 
-LIB.O		= $(LIB.C:.c=.o)
+SRC_H		= $(SRC_C:.c=.h)
 
-PY.PYX		= py/coho/__init__.pyx \
+PYTHON_SRC_PYX	= py/coho/__init__.pyx \
 		  py/coho/smi.pyx
 
-PY.C		= $(PY.PYX:.pyx=.c)
-PY.O		= $(PY.PYX:.pyx=.o)
-PY.SO		= $(PY.PYX:.pyx=.so)
+OBJ_O		= $(SRC_C:.c=.o)
+
+PYTHON_OBJ_C	= $(PYTHON_SRC_PYX:.pyx=.c)
+PYTHON_OBJ_O	= $(PYTHON_SRC_PYX:.pyx=.o)
+PYTHON_OBJ_SO	= $(PYTHON_SRC_PYX:.pyx=.so)
+
+PYTHON_OBJ	= $(PYTHON_OBJ_C) \
+		  $(PYTHON_OBJ_O) \
+		  $(PYTHON_OBJ_SO)
+
+OBJ		= libcoho.a \
+		  $(OBJ_O) \
+		  $(PYTHON_OBJ)
 
 AFL		= afl/smi/smi
 
 TEST		= test/smi
 
-CCO	= $(CC) $(CFLAGS) -fPIC $(CPPFLAGS) -I. -o $@ -c $(@:.o=.c)
-CCEXE	= $(CC) $(CFLAGS) $(CPPFLAGS) -I. -o $@ $@.c libcoho.a
 
-all:	libcoho.a $(TEST) $(PY.SO)
+all:				libcoho.a \
+				$(PYTHON_OBJ_SO) \
+				$(TEST)
 
-clean:
-	rm -f *.o libcoho.a
-	rm -f test/smi afl/smi/smi
-	rm -f py/coho/*.[co] py/coho/*.so py/version.txt
-	rm -rf py/dist py/__pycache__ py/coho.egg-info py/src
+
+clean:				python.clean
+	rm -f $(AFL) $(OBJ) $(TEST)
 	rm -rf doc/_build
+
 
 doc:
 	$(PYTHON) -m sphinx -M html doc doc/_build
 
-install: libcoho.a
+
+install:			libcoho.a
 	install -d $(DESTDIR)$(PREFIX)/lib
 	install -d $(DESTDIR)$(PREFIX)/include/coho
 	install -d $(DESTDIR)$(MANPREFIX)/man3
@@ -59,55 +65,88 @@ install: libcoho.a
 	install -m 0444 smi.h $(DESTDIR)$(PREFIX)/include/coho
 	install -m 0444 man/smi_parse.3 $(DESTDIR)$(MANPREFIX)/man3
 
-pre.setup.py:
+
+$(AFL) $(TEST):			libcoho.a
+	$(CC) $(CFLAGS) $(CPPFLAGS) -I. -o $@ $@.c libcoho.a
+
+
+$(OBJ_O):			compat.h
+smi.o: 				smi.h \
+				vec.h
+vec.o:				vec.h
+
+
+libcoho.a:			$(OBJ_O)
+	$(AR) -r $@ $?
+
+
+%.o:				%.c
+	$(CC) $(CFLAGS) -fPIC $(CPPFLAGS) -I. -o $@ -c $<
+
+
+# Python {{{
+
+python.clean:
+	cd py && \
+	rm -f version.txt && \
+	rm -rf __pycache__ *.egg-info && \
+	rm -rf dist src
+
+
+python.pre.setup.py:		python.clean
 	echo $(VERSION) > py/version.txt
 	rm -rf py/src
 	install -d py/src
-	install -m 0644 compat.[ch] smi.[ch] vec.[ch] py/src
+	install -m 0644 $(SRC_C) $(SRC_H) py/src
 
-sdist: pre.setup.py $(PY.C)
+
+python.sdist:			python.pre.setup.py \
+				$(PYTHON_OBJ_C)
 	$(PYTHON) py/setup.py sdist
 
-test: $(TEST)
+
+python.wheel:			python.pre.setup.py \
+				$(PYTHON_OBJ_C)
+	$(PYTHON) py/setup.py bdist_wheel
+
+
+py/coho/smi.c:			py/coho/smi.pxd
+py/coho/smi.o:			smi.h
+
+py/coho/__init__.o:		PYTHON_CFLAGS += -DVERSION='"$(VERSION)"'
+
+
+py/coho/%.c:			py/coho/%.pyx
+	$(CYTHON) -3 -X embedsignature=True -I py/coho $<
+
+
+py/coho/%.o:			py/coho/%.c
+	$(CC) $(PYTHON_CFLAGS) -I. -o $@ -c $<
+
+
+py/coho/%.so:			py/coho/%.o \
+				libcoho.a
+	$(CC) -shared $(PYTHON_LDFLAGS) -o $@ $^ $(PYTHON_LIBS)
+
+# }}}
+
+test:				$(TEST)
 	@for t in $(TEST); do \
 		echo -n "./$${t}... " ; \
 		./$$t >/dev/null 2>&1 || { echo "fail"; exit 1; }; \
 		echo "ok"; \
 	done
 
-wheel: pre.setup.py $(PY.C)
-	$(PYTHON) py/setup.py bdist_wheel
 
-$(AFL) $(TEST) $(PY.SO): libcoho.a
-$(LIB.O): compat.h
-afl/smi/smi: afl/smi/smi.c smi.h
-compat.o: compat.c compat.h
-py/coho/__init__.c: py/coho/__init__.pyx
-py/coho/__init__.o: py/coho/__init__.c
-py/coho/__init__.so: py/coho/__init__.o
-py/coho/smi.c: py/coho/smi.pyx py/coho/smi.pxd
-py/coho/smi.o: py/coho/smi.c smi.h
-py/coho/smi.so: py/coho/smi.o
-smi.o: smi.c smi.h vec.h
-test/smi: test/smi.c smi.h
-vec.o: vec.c vec.h
+.PHONY:				all \
+				clean \
+				doc \
+				install \
+				python.clean \
+				python.pre.setup.py \
+				python.sdist \
+				python.wheel \
+				test
 
-libcoho.a: $(LIB.O)
-	$(AR) -r $@ $?
 
-$(AFL) $(TEST):
-	$(CC) $(CFLAGS) $(CPPFLAGS) -I. -o $@ $@.c libcoho.a
-
-$(PY.C):
-	$(CYTHON) -X embedsignature=True -I py/coho -3 $(@:.c=.pyx)
-
-$(PY.O):
-	$(CC) $(CFLAGS.PY) -DVERSION='"$(VERSION)"' -o $@ -c $(@:.o=.c)
-
-$(PY.SO):
-	$(CC) -shared $(LDFLAGS.PY) -o $@ $(@:.so=.o) libcoho.a $(LDLIBS.PY)
-
-$(LIB.O):
-	$(CC) $(CFLAGS) -fPIC $(CPPFLAGS) -I. -o $@ -c $(@:.o=.c)
-
-.PHONY:	all doc clean install pre.setup.py sdist test wheel
+.SUFFIXES:
