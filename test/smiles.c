@@ -21,9 +21,9 @@ main(void)
 	coho_smiles_init(&x);
 
 	check_cnts(&x, "CC", 2, 1);
-	assert(x.bonds[0].ring == 0);
+	assert(x.bonds[0].is_ring == 0);
 	check_cnts(&x, "C1.C1", 2, 1);
-	assert(x.bonds[0].ring == 1);
+	assert(x.bonds[0].is_ring == 1);
 
 	check_cnts(&x, "C.C", 2, 0);
 

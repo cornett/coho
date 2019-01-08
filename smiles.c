@@ -206,9 +206,9 @@ coho_smiles_parse(struct coho_smiles *x, const char *smi, size_t sz)
 				 * Finalize order of implicit bonds, which
 				 * depends on atom aromaticity.
 				 */
-				if (b.implicit) {
-					if (x->atoms[b.a0].aromatic &&
-					    x->atoms[b.a1].aromatic)
+				if (b.is_implicit) {
+					if (x->atoms[b.a0].is_aromatic &&
+					    x->atoms[b.a1].is_aromatic)
 						b.order = COHO_SMILES_BOND_AROMATIC;
 					else
 						b.order = COHO_SMILES_BOND_SINGLE;
@@ -224,7 +224,7 @@ coho_smiles_parse(struct coho_smiles *x, const char *smi, size_t sz)
 			 */
 			coho_smiles_bond_init(&b);
 			b.a0 = anum;
-			b.implicit = 1;
+			b.is_implicit = 1;
 
 			if (eos) {
 				goto done;
@@ -530,8 +530,8 @@ add_ringbond(struct coho_smiles *x, int rnum, struct coho_smiles_bond *b)
 		rb->a0		= b->a0;
 		rb->order	= b->order;
 		rb->stereo	= b->stereo;
-		rb->implicit	= 0;
-		rb->ring	= 1;
+		rb->is_implicit	= 0;
+		rb->is_ring	= 1;
 		rb->position	= b->position;
 		rb->length	= b->length;
 		x->open_ring_closures++;
@@ -584,7 +584,7 @@ aliphatic_organic(struct coho_smiles *x, struct coho_smiles_atom *a)
 	coho_smiles_atom_init(a);
 	a->position = t.position;
 	a->atomic_number = t.intval;
-	a->organic = 1;
+	a->is_organic = 1;
 	a->length = t.n;
 	tokcpy(a->symbol, &t, sizeof(a->symbol));
 	return 1;
@@ -604,8 +604,8 @@ aromatic_organic(struct coho_smiles *x, struct coho_smiles_atom *a)
 	coho_smiles_atom_init(a);
 	a->position = t.position;
 	a->atomic_number = t.intval;
-	a->organic = 1;
-	a->aromatic = 1;
+	a->is_organic = 1;
+	a->is_aromatic = 1;
 	a->length = t.n;
 	tokcpy(a->symbol, &t, sizeof(a->symbol));
 	return 1;
@@ -625,11 +625,11 @@ assign_implicit_hydrogen_count(struct coho_smiles *x)
 	for (i = 0; i < x->atoms_sz; i++) {
 		a = &x->atoms[i];
 
-		if (!a->organic)
+		if (!a->is_organic)
 			continue;
 
 		valence = atom_valence(x, i);
-		std = round_valence(a->atomic_number, valence, a->aromatic);
+		std = round_valence(a->atomic_number, valence, a->is_aromatic);
 
 		if (std == -1)
 			a->implicit_hydrogen_count = 0;
@@ -725,7 +725,7 @@ atom_valence(struct coho_smiles *x, size_t idx)
 		neighbors += 1;
 	}
 
-	if (x->atoms[idx].aromatic && valence == neighbors) {
+	if (x->atoms[idx].is_aromatic && valence == neighbors) {
 		valence += 1;
 	}
 
@@ -752,7 +752,7 @@ bond(struct coho_smiles *x, struct coho_smiles_bond *b)
 
 	b->order = t.intval;
 	b->stereo = t.flags;
-	b->implicit = 0;
+	b->is_implicit = 0;
 	b->position = t.position;
 	b->length = t.n;
 	return 1;
@@ -774,7 +774,7 @@ bracket_atom(struct coho_smiles *x, struct coho_smiles_atom *a)
 		return 0;
 
 	coho_smiles_atom_init(a);
-	a->bracket = 1;
+	a->is_bracket = 1;
 	a->position = t.position;
 	a->length = t.n;
 
@@ -1176,9 +1176,9 @@ coho_smiles_atom_init(struct coho_smiles_atom *x)
 	x->charge = 0;
 	x->hydrogen_count = -1;
 	x->implicit_hydrogen_count = -1;
-	x->bracket = 0;
-	x->organic = 0;
-	x->aromatic = 0;
+	x->is_bracket = 0;
+	x->is_organic = 0;
+	x->is_aromatic = 0;
 	x->chirality[0] = '\0';
 	x->atom_class = -1;
 	x->position = -1;
@@ -1195,8 +1195,8 @@ coho_smiles_bond_init(struct coho_smiles_bond *x)
 	x->a1 = -1;
 	x->order = -1;
 	x->stereo = COHO_SMILES_BOND_STEREO_UNSPECIFIED;
-	x->implicit = 0;
-	x->ring = 0;
+	x->is_implicit = 0;
+	x->is_ring = 0;
 	x->position = -1;
 	x->length = 0;
 }
@@ -1227,7 +1227,7 @@ coho_smiles_reinit(struct coho_smiles *x, const char *smi, size_t end)
 
 /*
  * Parses atom symbol inside a bracket atom.
- * If successful, sets a->symbol, a->aromatic, and increments a->length.
+ * If successful, sets a->symbol, a->is_aromatic, and increments a->length.
  * Returns 1 if symbol was read, else 0.
  *
  * symbol ::= element_symbols | aromatic_symbols | '*'
@@ -1240,7 +1240,7 @@ symbol(struct coho_smiles *x, struct coho_smiles_atom *a)
 	if (!match(x, &t, 1, ELEMENT|AROMATIC|WILDCARD))
 		return 0;
 	a->atomic_number = t.intval;
-	a->aromatic = t.type & AROMATIC ? 1 : 0;
+	a->is_aromatic = t.type & AROMATIC ? 1 : 0;
 	a->length += t.n;
 	tokcpy(a->symbol, &t, sizeof(a->symbol));
 	return 1;

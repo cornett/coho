@@ -79,18 +79,18 @@ The ``coho.smi`` module contains a parser for the
             Set to ``None`` for atoms not specified using the organic
             subset nomenclature.
 
-        ``bracket``
+        ``is_bracket``
             True if the atom was specified using bracket(``[]``) notation,
             else False.
 
-        ``organic``
+        ``is_organic``
             True if the atom was specified using the
             organic subset nomenclature, else False.
             Wildcard atoms are not considered part of the organic subset.
             If they occur outside of a bracket, their ``bracket``
             and ``organic`` fields will both be False.
 
-        ``aromatic``
+        ``is_aromatic``
             True if the atom's symbol is lowercase, indicating that it is
             aromatic, else False.
 
@@ -143,14 +143,14 @@ The ``coho.smi`` module contains a parser for the
             ``BOND_STEREO_DOWN``
                 lies "down" from ``a1``
 
-        ``implicit``
+        ``is_implicit``
             True if bond was produced implicitly by the presence of two
             adjacent atoms without an intervening bond symbol, else False.
             Implicit bonds do not have a token position or length.
             An aromatic bond is implied by two adjacent aromatic atoms,
             otherwise implicit bonds are single.
 
-        ``ring``
+        ``is_ring``
             True if the bond was produced using the ring bond nomenclature,
             else False.
             This does not imply anything about the number of rings

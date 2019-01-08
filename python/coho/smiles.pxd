@@ -32,9 +32,9 @@ cdef extern from "smiles.h":
         int                 charge
         int                 hydrogen_count
         int                 implicit_hydrogen_count
-        int                 bracket
-        int                 organic
-        int                 aromatic
+        int                 is_bracket
+        int                 is_organic
+        int                 is_aromatic
         char                chirality[8]
         int                 atom_class
         int                 position
@@ -44,8 +44,8 @@ cdef extern from "smiles.h":
         int                 a0
         int                 a1
         int                 order
-        int                 implicit
-        int                 ring
+        int                 is_implicit
+        int                 is_ring
         int                 stereo
         int                 position
         int                 length

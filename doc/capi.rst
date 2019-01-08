@@ -89,9 +89,9 @@ fields.
                 int                      charge;
                 int                      hydrogen_count;
                 int                      implicit_hydrogen_count;
-                int                      bracket;
-                int                      organic;
-                int                      aromatic;
+                int                      is_bracket;
+                int                      is_organic;
+                int                      is_aromatic;
                 char                     chirality[8];
                 int                      atom_class;
                 int                      position;
@@ -134,7 +134,7 @@ fields.
         Set to -1 for atoms not specified using the organic
         subset nomenclature.
 
-    .. member:: int bracket
+    .. member:: int is_bracket
 
         1 if the atom was specified using bracket(``[]``) notation, else 0.
 
@@ -143,7 +143,7 @@ fields.
         1 if the atom was specified using the
         organic subset nomenclature, else 0.
         Wildcard atoms are not considered part of the organic subset.
-        If they occur outside of a bracket, their ``bracket`` and
+        If they occur outside of a bracket, their ``is_bracket`` and
         ``organic`` fields will both be 0.
 
     .. member:: int aromatic
@@ -179,8 +179,8 @@ fields.
                 int                      a1;
                 int                      order;
                 int                      stereo;
-                int                      implicit;
-                int                      ring;
+                int                      is_implicit;
+                int                      is_ring;
                 int                      position;
                 int                      length;
         };
