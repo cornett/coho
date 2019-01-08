@@ -42,9 +42,9 @@ The ``coho.smi`` module contains a parser for the
         If :meth:`parse()` fails, ``err``
         will be an error message, otherwise it will be ``None``.
 
-    .. attribute:: errpos
+    .. attribute:: error_position
 
-        If :meth:`parse()` fails, ``errpos`` will contain the offset
+        If :meth:`parse()` fails, ``error_position`` will contain the offset
         into the SMILES string where the
         error was detected, otherwise it will be ``None``.
 
@@ -102,7 +102,7 @@ The ``coho.smi`` module contains a parser for the
         ``aclass``
             Integer atom class if specified, else ``None``.
 
-        ``pos``
+        ``position``
             Offset of the atom's token in the SMILES string.
 
         ``len``
@@ -156,7 +156,7 @@ The ``coho.smi`` module contains a parser for the
             This does not imply anything about the number of rings
             in the molecule described by the SMILES string.
 
-        ``pos``
+        ``position``
             Offset of the bond's token in the SMILES string, or ``None``
             if the bond is implicit.
 

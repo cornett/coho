@@ -37,7 +37,7 @@ cdef extern from "smiles.h":
         int                 aromatic
         char                chirality[8]
         int                 aclass
-        int                 pos
+        int                 position
         int                 len
 
     struct coho_smiles_bond:
@@ -47,7 +47,7 @@ cdef extern from "smiles.h":
         int                 implicit
         int                 ring
         int                 stereo
-        int                 pos
+        int                 position
         int                 len
 
     struct coho_smiles:
@@ -56,7 +56,7 @@ cdef extern from "smiles.h":
         coho_smiles_bond   *bonds
         size_t              bonds_sz
         char               *err
-        int                 errpos
+        int                 error_position
 
     void coho_smiles_free(coho_smiles *)
     int coho_smiles_init(coho_smiles *)

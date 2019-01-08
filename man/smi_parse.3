@@ -54,7 +54,7 @@ the results of a call to
 .Bd -literal
 struct smi {
 	char			*err;
-	int			 errpos;
+	int			 error_position;
 	struct smi_atom		*atoms;
 	size_t			 atoms_sz;
 	struct smi_bond		*bonds;
@@ -69,11 +69,11 @@ fails,
 .Fa err
 will point to an error message, otherwise it will be
 .Dv NULL .
-.It Fa errpos
+.It Fa error_position
 If
 .Fn smi_parse
 fails,
-.Fa errpos
+.Fa error_position
 will contain the offset into the SMILES string where the
 error was detected, otherwise it will be -1.
 .It Fa atoms
@@ -97,7 +97,7 @@ If
 fails, the only valid access is to the
 .Fa err
 and
-.Fa errpos
+.Fa error_position
 fields.
 .Ss ATOMS
 Each atom parsed from the input is represented
@@ -117,7 +117,7 @@ struct smi_atom {
 	int			 aromatic;
 	char			 chirality[8];
 	int			 aclass;
-	int			 pos;
+	int			 position;
 	int			 len;
 };
 .Ed
@@ -161,7 +161,7 @@ Currently, parsing is limited to @ and @@.
 Use of other chirality designators will result in a parsing error.
 .It Fa aclass
 Positive integer atom class if specified, else -1.
-.It Fa pos
+.It Fa position
 Offset of the atom's token in the SMILES string.
 .It Fa len
 Length of the atom's token.
@@ -178,7 +178,7 @@ struct smi_bond {
 	int			 stereo;
 	int			 implicit;
 	int			 ring;
-	int			 pos;
+	int			 position;
 	int			 len;
 };
 .Ed
@@ -227,7 +227,7 @@ otherwise implicit bonds are single.
 1 if the bond was produced using the ring bond nomenclature, else 0.
 This does not imply anything about the number of rings in the molecule
 described by the SMILES string.
-.It Fa pos
+.It Fa position
 Offset of the bond's token in the SMILES string, or -1 if the bond is
 implicit.
 .It Fa len

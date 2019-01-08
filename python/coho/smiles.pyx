@@ -39,18 +39,18 @@ cdef class Parser:
 
     err = property(err, doc=err.__doc__)
 
-    def errpos(self):
+    def error_position(self):
         """Error position if last parse failed"""
         if self._x.err != NULL:
-            return self._x.errpos
+            return self._x.error_position
 
-    errpos = property(errpos, doc=errpos.__doc__)
+    error_position = property(error_position, doc=error_position.__doc__)
 
     def parse(self, str smi):
         """Parse SMILES string."""
         cdef bytes s = smi.encode()
         if coho_smiles_parse(&self._x, s, len(s)) == -1:
-            lead = "-" * self.errpos
+            lead = "-" * self.error_position
             msg = f"{self.err}\n{smi}\n{lead}^\n"
             x = ValueError(msg)
             raise x
@@ -76,7 +76,7 @@ cdef class Parser:
                 "organic": bool(a.organic),
                 "aromatic": bool(a.aromatic),
                 "aclass": noneif(a.aclass, -1),
-                "pos": a.pos,
+                "position": a.position,
                 "len": a.len,
             })
         return x
@@ -97,7 +97,7 @@ cdef class Parser:
                 "stereo": b.stereo,
                 "implicit": bool(b.implicit),
                 "ring": bool(b.ring),
-                "pos": b.pos if b.pos >= 0 else None,
+                "position": b.position if b.position >= 0 else None,
                 "len": b.len,
             })
         return x

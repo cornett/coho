@@ -50,7 +50,7 @@
 
 struct token {
 	int		 type;
-	int		 pos;
+	int		 position;
 	const char	*s;
 	size_t		 n;
 	int		 intval;
@@ -124,10 +124,10 @@ coho_smiles_init(struct coho_smiles *x)
 	size_t i;
 
 	x->smi = NULL;
-	x->pos = 0;
+	x->position = 0;
 	x->end = 0;
 	x->err = NULL;
-	x->errpos = -1;
+	x->error_position = -1;
 
 	VEC_INIT(x->atoms);
 	VEC_INIT(x->bonds);
@@ -167,7 +167,7 @@ coho_smiles_parse(struct coho_smiles *x, const char *smi, size_t sz)
 	state = INIT;
 
 	for (;;) {
-		eos = x->pos == x->end;
+		eos = x->position == x->end;
 
 		switch (state) {
 
@@ -305,7 +305,7 @@ coho_smiles_parse(struct coho_smiles *x, const char *smi, size_t sz)
 
 			if (eos) {
 				x->err = strdup("unbalanced parenthesis");
-				x->errpos = x->pos - 1;
+				x->error_position = x->position - 1;
 				goto err;
 			}
 
@@ -378,14 +378,14 @@ coho_smiles_parse(struct coho_smiles *x, const char *smi, size_t sz)
 	}
 
 done:
-	assert(x->pos == x->end);
+	assert(x->position == x->end);
 
 	if (check_ring_closures(x))
 		goto err;
 
 	if (x->paren_stack_sz > 0) {
 		x->err = strdup("unbalanced parenthesis");
-		x->errpos = x->paren_stack[0].pos;
+		x->error_position = x->paren_stack[0].position;
 		goto err;
 	}
 
@@ -397,8 +397,8 @@ done:
 unexpected:
 	x->err = strdup("unexpected character");
 err:
-	if (x->errpos == -1)
-		x->errpos = x->pos;
+	if (x->error_position == -1)
+		x->error_position = x->position;
 	return -1;
 }
 
@@ -488,7 +488,7 @@ add_bond(struct coho_smiles *x, struct coho_smiles_bond *bond)
 			continue;
 		else {
 			x->err = strdup("duplicate bond");
-			x->errpos = nb.pos;
+			x->error_position = nb.position;
 			return -1;
 		}
 	}
@@ -532,7 +532,7 @@ add_ringbond(struct coho_smiles *x, int rnum, struct coho_smiles_bond *b)
 		rb->stereo	= b->stereo;
 		rb->implicit	= 0;
 		rb->ring	= 1;
-		rb->pos		= b->pos;
+		rb->position	= b->position;
 		rb->len		= b->len;
 		x->open_ring_closures++;
 		return 0;
@@ -542,7 +542,7 @@ add_ringbond(struct coho_smiles *x, int rnum, struct coho_smiles_bond *b)
 
 	if (rb->a0 == b->a0) {
 		x->err = strdup("Atom ring-bonded to itself");
-		x->errpos = x->atoms[b->a0].pos;
+		x->error_position = x->atoms[b->a0].position;
 		return -1;
 	}
 
@@ -552,7 +552,7 @@ add_ringbond(struct coho_smiles *x, int rnum, struct coho_smiles_bond *b)
 		; /* pass */
 	else if (rb->order != b->order) {
 		x->err = strdup("conflicting ring bond orders");
-		x->errpos = x->atoms[b->a0].pos;
+		x->error_position = x->atoms[b->a0].position;
 		return -1;
 	}
 	if (rb->order == COHO_SMILES_BOND_UNSPECIFIED)
@@ -582,7 +582,7 @@ aliphatic_organic(struct coho_smiles *x, struct coho_smiles_atom *a)
 	if (!match(x, &t, 0, ALIPHATIC_ORGANIC))
 		return 0;
 	coho_smiles_atom_init(a);
-	a->pos = t.pos;
+	a->position = t.position;
 	a->atomic_number = t.intval;
 	a->organic = 1;
 	a->len = t.n;
@@ -602,7 +602,7 @@ aromatic_organic(struct coho_smiles *x, struct coho_smiles_atom *a)
 	if (!match(x, &t, 0, AROMATIC_ORGANIC))
 		return 0;
 	coho_smiles_atom_init(a);
-	a->pos = t.pos;
+	a->position = t.position;
 	a->atomic_number = t.intval;
 	a->organic = 1;
 	a->aromatic = 1;
@@ -736,7 +736,7 @@ atom_valence(struct coho_smiles *x, size_t idx)
  * Matches a bond or returns 0 if not found.
  * If found, sets fields of *b and returns 1.
  * Only sets fields that can be determined by the matching bond
- * token (order, stereo, pos, and len).
+ * token (order, stereo, position, and len).
  * Clears implicit flag.
  * Doesn't set bond atoms.
  *
@@ -753,7 +753,7 @@ bond(struct coho_smiles *x, struct coho_smiles_bond *b)
 	b->order = t.intval;
 	b->stereo = t.flags;
 	b->implicit = 0;
-	b->pos = t.pos;
+	b->position = t.position;
 	b->len = t.n;
 	return 1;
 }
@@ -775,7 +775,7 @@ bracket_atom(struct coho_smiles *x, struct coho_smiles_atom *a)
 
 	coho_smiles_atom_init(a);
 	a->bracket = 1;
-	a->pos = t.pos;
+	a->position = t.position;
 	a->len = t.n;
 
 	if (isotope(x, a) == -1)
@@ -822,7 +822,7 @@ check_ring_closures(struct coho_smiles *x)
 
 	for (i = 0; i < 100; i++) {
 		if (x->rbonds[i].a0 != -1) {
-			x->errpos = x->rbonds[i].pos;
+			x->error_position = x->rbonds[i].position;
 			break;
 		}
 	}
@@ -867,7 +867,7 @@ charge(struct coho_smiles *x, struct coho_smiles_atom *a)
 
 		if (lex(x, &t, 1) & (PLUS|MINUS)) {
 			if (t.intval == sign) {
-				x->pos += t.n;
+				x->position += t.n;
 				a->charge *= 2;
 				len += t.n;
 			}
@@ -910,7 +910,7 @@ close_paren(struct coho_smiles *x, struct coho_smiles_bond *b)
 	if (!match(x, &t, 0, PAREN_CLOSE))
 		return 0;
 
-	if (pop_paren_stack(x, t.pos, b))
+	if (pop_paren_stack(x, t.position, b))
 		return -1;
 	return 1;
 }
@@ -965,15 +965,15 @@ integer(struct coho_smiles *x, size_t maxdigit, int *dst)
 {
 	size_t i;
 	int n = 0;
-	int saved = x->pos;
+	int saved = x->position;
 	struct token t;
 
 	for (i = 0; lex(x, &t, 0) & DIGIT; i++) {
 		if (maxdigit && i == maxdigit) {
-			x->pos = saved;
+			x->position = saved;
 			return -1;
 		}
-		x->pos += t.n;
+		x->position += t.n;
 		n = n * 10 + t.intval;
 	}
 	if (i == 0)
@@ -1010,7 +1010,7 @@ static int
 match(struct coho_smiles *x, struct token *t, int inbracket, unsigned int ttype)
 {
 	if (lex(x, t, inbracket) & ttype) {
-		x->pos += t->n;
+		x->position += t->n;
 		return 1;
 	}
 	return 0;
@@ -1029,7 +1029,7 @@ open_paren(struct coho_smiles *x, struct coho_smiles_bond *b)
 	if (!match(x, &t, 0, PAREN_OPEN))
 		return 0;
 
-	push_paren_stack(x, t.pos, b);
+	push_paren_stack(x, t.position, b);
 	return 1;
 }
 
@@ -1045,11 +1045,11 @@ open_paren(struct coho_smiles *x, struct coho_smiles_bond *b)
  * On failure, sets x->err and returns -1.
  */
 static int
-pop_paren_stack(struct coho_smiles *x, int pos, struct coho_smiles_bond *b)
+pop_paren_stack(struct coho_smiles *x, int position, struct coho_smiles_bond *b)
 {
 	if (!x->paren_stack_sz) {
 		x->err = strdup("unbalanced parenthesis");
-		x->errpos = pos;
+		x->error_position = position;
 		return -1;
 	}
 
@@ -1068,7 +1068,7 @@ pop_paren_stack(struct coho_smiles *x, int pos, struct coho_smiles_bond *b)
  * to support error messages.
  */
 static void
-push_paren_stack(struct coho_smiles *x, int pos, struct coho_smiles_bond *b)
+push_paren_stack(struct coho_smiles *x, int position, struct coho_smiles_bond *b)
 {
 	struct coho_smiles_paren *p;
 
@@ -1076,7 +1076,7 @@ push_paren_stack(struct coho_smiles *x, int pos, struct coho_smiles_bond *b)
 
 	XVEC_ENSURE_APPEND(x->paren_stack, 1);
 	p = &x->paren_stack[x->paren_stack_sz++];
-	p->pos = pos;
+	p->position = position;
 	p->bond = *b;
 }
 
@@ -1097,7 +1097,7 @@ ringbond(struct coho_smiles *x, int anum)
 	struct token t;
 	struct coho_smiles_bond b;
 	int rnum;
-	int saved = x->pos;
+	int saved = x->position;
 
 	coho_smiles_bond_init(&b);
 	b.a0 = anum;
@@ -1107,11 +1107,11 @@ ringbond(struct coho_smiles *x, int anum)
 			return -1;
 	} else {
 		b.order = COHO_SMILES_BOND_UNSPECIFIED;
-		b.pos = x->pos;
+		b.position = x->position;
 	}
 
 	if (!match(x, &t, 0, PERCENT|DIGIT)) {
-		x->pos = saved;
+		x->position = saved;
 		return 0;
 	}
 
@@ -1181,7 +1181,7 @@ coho_smiles_atom_init(struct coho_smiles_atom *x)
 	x->aromatic = 0;
 	x->chirality[0] = '\0';
 	x->aclass = -1;
-	x->pos = -1;
+	x->position = -1;
 	x->len = 0;
 }
 
@@ -1197,7 +1197,7 @@ coho_smiles_bond_init(struct coho_smiles_bond *x)
 	x->stereo = COHO_SMILES_BOND_STEREO_UNSPECIFIED;
 	x->implicit = 0;
 	x->ring = 0;
-	x->pos = -1;
+	x->position = -1;
 	x->len = 0;
 }
 
@@ -1211,11 +1211,11 @@ coho_smiles_reinit(struct coho_smiles *x, const char *smi, size_t end)
 	size_t i;
 
 	x->smi = smi;
-	x->pos = 0;
+	x->position = 0;
 	x->end = end;
 	free(x->err);
 	x->err = NULL;
-	x->errpos = -1;
+	x->error_position = -1;
 	x->atoms_sz = 0;
 	x->bonds_sz = 0;
 	x->paren_stack_sz = 0;
@@ -1280,7 +1280,7 @@ wildcard(struct coho_smiles *x, struct coho_smiles_atom *a)
 	if (!match(x, &t, 0, WILDCARD))
 		return 0;
 	coho_smiles_atom_init(a);
-	a->pos = t.pos;
+	a->position = t.position;
 	a->atomic_number = 0;
 	a->len = t.n;
 	tokcpy(a->symbol, &t, sizeof(a->symbol));
@@ -1302,18 +1302,18 @@ lex(struct coho_smiles *x, struct token *t, int inbracket)
 	int c0, c1;
 	const char *s;
 
-	if (x->pos == x->end)
+	if (x->position == x->end)
 		return 0;
 
-	s = x->smi + x->pos;
+	s = x->smi + x->position;
 	c0 = s[0];
 	c1 = 0;
 
-	if (x->pos < x->end)
+	if (x->position < x->end)
 		c1 = s[1];
 
 	t->s = s;
-	t->pos = x->pos;
+	t->position = x->position;
 	t->n = 1;
 	t->type = 0;
 	t->intval = -1;

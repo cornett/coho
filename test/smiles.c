@@ -36,7 +36,7 @@ main(void)
 	assert(x.bonds_sz == 1);
 
 	assert(coho_smiles_parse(&x, "[,*](C)^", 0) == -1);
-	assert(x.errpos == 1);
+	assert(x.error_position == 1);
 
 	coho_smiles_free(&x);
 	return 0;

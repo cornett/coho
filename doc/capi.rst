@@ -31,7 +31,7 @@ not imply description of a chemically-meaningful structure.
 
         struct smi {
                 char                        *err;
-                int                          errpos;
+                int                          error_position;
                 struct smi_atom             *atoms;
                 size_t                       atoms_sz;
                 struct smi_bond             *bonds;
@@ -47,9 +47,9 @@ not imply description of a chemically-meaningful structure.
         If :func:`smi_parse()` fails, ``err``
         will point to an error message, otherwise it will be ``NULL``.
 
-    .. member:: int errpos
+    .. member:: int error_position
 
-        If :func:`smi_parse()` fails, ``errpos`` will contain the offset
+        If :func:`smi_parse()` fails, ``error_position`` will contain the offset
         into the SMILES string where the
         error was detected, otherwise it will be -1.
 
@@ -74,7 +74,7 @@ not imply description of a chemically-meaningful structure.
         Length of :member:`bonds <smi.bonds>`.
 
 If :func:`smi_parse()` fails, the only valid access is to the
-:member:`err <smi.err>` and :member:`errpos <smi.errpos>`
+:member:`err <smi.err>` and :member:`error_position <smi.error_position>`
 fields.
 
 
@@ -94,7 +94,7 @@ fields.
                 int                      aromatic;
                 char                     chirality[8];
                 int                      aclass;
-                int                      pos;
+                int                      position;
                 int                      len;
         };
 
@@ -161,7 +161,7 @@ fields.
 
         Positive integer atom class if specified, else -1.
 
-    .. member:: int pos
+    .. member:: int position
 
         Offset of the atom's token in the SMILES string.
 
@@ -181,7 +181,7 @@ fields.
                 int                      stereo;
                 int                      implicit;
                 int                      ring;
-                int                      pos;
+                int                      position;
                 int                      len;
         };
 
@@ -237,7 +237,7 @@ fields.
         This does not imply anything about the number of rings
         in the molecule described by the SMILES string.
 
-    .. member:: int pos
+    .. member:: int position
 
         Offset of the bond's token in the SMILES string, or -1 if the
         bond is implicit.

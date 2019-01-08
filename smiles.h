@@ -41,7 +41,7 @@ struct coho_smiles_atom {
 	int				 aromatic;
 	char				 chirality[8];
 	int				 aclass;
-	int				 pos;
+	int				 position;
 	int				 len;
 };
 
@@ -52,21 +52,21 @@ struct coho_smiles_bond {
 	int				 stereo;
 	int				 implicit;
 	int				 ring;
-	int				 pos;
+	int				 position;
 	int				 len;
 };
 
 struct coho_smiles_paren {
-	int				 pos;
+	int				 position;
 	struct coho_smiles_bond		 bond;
 };
 
 struct coho_smiles {
 	const char			*smi;
-	int				 pos;
+	int				 position;
 	int				 end;
 	char				*err;
-	int				 errpos;
+	int				 error_position;
 
 	struct coho_smiles_atom		*atoms;
 	size_t				 atoms_sz;
