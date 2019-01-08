@@ -38,7 +38,7 @@ cdef extern from "smiles.h":
         char                chirality[8]
         int                 atom_class
         int                 position
-        int                 len
+        int                 length
 
     struct coho_smiles_bond:
         int                 a0
@@ -48,7 +48,7 @@ cdef extern from "smiles.h":
         int                 ring
         int                 stereo
         int                 position
-        int                 len
+        int                 length
 
     struct coho_smiles:
         coho_smiles_atom   *atoms

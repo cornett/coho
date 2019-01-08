@@ -42,7 +42,7 @@ struct coho_smiles_atom {
 	char				 chirality[8];
 	int				 atom_class;
 	int				 position;
-	int				 len;
+	int				 length;
 };
 
 struct coho_smiles_bond {
@@ -53,7 +53,7 @@ struct coho_smiles_bond {
 	int				 implicit;
 	int				 ring;
 	int				 position;
-	int				 len;
+	int				 length;
 };
 
 struct coho_smiles_paren {

@@ -404,7 +404,7 @@ err:
 
 /*
  * Parses optional atom class inside a bracket atom (ex: [C:23]).
- * If successful, sets a->atom_class and increments a->len.
+ * If successful, sets a->atom_class and increments a->length.
  * Returns 1 if atom class was read, else 0.
  * On error, sets x->err and returns -1.
  *
@@ -419,7 +419,7 @@ atom_class(struct coho_smiles *x, struct coho_smiles_atom *a)
 	if (!match(x, &t, 1, COLON))
 		return 0;
 
-	a->len += t.n;
+	a->length += t.n;
 
 	if ((n = integer(x, 8, &a->atom_class)) == -1) {
 		x->err = strdup("atom class too large");
@@ -429,7 +429,7 @@ atom_class(struct coho_smiles *x, struct coho_smiles_atom *a)
 		return -1;
 	}
 
-	a->len += n;
+	a->length += n;
 	return 1;
 }
 
@@ -533,7 +533,7 @@ add_ringbond(struct coho_smiles *x, int rnum, struct coho_smiles_bond *b)
 		rb->implicit	= 0;
 		rb->ring	= 1;
 		rb->position	= b->position;
-		rb->len		= b->len;
+		rb->length	= b->length;
 		x->open_ring_closures++;
 		return 0;
 	}
@@ -585,7 +585,7 @@ aliphatic_organic(struct coho_smiles *x, struct coho_smiles_atom *a)
 	a->position = t.position;
 	a->atomic_number = t.intval;
 	a->organic = 1;
-	a->len = t.n;
+	a->length = t.n;
 	tokcpy(a->symbol, &t, sizeof(a->symbol));
 	return 1;
 }
@@ -606,7 +606,7 @@ aromatic_organic(struct coho_smiles *x, struct coho_smiles_atom *a)
 	a->atomic_number = t.intval;
 	a->organic = 1;
 	a->aromatic = 1;
-	a->len = t.n;
+	a->length = t.n;
 	tokcpy(a->symbol, &t, sizeof(a->symbol));
 	return 1;
 }
@@ -736,7 +736,7 @@ atom_valence(struct coho_smiles *x, size_t idx)
  * Matches a bond or returns 0 if not found.
  * If found, sets fields of *b and returns 1.
  * Only sets fields that can be determined by the matching bond
- * token (order, stereo, position, and len).
+ * token (order, stereo, position, and length).
  * Clears implicit flag.
  * Doesn't set bond atoms.
  *
@@ -754,7 +754,7 @@ bond(struct coho_smiles *x, struct coho_smiles_bond *b)
 	b->stereo = t.flags;
 	b->implicit = 0;
 	b->position = t.position;
-	b->len = t.n;
+	b->length = t.n;
 	return 1;
 }
 
@@ -776,7 +776,7 @@ bracket_atom(struct coho_smiles *x, struct coho_smiles_atom *a)
 	coho_smiles_atom_init(a);
 	a->bracket = 1;
 	a->position = t.position;
-	a->len = t.n;
+	a->length = t.n;
 
 	if (isotope(x, a) == -1)
 		return -1;
@@ -802,7 +802,7 @@ bracket_atom(struct coho_smiles *x, struct coho_smiles_atom *a)
 		x->err = strdup("bracket atom syntax error");
 		return -1;
 	}
-	a->len += t.n;
+	a->length += t.n;
 	return 1;
 }
 
@@ -832,7 +832,7 @@ check_ring_closures(struct coho_smiles *x)
 
 /*
  * Parses optional charge inside a bracket atom.
- * If successful, sets a->charge and increments a->len.
+ * If successful, sets a->charge and increments a->length.
  * Returns 1 if charge was read, else 0.
  * On error, sets x->err and returns -1.
  *
@@ -849,19 +849,19 @@ charge(struct coho_smiles *x, struct coho_smiles_atom *a)
 	struct token t;
 	int sign;
 	int n;
-	int len;
+	int length;
 
 	if (!match(x, &t, 1, PLUS|MINUS))
 		return 0;
 	sign = t.intval;
-	len = t.n;
+	length = t.n;
 
 	if ((n = integer(x, 2, &a->charge)) == -1) {
 		x->err = strdup("charge too large");
 		return -1;
 	} else if (n) {
 		a->charge *= sign;
-		len += n;
+		length += n;
 	} else {
 		a->charge = sign;
 
@@ -869,18 +869,18 @@ charge(struct coho_smiles *x, struct coho_smiles_atom *a)
 			if (t.intval == sign) {
 				x->position += t.n;
 				a->charge *= 2;
-				len += t.n;
+				length += t.n;
 			}
 		}
 	}
 
-	a->len += len;
+	a->length += length;
 	return 1;
 }
 
 /*
  * Parses chirality inside a bracket atom.
- * If successful, sets a->chirality and increments a->len.
+ * If successful, sets a->chirality and increments a->length.
  * Returns 1 if chirality was read, else 0.
  * TODO: Currently, this only understands @ and @@.
  */
@@ -892,7 +892,7 @@ chirality(struct coho_smiles *x, struct coho_smiles_atom *a)
 	if (!match(x, &t, 1, CHIRALITY))
 		return 0;
 	tokcpy(a->chirality, &t, sizeof(a->chirality));
-	a->len += t.n;
+	a->length += t.n;
 	return 1;
 }
 
@@ -929,7 +929,7 @@ dot(struct coho_smiles *x)
 
 /*
  * Parses hydrogen count inside a bracket atom.
- * If successful, sets a->hydrogen_count and increments a->len.
+ * If successful, sets a->hydrogen_count and increments a->length.
  * Returns 1 if hydrogen_count was read, else 0.
  *
  * hydrogen_count ::= 'H' | 'H' DIGIT
@@ -942,11 +942,11 @@ hydrogen_count(struct coho_smiles *x, struct coho_smiles_atom *a)
 	if (!match(x, &t, 1, HYDROGEN))
 		return 0;
 
-	a->len += t.n;
+	a->length += t.n;
 
 	if (match(x, &t, 1, DIGIT)) {
 		a->hydrogen_count = t.intval;
-		a->len += t.n;
+		a->length += t.n;
 	} else {
 		a->hydrogen_count = 1;
 	}
@@ -984,7 +984,7 @@ integer(struct coho_smiles *x, size_t maxdigit, int *dst)
 
 /*
  * Parses isotope inside a bracket atom.
- * If successful, sets a->isotope and increments a->len.
+ * If successful, sets a->isotope and increments a->length.
  * Returns 1 if isotope was read, else 0.
  * On error, returns -1 and sets x->err.
  */
@@ -997,7 +997,7 @@ isotope(struct coho_smiles *x, struct coho_smiles_atom *a)
 		x->err = strdup("isotope too large");
 		return -1;
 	}
-	a->len += n;
+	a->length += n;
 	return 0;
 }
 
@@ -1182,7 +1182,7 @@ coho_smiles_atom_init(struct coho_smiles_atom *x)
 	x->chirality[0] = '\0';
 	x->atom_class = -1;
 	x->position = -1;
-	x->len = 0;
+	x->length = 0;
 }
 
 /*
@@ -1198,7 +1198,7 @@ coho_smiles_bond_init(struct coho_smiles_bond *x)
 	x->implicit = 0;
 	x->ring = 0;
 	x->position = -1;
-	x->len = 0;
+	x->length = 0;
 }
 
 /*
@@ -1227,7 +1227,7 @@ coho_smiles_reinit(struct coho_smiles *x, const char *smi, size_t end)
 
 /*
  * Parses atom symbol inside a bracket atom.
- * If successful, sets a->symbol, a->aromatic, and increments a->len.
+ * If successful, sets a->symbol, a->aromatic, and increments a->length.
  * Returns 1 if symbol was read, else 0.
  *
  * symbol ::= element_symbols | aromatic_symbols | '*'
@@ -1241,7 +1241,7 @@ symbol(struct coho_smiles *x, struct coho_smiles_atom *a)
 		return 0;
 	a->atomic_number = t.intval;
 	a->aromatic = t.type & AROMATIC ? 1 : 0;
-	a->len += t.n;
+	a->length += t.n;
 	tokcpy(a->symbol, &t, sizeof(a->symbol));
 	return 1;
 }
@@ -1282,7 +1282,7 @@ wildcard(struct coho_smiles *x, struct coho_smiles_atom *a)
 	coho_smiles_atom_init(a);
 	a->position = t.position;
 	a->atomic_number = 0;
-	a->len = t.n;
+	a->length = t.n;
 	tokcpy(a->symbol, &t, sizeof(a->symbol));
 	return 1;
 }

@@ -77,7 +77,7 @@ cdef class Parser:
                 "aromatic": bool(a.aromatic),
                 "atom_class": noneif(a.atom_class, -1),
                 "position": a.position,
-                "len": a.len,
+                "length": a.length,
             })
         return x
 
@@ -98,7 +98,7 @@ cdef class Parser:
                 "implicit": bool(b.implicit),
                 "ring": bool(b.ring),
                 "position": b.position if b.position >= 0 else None,
-                "len": b.len,
+                "length": b.length,
             })
         return x
 

@@ -95,7 +95,7 @@ fields.
                 char                     chirality[8];
                 int                      atom_class;
                 int                      position;
-                int                      len;
+                int                      length;
         };
 
     Each atom parsed from the input is represented
@@ -165,7 +165,7 @@ fields.
 
         Offset of the atom's token in the SMILES string.
 
-    .. member:: int len
+    .. member:: int length
 
         Length of the atom's token.
 
@@ -182,7 +182,7 @@ fields.
                 int                      implicit;
                 int                      ring;
                 int                      position;
-                int                      len;
+                int                      length;
         };
 
     Each bond parsed from the input produces an
@@ -242,7 +242,7 @@ fields.
         Offset of the bond's token in the SMILES string, or -1 if the
         bond is implicit.
 
-    .. member:: int len
+    .. member:: int length
 
         Length of the bond's token, or zero if implicit.
 

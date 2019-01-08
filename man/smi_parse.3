@@ -118,7 +118,7 @@ struct smi_atom {
 	char			 chirality[8];
 	int			 atom_class;
 	int			 position;
-	int			 len;
+	int			 length;
 };
 .Ed
 .Bl -tag -width atomic_number
@@ -163,7 +163,7 @@ Use of other chirality designators will result in a parsing error.
 Positive integer atom class if specified, else -1.
 .It Fa position
 Offset of the atom's token in the SMILES string.
-.It Fa len
+.It Fa length
 Length of the atom's token.
 .El
 .Ss BONDS
@@ -179,7 +179,7 @@ struct smi_bond {
 	int			 implicit;
 	int			 ring;
 	int			 position;
-	int			 len;
+	int			 length;
 };
 .Ed
 .Bl -tag -width implicit
@@ -230,7 +230,7 @@ described by the SMILES string.
 .It Fa position
 Offset of the bond's token in the SMILES string, or -1 if the bond is
 implicit.
-.It Fa len
+.It Fa length
 Length of the bond's token, or zero if implicit.
 .El
 .Sh RETURN VALUES

@@ -105,7 +105,7 @@ The ``coho.smi`` module contains a parser for the
         ``position``
             Offset of the atom's token in the SMILES string.
 
-        ``len``
+        ``length``
             Length of the atom's token.
 
 
@@ -160,7 +160,7 @@ The ``coho.smi`` module contains a parser for the
             Offset of the bond's token in the SMILES string, or ``None``
             if the bond is implicit.
 
-        ``len``
+        ``length``
             Length of the bond's token, or zero if implicit.
 
 Example
