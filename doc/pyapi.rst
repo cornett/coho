@@ -70,10 +70,10 @@ The ``coho.smi`` module contains a parser for the
         ``charge``
             Formal charge, or 0 if none was specified.
 
-        ``hcount``
+        ``hydrogen_count``
             Number of explicit hydrogens, or ``None`` if none were specified.
 
-        ``implicit_hcount``
+        ``implicit_hydrogen_count``
             Number of implicit hydrogens required to bring atom to its
             next standard valence state.
             Set to ``None`` for atoms not specified using the organic

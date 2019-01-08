@@ -87,8 +87,8 @@ fields.
                 char                     symbol[4];
                 int                      isotope;
                 int                      charge;
-                int                      hcount;
-                int                      implicit_hcount;
+                int                      hydrogen_count;
+                int                      implicit_hydrogen_count;
                 int                      bracket;
                 int                      organic;
                 int                      aromatic;
@@ -123,11 +123,11 @@ fields.
 
         Formal charge, or 0 if none was specified.
 
-    .. member:: int hcount
+    .. member:: int hydrogen_count
 
         Number of explicit hydrogens, or -1 if none were specified.
 
-    .. member:: int implicit_hcount
+    .. member:: int implicit_hydrogen_count
 
         Number of implicit hydrogens required to bring atom to its
         next standard valence state.

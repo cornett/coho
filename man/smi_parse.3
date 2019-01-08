@@ -110,8 +110,8 @@ struct smi_atom {
 	char			 symbol[4];
 	int			 isotope;
 	int			 charge;
-	int			 hcount;
-	int			 implicit_hcount;
+	int			 hydrogen_count;
+	int			 implicit_hydrogen_count;
 	int			 bracket;
 	int			 organic;
 	int			 aromatic;
@@ -134,9 +134,9 @@ Note that the OpenSMILES specification states that zero is a
 valid isotope and that [0S] is not the same as [S].
 .It Fa charge
 Formal charge, or 0 if none was specified.
-.It Fa hcount
+.It Fa hydrogen_count
 Number of explicit hydrogens, or -1 if none were specified.
-.It Fa implicit_hcount
+.It Fa implicit_hydrogen_count
 Number of implicit hydrogens required to bring atom to its
 next standard valence state.
 Set to -1 for atoms not specified using the organic

@@ -63,7 +63,7 @@ static int add_bond(struct coho_smiles *, struct coho_smiles_bond *);
 static int add_ringbond(struct coho_smiles *, int, struct coho_smiles_bond *);
 static int aliphatic_organic(struct coho_smiles *, struct coho_smiles_atom *);
 static int aromatic_organic(struct coho_smiles *, struct coho_smiles_atom *);
-static int assign_implicit_hcount(struct coho_smiles *);
+static int assign_implicit_hydrogen_count(struct coho_smiles *);
 static int atom(struct coho_smiles *, int *);
 static int atom_ringbond(struct coho_smiles *, int *);
 static int atom_valence(struct coho_smiles *, size_t);
@@ -74,7 +74,7 @@ static int check_ring_closures(struct coho_smiles *);
 static int chirality(struct coho_smiles *, struct coho_smiles_atom *);
 static int close_paren(struct coho_smiles *, struct coho_smiles_bond *);
 static int dot(struct coho_smiles *);
-static int hcount(struct coho_smiles *, struct coho_smiles_atom *);
+static int hydrogen_count(struct coho_smiles *, struct coho_smiles_atom *);
 static int integer(struct coho_smiles *, size_t, int *);
 static int isotope(struct coho_smiles *, struct coho_smiles_atom *);
 static unsigned int lex(struct coho_smiles *, struct token *, int);
@@ -389,7 +389,7 @@ done:
 		goto err;
 	}
 
-	if (assign_implicit_hcount(x))
+	if (assign_implicit_hydrogen_count(x))
 		goto err;
 
 	return 0;
@@ -616,7 +616,7 @@ aromatic_organic(struct coho_smiles *x, struct coho_smiles_atom *a)
  * specified using the organic-subset shorthand.
  */
 static int
-assign_implicit_hcount(struct coho_smiles *x)
+assign_implicit_hydrogen_count(struct coho_smiles *x)
 {
 	size_t i;
 	int valence, std;
@@ -632,9 +632,9 @@ assign_implicit_hcount(struct coho_smiles *x)
 		std = round_valence(a->atomic_number, valence, a->aromatic);
 
 		if (std == -1)
-			a->implicit_hcount = 0;
+			a->implicit_hydrogen_count = 0;
 		else
-			a->implicit_hcount = std - valence;
+			a->implicit_hydrogen_count = std - valence;
 	}
 
 	return 0;
@@ -763,7 +763,7 @@ bond(struct coho_smiles *x, struct coho_smiles_bond *b)
  * If found, initializes the atom, sets its fields, and returns 1.
  * On error, sets x->err and returns -1.
  *
- * bracket_atom ::= '[' isotope? symbol chiral? hcount? charge? class? ']'
+ * bracket_atom ::= '[' isotope? symbol chiral? hydrogen_count? charge? class? ']'
  */
 static int
 bracket_atom(struct coho_smiles *x, struct coho_smiles_atom *a)
@@ -789,7 +789,7 @@ bracket_atom(struct coho_smiles *x, struct coho_smiles_atom *a)
 	if (chirality(x, a) == -1)
 		return -1;
 
-	if (hcount(x, a) == -1)
+	if (hydrogen_count(x, a) == -1)
 		return -1;
 
 	if (charge(x, a) == -1)
@@ -929,13 +929,13 @@ dot(struct coho_smiles *x)
 
 /*
  * Parses hydrogen count inside a bracket atom.
- * If successful, sets a->hcount and increments a->len.
- * Returns 1 if hcount was read, else 0.
+ * If successful, sets a->hydrogen_count and increments a->len.
+ * Returns 1 if hydrogen_count was read, else 0.
  *
- * hcount ::= 'H' | 'H' DIGIT
+ * hydrogen_count ::= 'H' | 'H' DIGIT
  */
 static int
-hcount(struct coho_smiles *x, struct coho_smiles_atom *a)
+hydrogen_count(struct coho_smiles *x, struct coho_smiles_atom *a)
 {
 	struct token t;
 
@@ -945,10 +945,10 @@ hcount(struct coho_smiles *x, struct coho_smiles_atom *a)
 	a->len += t.n;
 
 	if (match(x, &t, 1, DIGIT)) {
-		a->hcount = t.intval;
+		a->hydrogen_count = t.intval;
 		a->len += t.n;
 	} else {
-		a->hcount = 1;
+		a->hydrogen_count = 1;
 	}
 
 	return 1;
@@ -1174,8 +1174,8 @@ coho_smiles_atom_init(struct coho_smiles_atom *x)
 	x->symbol[0] = '\0';
 	x->isotope = -1;
 	x->charge = 0;
-	x->hcount = -1;
-	x->implicit_hcount = -1;
+	x->hydrogen_count = -1;
+	x->implicit_hydrogen_count = -1;
 	x->bracket = 0;
 	x->organic = 0;
 	x->aromatic = 0;

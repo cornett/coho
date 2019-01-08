@@ -34,8 +34,8 @@ struct coho_smiles_atom {
 	char				 symbol[4];
 	int				 isotope;
 	int				 charge;
-	int				 hcount;
-	int				 implicit_hcount;
+	int				 hydrogen_count;
+	int				 implicit_hydrogen_count;
 	int				 bracket;
 	int				 organic;
 	int				 aromatic;
