@@ -175,8 +175,8 @@ fields.
     ::
 
         struct smi_bond {
-                int                      a0;
-                int                      a1;
+                int                      atom0;
+                int                      atom1;
                 int                      order;
                 int                      stereo;
                 int                      is_implicit;
@@ -189,12 +189,12 @@ fields.
     instance of :type:`struct smi_bond <smi_bond>`.
     Its fields are described below:
 
-    .. member:: int a0
+    .. member:: int atom0
 
         The atom number (offset into :member:`atoms <smi.atoms>`)
         of the first member of the bond pair.
 
-    .. member:: int a1
+    .. member:: int atom1
 
         The atom number (offset into :member:`atoms <smi.atoms>`)
         of the second member of the bond pair.
@@ -218,9 +218,9 @@ fields.
         ``SMI_BOND_STEREO_UNSPECIFIED``
             Bond has no stereochemistry
         ``SMI_BOND_STEREO_UP``
-            lies "up" from :member:`a0 <smi_bond.a0>`
+            lies "up" from :member:`atom0 <smi_bond.atom0>`
         ``SMI_BOND_STEREO_DOWN``
-            lies "down" from :member:`a0 <smi_bond.a0>`
+            lies "down" from :member:`atom0 <smi_bond.atom0>`
 
     .. member:: int implicit
 
@@ -300,8 +300,8 @@ The following example shows how to parse a SMILES string::
 
             for (i = 0; i < smi.bonds_sz; i++) {
                     printf("%zi-%zi %i\n",
-                           smi.bonds[i].a0,
-                           smi.bonds[i].a1,
+                           smi.bonds[i].atom0,
+                           smi.bonds[i].atom1,
                            smi.bonds[i].order);
             }
 

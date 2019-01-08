@@ -162,7 +162,7 @@ coho_smiles_parse(struct coho_smiles *x, const char *smi, size_t sz)
 	}
 	coho_smiles_reinit(x, smi, end);
 
-	b.a0 = -1;		/* no previous atom to bond to */
+	b.atom0 = -1;		/* no previous atom to bond to */
 	anum = -1;
 	state = INIT;
 
@@ -200,15 +200,15 @@ coho_smiles_parse(struct coho_smiles *x, const char *smi, size_t sz)
 			 * If there is an open bond to the previous
 			 * atom, complete it.
 			 */
-			if (b.a0 != -1) {
-				b.a1 = anum;
+			if (b.atom0 != -1) {
+				b.atom1 = anum;
 				/*
 				 * Finalize order of implicit bonds, which
 				 * depends on atom aromaticity.
 				 */
 				if (b.is_implicit) {
-					if (x->atoms[b.a0].is_aromatic &&
-					    x->atoms[b.a1].is_aromatic)
+					if (x->atoms[b.atom0].is_aromatic &&
+					    x->atoms[b.atom1].is_aromatic)
 						b.order = COHO_SMILES_BOND_AROMATIC;
 					else
 						b.order = COHO_SMILES_BOND_SINGLE;
@@ -223,7 +223,7 @@ coho_smiles_parse(struct coho_smiles *x, const char *smi, size_t sz)
 			 * Store this state in an incomplete bond.
 			 */
 			coho_smiles_bond_init(&b);
-			b.a0 = anum;
+			b.atom0 = anum;
 			b.is_implicit = 1;
 
 			if (eos) {
@@ -269,7 +269,7 @@ coho_smiles_parse(struct coho_smiles *x, const char *smi, size_t sz)
 		 */
 		case DOT_READ:
 			/* Invalidate open bond to previous atom. */
-			b.a0 = -1;
+			b.atom0 = -1;
 
 			if (atom_ringbond(x, &anum)) {
 				if (x->err)
@@ -448,7 +448,7 @@ add_atom(struct coho_smiles *x, struct coho_smiles_atom *a)
  * Saves a new bond to the bond list and returns its index.
  * Returns new length of bond list on success.
  * If the bond is already in the list, sets x->err and returns -1.
- * Bonds are added so that bond->a0 < bond->a1 and the entire bond list
+ * Bonds are added so that bond->atom0 < bond->atom1 and the entire bond list
  * remains sorted.
  */
 static int
@@ -459,11 +459,11 @@ add_bond(struct coho_smiles *x, struct coho_smiles_bond *bond)
 
 	nb = *bond;
 
-	/* Flip so a0 < a1
+	/* Flip so atom0 < atom1
 	 */
-	if (bond->a0 > bond->a1) {
-		nb.a0 = bond->a1;
-		nb.a1 = bond->a0;
+	if (bond->atom0 > bond->atom1) {
+		nb.atom0 = bond->atom1;
+		nb.atom1 = bond->atom0;
 
 		if (bond->stereo == COHO_SMILES_BOND_STEREO_UP)
 			nb.stereo = COHO_SMILES_BOND_STEREO_DOWN;
@@ -478,13 +478,13 @@ add_bond(struct coho_smiles *x, struct coho_smiles_bond *bond)
 	for (i = x->bonds_sz; i > 0; i--) {
 		b = &x->bonds[i-1];
 
-		if (nb.a0 > b->a0)
+		if (nb.atom0 > b->atom0)
 			break;
-		else if (nb.a0 < b->a0)
+		else if (nb.atom0 < b->atom0)
 			continue;
-		else if (nb.a1 > b->a1)
+		else if (nb.atom1 > b->atom1)
 			break;
-		else if (nb.a1 < b->a1)
+		else if (nb.atom1 < b->atom1)
 			continue;
 		else {
 			x->err = strdup("duplicate bond");
@@ -526,8 +526,8 @@ add_ringbond(struct coho_smiles *x, int rnum, struct coho_smiles_bond *b)
 
 	rb = &x->rbonds[rnum];
 
-	if (rb->a0 == -1) {
-		rb->a0		= b->a0;
+	if (rb->atom0 == -1) {
+		rb->atom0	= b->atom0;
 		rb->order	= b->order;
 		rb->stereo	= b->stereo;
 		rb->is_implicit	= 0;
@@ -540,9 +540,9 @@ add_ringbond(struct coho_smiles *x, int rnum, struct coho_smiles_bond *b)
 
 	/* Close the open bond */
 
-	if (rb->a0 == b->a0) {
+	if (rb->atom0 == b->atom0) {
 		x->err = strdup("Atom ring-bonded to itself");
-		x->error_position = x->atoms[b->a0].position;
+		x->error_position = x->atoms[b->atom0].position;
 		return -1;
 	}
 
@@ -552,19 +552,19 @@ add_ringbond(struct coho_smiles *x, int rnum, struct coho_smiles_bond *b)
 		; /* pass */
 	else if (rb->order != b->order) {
 		x->err = strdup("conflicting ring bond orders");
-		x->error_position = x->atoms[b->a0].position;
+		x->error_position = x->atoms[b->atom0].position;
 		return -1;
 	}
 	if (rb->order == COHO_SMILES_BOND_UNSPECIFIED)
 		rb->order = COHO_SMILES_BOND_SINGLE;
 
-	rb->a1 = b->a0;
+	rb->atom1 = b->atom0;
 
 	if (add_bond(x, rb) == -1)
 		return -1;
 
 	coho_smiles_bond_init(rb);
-	rb->a0 = -1; ;		/* mark slot open again */
+	rb->atom0 = -1; ;		/* mark slot open again */
 	x->open_ring_closures--;
 
 	return 0;
@@ -706,9 +706,9 @@ atom_valence(struct coho_smiles *x, size_t idx)
 
 	for (i = 0; i < x->bonds_sz; i++) {
 		b = &x->bonds[i];
-		if (b->a0 > (int)idx)
+		if (b->atom0 > (int)idx)
 			break;
-		else if (b->a0 != (int)idx && b->a1 != (int)idx)
+		else if (b->atom0 != (int)idx && b->atom1 != (int)idx)
 			continue;
 
 		if (b->order == COHO_SMILES_BOND_SINGLE)
@@ -821,7 +821,7 @@ check_ring_closures(struct coho_smiles *x)
 	x->err = strdup("unclosed ring bond");
 
 	for (i = 0; i < 100; i++) {
-		if (x->rbonds[i].a0 != -1) {
+		if (x->rbonds[i].atom0 != -1) {
 			x->error_position = x->rbonds[i].position;
 			break;
 		}
@@ -1072,7 +1072,7 @@ push_paren_stack(struct coho_smiles *x, int position, struct coho_smiles_bond *b
 {
 	struct coho_smiles_paren *p;
 
-	assert(b->a0 != -1);
+	assert(b->atom0 != -1);
 
 	XVEC_ENSURE_APPEND(x->paren_stack, 1);
 	p = &x->paren_stack[x->paren_stack_sz++];
@@ -1100,7 +1100,7 @@ ringbond(struct coho_smiles *x, int anum)
 	int saved = x->position;
 
 	coho_smiles_bond_init(&b);
-	b.a0 = anum;
+	b.atom0 = anum;
 
 	if (bond(x, &b)) {
 		if (x->err)
@@ -1191,8 +1191,8 @@ coho_smiles_atom_init(struct coho_smiles_atom *x)
 static void
 coho_smiles_bond_init(struct coho_smiles_bond *x)
 {
-	x->a0 = -1;
-	x->a1 = -1;
+	x->atom0 = -1;
+	x->atom1 = -1;
 	x->order = -1;
 	x->stereo = COHO_SMILES_BOND_STEREO_UNSPECIFIED;
 	x->is_implicit = 0;

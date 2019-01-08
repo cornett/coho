@@ -172,8 +172,8 @@ Each bond parsed from the input produces an instance of
 Its fields are described below.
 .Bd -literal
 struct smi_bond {
-	int			 a0;
-	int			 a1;
+	int			 atom0;
+	int			 atom1;
 	int			 order;
 	int			 stereo;
 	int			 is_implicit;
@@ -183,11 +183,11 @@ struct smi_bond {
 };
 .Ed
 .Bl -tag -width implicit
-.It Fa a0
+.It Fa atom0
 The atom number (offset into
 .Fa atoms )
 of the first member of the bond pair.
-.It Fa a1
+.It Fa atom1
 The atom number (offset in
 .Fa atoms )
 of the second member of the bond pair.
@@ -208,14 +208,14 @@ Takes values from the following enumeration:
 Bond has no stereochemistry
 .It SMI_BOND_STEREO_UP
 Atom
-.Fa a1
+.Fa atom1
 lies "up" from
-.Fa a0
+.Fa atom0
 .It SMI_BOND_STEREO_DOWN
 Atom
-.Fa a1
+.Fa atom1
 lies "down" from
-.Fa a0
+.Fa atom0
 .El
 .It Fa is_implicit
 1 if bond was produced implicitly by the presence of two adjacent atoms
@@ -272,8 +272,8 @@ main(void)
 
 	for (i = 0; i < smi.bonds_sz; i++) {
 		printf("%zi-%zi %i\n",
-		       smi.bonds[i].a0,
-		       smi.bonds[i].a1,
+		       smi.bonds[i].atom0,
+		       smi.bonds[i].atom1,
 		       smi.bonds[i].order);
 	}
 

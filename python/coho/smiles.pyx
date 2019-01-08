@@ -91,8 +91,8 @@ cdef class Parser:
         for i in range(self._x.bonds_sz):
             b = self._x.bonds[i]
             x.append({
-                "a0": b.a0,
-                "a1": b.a1,
+                "atom0": b.atom0,
+                "atom1": b.atom1,
                 "order": b.order,
                 "stereo": b.stereo,
                 "is_implicit": bool(b.is_implicit),

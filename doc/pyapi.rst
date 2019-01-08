@@ -114,11 +114,11 @@ The ``coho.smi`` module contains a parser for the
         Return a list of parsed bonds.
         Each bond is represented as a dictionary with the following keys.
 
-        ``a0``
+        ``atom0``
             The atom number (position in :attr:`atoms` list)
             of the first member of the bond pair.
 
-        ``a1``
+        ``atom1``
             The atom number (position in :attr:`atoms` list)
             of the second member of the bond pair.
 
@@ -139,9 +139,9 @@ The ``coho.smi`` module contains a parser for the
             ``BOND_STEREO_UNSPECIFIED``
                 Bond has no stereochemistry
             ``BOND_STEREO_UP``
-                lies "up" from ``a0``
+                lies "up" from ``atom0``
             ``BOND_STEREO_DOWN``
-                lies "down" from ``a1``
+                lies "down" from ``atom1``
 
         ``is_implicit``
             True if bond was produced implicitly by the presence of two

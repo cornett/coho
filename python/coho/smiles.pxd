@@ -41,8 +41,8 @@ cdef extern from "smiles.h":
         int                 length
 
     struct coho_smiles_bond:
-        int                 a0
-        int                 a1
+        int                 atom0
+        int                 atom1
         int                 order
         int                 is_implicit
         int                 is_ring
