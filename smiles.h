@@ -65,7 +65,7 @@ struct coho_smiles {
 	const char			*smi;
 	int				 position;
 	int				 end;
-	char				*err;
+	char				*error;
 	int				 error_position;
 
 	struct coho_smiles_atom		*atoms;

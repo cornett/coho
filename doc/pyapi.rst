@@ -37,9 +37,9 @@ The ``coho.smi`` module contains a parser for the
 
         If parsing SMILES fails, a :class:`ValueError` is raised.
 
-    .. attribute:: err
+    .. attribute:: error
 
-        If :meth:`parse()` fails, ``err``
+        If :meth:`parse()` fails, ``error``
         will be an error message, otherwise it will be ``None``.
 
     .. attribute:: error_position

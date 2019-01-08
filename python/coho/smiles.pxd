@@ -55,7 +55,7 @@ cdef extern from "smiles.h":
         size_t              atoms_sz
         coho_smiles_bond   *bonds
         size_t              bonds_sz
-        char               *err
+        char               *error
         int                 error_position
 
     void coho_smiles_free(coho_smiles *)

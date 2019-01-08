@@ -112,7 +112,7 @@ static int standard_valences[][4] = {
 void
 coho_smiles_free(struct coho_smiles *x)
 {
-	free(x->err);
+	free(x->error);
 	free(x->atoms);
 	free(x->bonds);
 	free(x->paren_stack);
@@ -126,7 +126,7 @@ coho_smiles_init(struct coho_smiles *x)
 	x->smi = NULL;
 	x->position = 0;
 	x->end = 0;
-	x->err = NULL;
+	x->error = NULL;
 	x->error_position = -1;
 
 	VEC_INIT(x->atoms);
@@ -157,7 +157,7 @@ coho_smiles_parse(struct coho_smiles *x, const char *smi, size_t sz)
 
 	end = sz ? sz : strlen(smi);
 	if (sz > INT_MAX) {
-		x->err = strdup("SMILES too long");
+		x->error = strdup("SMILES too long");
 		return -1;
 	}
 	coho_smiles_reinit(x, smi, end);
@@ -176,17 +176,17 @@ coho_smiles_parse(struct coho_smiles *x, const char *smi, size_t sz)
 		 */
 		case INIT:
 			if (eos) {
-				x->err = strdup("empty SMILES");
+				x->error = strdup("empty SMILES");
 				goto err;
 			}
 
 			else if (atom_ringbond(x, &anum)) {
-				if (x->err)
+				if (x->error)
 					goto err;
 			}
 
 			else {
-				x->err = strdup("atom expected");
+				x->error = strdup("atom expected");
 				goto err;
 			}
 			state = ATOM_READ;
@@ -231,12 +231,12 @@ coho_smiles_parse(struct coho_smiles *x, const char *smi, size_t sz)
 			}
 
 			else if (atom_ringbond(x, &anum)) {
-				if (x->err)
+				if (x->error)
 					goto err;
 			}
 
 			else if (bond(x, &b)) {
-				if (x->err)
+				if (x->error)
 					goto err;
 				state = BOND_READ;
 			}
@@ -250,7 +250,7 @@ coho_smiles_parse(struct coho_smiles *x, const char *smi, size_t sz)
 			}
 
 			else if (close_paren(x, &b)) {
-				if (x->err)
+				if (x->error)
 					goto err;
 				state = CLOSE_PAREN_READ;
 			}
@@ -272,10 +272,10 @@ coho_smiles_parse(struct coho_smiles *x, const char *smi, size_t sz)
 			b.atom0 = -1;
 
 			if (atom_ringbond(x, &anum)) {
-				if (x->err)
+				if (x->error)
 					goto err;
 			} else {
-				x->err = strdup("atom must follow dot");
+				x->error = strdup("atom must follow dot");
 				goto err;
 			}
 			state = ATOM_READ;
@@ -288,10 +288,10 @@ coho_smiles_parse(struct coho_smiles *x, const char *smi, size_t sz)
 		case BOND_READ:
 
 			if (atom_ringbond(x, &anum)) {
-				if (x->err)
+				if (x->error)
 					goto err;
 			} else {
-				x->err = strdup("atom must follow bond");
+				x->error = strdup("atom must follow bond");
 				goto err;
 			}
 			state = ATOM_READ;
@@ -304,19 +304,19 @@ coho_smiles_parse(struct coho_smiles *x, const char *smi, size_t sz)
 		case OPEN_PAREN_READ:
 
 			if (eos) {
-				x->err = strdup("unbalanced parenthesis");
+				x->error = strdup("unbalanced parenthesis");
 				x->error_position = x->position - 1;
 				goto err;
 			}
 
 			else if (atom_ringbond(x, &anum)) {
-				if (x->err)
+				if (x->error)
 					goto err;
 				state = ATOM_READ;
 			}
 
 			else if (bond(x, &b)) {
-				if (x->err)
+				if (x->error)
 					goto err;
 				state = BOND_READ;
 			}
@@ -326,7 +326,7 @@ coho_smiles_parse(struct coho_smiles *x, const char *smi, size_t sz)
 			}
 
 			else {
-				x->err = strdup("atom, bond, or dot "
+				x->error = strdup("atom, bond, or dot "
 						"expected");
 				goto err;
 			}
@@ -343,13 +343,13 @@ coho_smiles_parse(struct coho_smiles *x, const char *smi, size_t sz)
 			}
 
 			else if (atom_ringbond(x, &anum)) {
-				if (x->err)
+				if (x->error)
 					goto err;
 				state = ATOM_READ;
 			}
 
 			else if (bond(x, &b)) {
-				if (x->err)
+				if (x->error)
 					goto err;
 				state = BOND_READ;
 			}
@@ -363,7 +363,7 @@ coho_smiles_parse(struct coho_smiles *x, const char *smi, size_t sz)
 			}
 
 			else if (close_paren(x, &b)) {
-				if (x->err)
+				if (x->error)
 					goto err;
 				state = CLOSE_PAREN_READ;
 			}
@@ -384,7 +384,7 @@ done:
 		goto err;
 
 	if (x->paren_stack_sz > 0) {
-		x->err = strdup("unbalanced parenthesis");
+		x->error = strdup("unbalanced parenthesis");
 		x->error_position = x->paren_stack[0].position;
 		goto err;
 	}
@@ -395,7 +395,7 @@ done:
 	return 0;
 
 unexpected:
-	x->err = strdup("unexpected character");
+	x->error = strdup("unexpected character");
 err:
 	if (x->error_position == -1)
 		x->error_position = x->position;
@@ -406,7 +406,7 @@ err:
  * Parses optional atom class inside a bracket atom (ex: [C:23]).
  * If successful, sets a->atom_class and increments a->length.
  * Returns 1 if atom class was read, else 0.
- * On error, sets x->err and returns -1.
+ * On error, sets x->error and returns -1.
  *
  * class ::= ':' NUMBER
  */
@@ -422,10 +422,10 @@ atom_class(struct coho_smiles *x, struct coho_smiles_atom *a)
 	a->length += t.n;
 
 	if ((n = integer(x, 8, &a->atom_class)) == -1) {
-		x->err = strdup("atom class too large");
+		x->error = strdup("atom class too large");
 		return -1;
 	} else if (n == 0) {
-		x->err = strdup("atom class expected");
+		x->error = strdup("atom class expected");
 		return -1;
 	}
 
@@ -447,7 +447,7 @@ add_atom(struct coho_smiles *x, struct coho_smiles_atom *a)
 /*
  * Saves a new bond to the bond list and returns its index.
  * Returns new length of bond list on success.
- * If the bond is already in the list, sets x->err and returns -1.
+ * If the bond is already in the list, sets x->error and returns -1.
  * Bonds are added so that bond->atom0 < bond->atom1 and the entire bond list
  * remains sorted.
  */
@@ -487,7 +487,7 @@ add_bond(struct coho_smiles *x, struct coho_smiles_bond *bond)
 		else if (nb.atom1 < b->atom1)
 			continue;
 		else {
-			x->err = strdup("duplicate bond");
+			x->error = strdup("duplicate bond");
 			x->error_position = nb.position;
 			return -1;
 		}
@@ -512,7 +512,7 @@ add_bond(struct coho_smiles *x, struct coho_smiles_bond *bond)
  * it is closed and the new bond is added to the bond list.
  * Otherwise, a new bond is opened.
  * Returns 0 on success.
- * On failure, sets x->err and returns -1.
+ * On failure, sets x->error and returns -1.
  */
 static int
 add_ringbond(struct coho_smiles *x, int rnum, struct coho_smiles_bond *b)
@@ -541,7 +541,7 @@ add_ringbond(struct coho_smiles *x, int rnum, struct coho_smiles_bond *b)
 	/* Close the open bond */
 
 	if (rb->atom0 == b->atom0) {
-		x->err = strdup("Atom ring-bonded to itself");
+		x->error = strdup("Atom ring-bonded to itself");
 		x->error_position = x->atoms[b->atom0].position;
 		return -1;
 	}
@@ -551,7 +551,7 @@ add_ringbond(struct coho_smiles *x, int rnum, struct coho_smiles_bond *b)
 	else if (b->order == COHO_SMILES_BOND_UNSPECIFIED)
 		; /* pass */
 	else if (rb->order != b->order) {
-		x->err = strdup("conflicting ring bond orders");
+		x->error = strdup("conflicting ring bond orders");
 		x->error_position = x->atoms[b->atom0].position;
 		return -1;
 	}
@@ -643,7 +643,7 @@ assign_implicit_hydrogen_count(struct coho_smiles *x)
 /*
  * Matches an atom or returns 0 if not found.
  * If successful, stores the index of the new atom in *anum and returns 1.
- * On error, sets x->err and returns -1.
+ * On error, sets x->error and returns -1.
  *
  * atom ::= bracket_atom | aliphatic_organic | aromatic_organic | '*'
  */
@@ -656,7 +656,7 @@ atom(struct coho_smiles *x, int *anum)
 	    aliphatic_organic(x, &a) ||
 	    aromatic_organic(x, &a) ||
 	    wildcard(x, &a)) {
-		if (x->err)
+		if (x->error)
 			return -1;
 	} else
 		return 0;
@@ -669,20 +669,20 @@ atom(struct coho_smiles *x, int *anum)
  * Matches an atom followed by zero or more ringbonds.
  * On success, stores the index of the new atom in *anum and returns 1.
  * Returns 0 if there is no match.
- * On error, sets x->err and returns -1.
+ * On error, sets x->error and returns -1.
  */
 static int
 atom_ringbond(struct coho_smiles *x, int *anum)
 {
 	if (atom(x, anum)) {
-		if (x->err)
+		if (x->error)
 			return -1;
 	} else {
 		return 0;
 	}
 
 	while (ringbond(x, *anum))
-		if (x->err)
+		if (x->error)
 			return -1;
 
 	return 1;
@@ -761,7 +761,7 @@ bond(struct coho_smiles *x, struct coho_smiles_bond *b)
 /*
  * Matches a bracket atom or returns 0 if not found.
  * If found, initializes the atom, sets its fields, and returns 1.
- * On error, sets x->err and returns -1.
+ * On error, sets x->error and returns -1.
  *
  * bracket_atom ::= '[' isotope? symbol chiral? hydrogen_count? charge? class? ']'
  */
@@ -782,7 +782,7 @@ bracket_atom(struct coho_smiles *x, struct coho_smiles_atom *a)
 		return -1;
 
 	if (symbol(x, a) == 0) {
-		x->err = strdup("atom symbol expected");
+		x->error = strdup("atom symbol expected");
 		return -1;
 	}
 
@@ -799,7 +799,7 @@ bracket_atom(struct coho_smiles *x, struct coho_smiles_atom *a)
 		return -1;
 
 	if (!match(x, &t, 0, BRACKET_CLOSE)) {
-		x->err = strdup("bracket atom syntax error");
+		x->error = strdup("bracket atom syntax error");
 		return -1;
 	}
 	a->length += t.n;
@@ -808,7 +808,7 @@ bracket_atom(struct coho_smiles *x, struct coho_smiles_atom *a)
 
 /*
  * Returns 0 if all rings have been closed.
- * Otherwise, sets x->err and returns -1.
+ * Otherwise, sets x->error and returns -1.
  */
 static int
 check_ring_closures(struct coho_smiles *x)
@@ -818,7 +818,7 @@ check_ring_closures(struct coho_smiles *x)
 	if (x->open_ring_closures == 0)
 		return 0;
 
-	x->err = strdup("unclosed ring bond");
+	x->error = strdup("unclosed ring bond");
 
 	for (i = 0; i < 100; i++) {
 		if (x->rbonds[i].atom0 != -1) {
@@ -834,7 +834,7 @@ check_ring_closures(struct coho_smiles *x)
  * Parses optional charge inside a bracket atom.
  * If successful, sets a->charge and increments a->length.
  * Returns 1 if charge was read, else 0.
- * On error, sets x->err and returns -1.
+ * On error, sets x->error and returns -1.
  *
  * charge ::=   '-'
  *            | '-' DIGIT? DIGIT
@@ -857,7 +857,7 @@ charge(struct coho_smiles *x, struct coho_smiles_atom *a)
 	length = t.n;
 
 	if ((n = integer(x, 2, &a->charge)) == -1) {
-		x->err = strdup("charge too large");
+		x->error = strdup("charge too large");
 		return -1;
 	} else if (n) {
 		a->charge *= sign;
@@ -900,7 +900,7 @@ chirality(struct coho_smiles *x, struct coho_smiles_atom *a)
  * Matches a closing parenthesis that ends a branch.
  * On success, pops the parenthesis stack and returns 1.
  * Returns 0 if there was no match.
- * On error, sets x->err and returns -1.
+ * On error, sets x->error and returns -1.
  */
 static int
 close_paren(struct coho_smiles *x, struct coho_smiles_bond *b)
@@ -986,7 +986,7 @@ integer(struct coho_smiles *x, size_t maxdigit, int *dst)
  * Parses isotope inside a bracket atom.
  * If successful, sets a->isotope and increments a->length.
  * Returns 1 if isotope was read, else 0.
- * On error, returns -1 and sets x->err.
+ * On error, returns -1 and sets x->error.
  */
 static int
 isotope(struct coho_smiles *x, struct coho_smiles_atom *a)
@@ -994,7 +994,7 @@ isotope(struct coho_smiles *x, struct coho_smiles_atom *a)
 	int n;
 
 	if ((n = integer(x, 5, &a->isotope)) == -1) {
-		x->err = strdup("isotope too large");
+		x->error = strdup("isotope too large");
 		return -1;
 	}
 	a->length += n;
@@ -1042,13 +1042,13 @@ open_paren(struct coho_smiles *x, struct coho_smiles_bond *b)
  * The position of the parenthesis triggering the pop is used for
  * error messages.
  * Returns 0 on success.
- * On failure, sets x->err and returns -1.
+ * On failure, sets x->error and returns -1.
  */
 static int
 pop_paren_stack(struct coho_smiles *x, int position, struct coho_smiles_bond *b)
 {
 	if (!x->paren_stack_sz) {
-		x->err = strdup("unbalanced parenthesis");
+		x->error = strdup("unbalanced parenthesis");
 		x->error_position = position;
 		return -1;
 	}
@@ -1082,7 +1082,7 @@ push_paren_stack(struct coho_smiles *x, int position, struct coho_smiles_bond *b
 
 /*
  * Matches a ring bond or returns 0 if not found.
- * On error, sets x->err and returns -1.
+ * On error, sets x->error and returns -1.
  * On success, uses atom anum to open or close a ring
  * bond and then returns 1.
  * If the parsed ring bond ID is in use, closes it and adds a new bond
@@ -1103,7 +1103,7 @@ ringbond(struct coho_smiles *x, int anum)
 	b.atom0 = anum;
 
 	if (bond(x, &b)) {
-		if (x->err)
+		if (x->error)
 			return -1;
 	} else {
 		b.order = COHO_SMILES_BOND_UNSPECIFIED;
@@ -1117,13 +1117,13 @@ ringbond(struct coho_smiles *x, int anum)
 
 	if (t.type == PERCENT) {
 		if (!match(x, &t, 0, DIGIT)) {
-			x->err = strdup("ring bond expected");
+			x->error = strdup("ring bond expected");
 			return -1;
 		}
 		rnum = t.intval * 10;
 
 		if (!match(x, &t, 0, DIGIT)) {
-			x->err = strdup("2 digit ring bond expected");
+			x->error = strdup("2 digit ring bond expected");
 			return -1;
 		}
 		rnum += t.intval;
@@ -1213,8 +1213,8 @@ coho_smiles_reinit(struct coho_smiles *x, const char *smi, size_t end)
 	x->smi = smi;
 	x->position = 0;
 	x->end = end;
-	free(x->err);
-	x->err = NULL;
+	free(x->error);
+	x->error = NULL;
 	x->error_position = -1;
 	x->atoms_sz = 0;
 	x->bonds_sz = 0;
@@ -1270,7 +1270,7 @@ tokcpy(char *dst, struct token *t, size_t dstsz)
 /*
  * Matches a wildcard atom (*) or returns 0 if not found.
  * If found, initializes the atom, sets its fields, and returns 1.
- * On error, sets x->err and returns -1.
+ * On error, sets x->error and returns -1.
  */
 static int
 wildcard(struct coho_smiles *x, struct coho_smiles_atom *a)

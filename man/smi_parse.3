@@ -53,7 +53,7 @@ the results of a call to
 .Fn smi_parse .
 .Bd -literal
 struct smi {
-	char			*err;
+	char			*error;
 	int			 error_position;
 	struct smi_atom		*atoms;
 	size_t			 atoms_sz;
@@ -62,11 +62,11 @@ struct smi {
 }
 .Ed
 .Bl -tag -width atoms_sz
-.It Fa err
+.It Fa error
 If
 .Fn smi_parse
 fails,
-.Fa err
+.Fa error
 will point to an error message, otherwise it will be
 .Dv NULL .
 .It Fa error_position
@@ -95,7 +95,7 @@ Length of
 If
 .Fn smi_parse
 fails, the only valid access is to the
-.Fa err
+.Fa error
 and
 .Fa error_position
 fields.
@@ -256,7 +256,7 @@ main(void)
 	smi_init(&smi);
 
 	if (smi_parse(&smi, "CNCC", 0)) {
-		fprintf(stderr, "failed: %s\n", smi.err);
+		fprintf(stderr, "failed: %s\n", smi.error);
 		smi_free(&smi);
 		return 1;
 	}

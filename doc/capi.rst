@@ -30,7 +30,7 @@ not imply description of a chemically-meaningful structure.
     ::
 
         struct smi {
-                char                        *err;
+                char                        *error;
                 int                          error_position;
                 struct smi_atom             *atoms;
                 size_t                       atoms_sz;
@@ -42,9 +42,9 @@ not imply description of a chemically-meaningful structure.
     be used to examine the results of a
     call to :func:`smi_parse()`:
 
-    .. member:: char \*err
+    .. member:: char \*error
 
-        If :func:`smi_parse()` fails, ``err``
+        If :func:`smi_parse()` fails, ``error``
         will point to an error message, otherwise it will be ``NULL``.
 
     .. member:: int error_position
@@ -74,7 +74,7 @@ not imply description of a chemically-meaningful structure.
         Length of :member:`bonds <smi.bonds>`.
 
 If :func:`smi_parse()` fails, the only valid access is to the
-:member:`err <smi.err>` and :member:`error_position <smi.error_position>`
+:member:`error <smi.error>` and :member:`error_position <smi.error_position>`
 fields.
 
 
@@ -284,7 +284,7 @@ The following example shows how to parse a SMILES string::
             smi_init(&smi);
 
             if (smi_parse(&smi, "CNCC", 0)) {
-                    fprintf(stderr, "failed: %s\n", smi.err);
+                    fprintf(stderr, "failed: %s\n", smi.error);
                     smi_free(&smi);
                     return 1;
             }
