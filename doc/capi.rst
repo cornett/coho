@@ -93,7 +93,7 @@ fields.
                 int                      organic;
                 int                      aromatic;
                 char                     chirality[8];
-                int                      aclass;
+                int                      atom_class;
                 int                      position;
                 int                      len;
         };
@@ -157,7 +157,7 @@ fields.
         Currently, parsing is limited to ``@`` and ``@@``.
         Use of other chirality designators will result in a parsing error.
 
-    .. member:: int aclass
+    .. member:: int atom_class
 
         Positive integer atom class if specified, else -1.
 

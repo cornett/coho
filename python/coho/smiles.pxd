@@ -36,7 +36,7 @@ cdef extern from "smiles.h":
         int                 organic
         int                 aromatic
         char                chirality[8]
-        int                 aclass
+        int                 atom_class
         int                 position
         int                 len
 

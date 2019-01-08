@@ -57,7 +57,7 @@ struct token {
 	int		 flags;
 };
 
-static int aclass(struct coho_smiles *, struct coho_smiles_atom *);
+static int atom_class(struct coho_smiles *, struct coho_smiles_atom *);
 static int add_atom(struct coho_smiles *, struct coho_smiles_atom *);
 static int add_bond(struct coho_smiles *, struct coho_smiles_bond *);
 static int add_ringbond(struct coho_smiles *, int, struct coho_smiles_bond *);
@@ -404,14 +404,14 @@ err:
 
 /*
  * Parses optional atom class inside a bracket atom (ex: [C:23]).
- * If successful, sets a->aclass and increments a->len.
+ * If successful, sets a->atom_class and increments a->len.
  * Returns 1 if atom class was read, else 0.
  * On error, sets x->err and returns -1.
  *
  * class ::= ':' NUMBER
  */
 static int
-aclass(struct coho_smiles *x, struct coho_smiles_atom *a)
+atom_class(struct coho_smiles *x, struct coho_smiles_atom *a)
 {
 	struct token t;
 	int n;
@@ -421,7 +421,7 @@ aclass(struct coho_smiles *x, struct coho_smiles_atom *a)
 
 	a->len += t.n;
 
-	if ((n = integer(x, 8, &a->aclass)) == -1) {
+	if ((n = integer(x, 8, &a->atom_class)) == -1) {
 		x->err = strdup("atom class too large");
 		return -1;
 	} else if (n == 0) {
@@ -795,7 +795,7 @@ bracket_atom(struct coho_smiles *x, struct coho_smiles_atom *a)
 	if (charge(x, a) == -1)
 		return -1;
 
-	if (aclass(x, a) == -1)
+	if (atom_class(x, a) == -1)
 		return -1;
 
 	if (!match(x, &t, 0, BRACKET_CLOSE)) {
@@ -1180,7 +1180,7 @@ coho_smiles_atom_init(struct coho_smiles_atom *x)
 	x->organic = 0;
 	x->aromatic = 0;
 	x->chirality[0] = '\0';
-	x->aclass = -1;
+	x->atom_class = -1;
 	x->position = -1;
 	x->len = 0;
 }

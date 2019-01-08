@@ -56,8 +56,8 @@ chiral1="@@"
 hydrogen0="H"
 hydrogen1="H2"
 
-aclass0=":"
-aclass1=":444"
+atom_class0=":"
+atom_class1=":444"
 
 atom0="[103C@H4+:666]"
 

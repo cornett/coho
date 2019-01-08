@@ -40,7 +40,7 @@ struct coho_smiles_atom {
 	int				 organic;
 	int				 aromatic;
 	char				 chirality[8];
-	int				 aclass;
+	int				 atom_class;
 	int				 position;
 	int				 len;
 };

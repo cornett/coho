@@ -75,7 +75,7 @@ cdef class Parser:
                 "bracket": bool(a.bracket),
                 "organic": bool(a.organic),
                 "aromatic": bool(a.aromatic),
-                "aclass": noneif(a.aclass, -1),
+                "atom_class": noneif(a.atom_class, -1),
                 "position": a.position,
                 "len": a.len,
             })

@@ -99,7 +99,7 @@ The ``coho.smi`` module contains a parser for the
             Currently, parsing is limited to ``@`` and ``@@``.
             Use of other chirality designators will result in a parsing error.
 
-        ``aclass``
+        ``atom_class``
             Integer atom class if specified, else ``None``.
 
         ``position``
