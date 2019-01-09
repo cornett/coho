@@ -12,6 +12,8 @@
 # ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 # OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
+from coho cimport COHO_OK
+
 BOND_SINGLE         = COHO_SMILES_BOND_SINGLE
 BOND_DOUBLE         = COHO_SMILES_BOND_DOUBLE
 BOND_TRIPLE         = COHO_SMILES_BOND_TRIPLE
@@ -49,7 +51,7 @@ cdef class Parser:
     def parse(self, str smi):
         """Parse SMILES string."""
         cdef bytes s = smi.encode()
-        if coho_smiles_parse(&self._x, s, len(s)) == -1:
+        if coho_smiles_parse(&self._x, s, len(s)) != COHO_OK:
             lead = "-" * self.error_position
             msg = f"{self.error}\n{smi}\n{lead}^\n"
             x = ValueError(msg)

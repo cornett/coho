@@ -1,13 +1,14 @@
 #include <assert.h>
 #include <stdio.h>
 
+#include "coho.h"
 #include "smiles.h"
 
 
 static void
 check_cnts(struct coho_smiles *x, const char *smi, size_t acnt, size_t bcnt)
 {
-	assert(coho_smiles_parse(x, smi, 0) == 0);
+	assert(coho_smiles_parse(x, smi, 0) == COHO_OK);
 	assert(x->atoms_sz == acnt);
 	assert(x->bonds_sz == bcnt);
 }
@@ -31,11 +32,11 @@ main(void)
 	assert(x.atoms[0].atomic_number == 0);
 	assert(x.atoms[1].atomic_number == 6);
 
-	assert(coho_smiles_parse(&x, "[*](C)^", 6) == 0);
+	assert(coho_smiles_parse(&x, "[*](C)^", 6) == COHO_OK);
 	assert(x.atoms_sz == 2);
 	assert(x.bonds_sz == 1);
 
-	assert(coho_smiles_parse(&x, "[,*](C)^", 0) == -1);
+	assert(coho_smiles_parse(&x, "[,*](C)^", 0) == COHO_ERROR);
 	assert(x.error_position == 1);
 
 	coho_smiles_free(&x);

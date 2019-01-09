@@ -25,6 +25,7 @@
 #include <limits.h>
 #include <stdlib.h>
 
+#include "coho.h"
 #include "smiles.h"
 #include "compat.h"
 #include "vec.h"
@@ -159,7 +160,7 @@ coho_smiles_parse(struct coho_smiles *x, const char *smiles, size_t sz)
 	end = sz ? sz : strlen(smiles);
 	if (sz > INT_MAX) {
 		x->error = strdup("SMILES too long");
-		return -1;
+		return COHO_NOMEM;
 	}
 	coho_smiles_reinit(x, smiles, end);
 
@@ -393,14 +394,14 @@ done:
 	if (assign_implicit_hydrogen_count(x))
 		goto err;
 
-	return 0;
+	return COHO_OK;
 
 unexpected:
 	x->error = strdup("unexpected character");
 err:
 	if (x->error_position == -1)
 		x->error_position = x->position;
-	return -1;
+	return COHO_ERROR;
 }
 
 /*

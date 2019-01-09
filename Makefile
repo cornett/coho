@@ -19,7 +19,8 @@ SRC_C		= compat.c \
 		  smiles.c \
 		  vec.c
 
-SRC_H		= $(SRC_C:.c=.h)
+SRC_H		= $(SRC_C:.c=.h) \
+		  coho.h
 
 PYTHON_SRC_PYX	= python/coho/__init__.pyx \
 		  python/coho/smiles.pyx
@@ -66,11 +67,13 @@ install:			libcoho.a
 	install -m 0444 man/smiles_parse.3 $(DESTDIR)$(MANPREFIX)/man3
 
 
-$(AFL) $(TEST):			libcoho.a
+$(AFL) $(TEST):			libcoho.a \
+				coho.h
 	$(CC) $(CFLAGS) $(CPPFLAGS) -I. -o $@ $@.c libcoho.a
 
 
-$(OBJ_O):			compat.h
+$(OBJ_O):			coho.h \
+				compat.h
 smiles.o:			smiles.h \
 				vec.h
 vec.o:				vec.h
