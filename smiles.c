@@ -144,6 +144,7 @@ coho_smiles_parse(struct coho_smiles *x, const char *smi, size_t sz)
 	struct coho_smiles_bond b;
 	int anum;			/* index of last atom read */
 	int eos;			/* end-of-string flag */
+	int rc;
 	size_t end;
 
 	enum {
@@ -180,8 +181,8 @@ coho_smiles_parse(struct coho_smiles *x, const char *smi, size_t sz)
 				goto err;
 			}
 
-			else if (atom_ringbond(x, &anum)) {
-				if (x->error)
+			else if ((rc = atom_ringbond(x, &anum))) {
+				if (rc == -1)
 					goto err;
 			}
 
@@ -230,13 +231,13 @@ coho_smiles_parse(struct coho_smiles *x, const char *smi, size_t sz)
 				goto done;
 			}
 
-			else if (atom_ringbond(x, &anum)) {
-				if (x->error)
+			else if ((rc = atom_ringbond(x, &anum))) {
+				if (rc == -1)
 					goto err;
 			}
 
-			else if (bond(x, &b)) {
-				if (x->error)
+			else if ((rc = bond(x, &b))) {
+				if (rc == -1)
 					goto err;
 				state = BOND_READ;
 			}
@@ -249,8 +250,8 @@ coho_smiles_parse(struct coho_smiles *x, const char *smi, size_t sz)
 				state = OPEN_PAREN_READ;
 			}
 
-			else if (close_paren(x, &b)) {
-				if (x->error)
+			else if ((rc = close_paren(x, &b))) {
+				if (rc == -1)
 					goto err;
 				state = CLOSE_PAREN_READ;
 			}
@@ -271,8 +272,8 @@ coho_smiles_parse(struct coho_smiles *x, const char *smi, size_t sz)
 			/* Invalidate open bond to previous atom. */
 			b.atom0 = -1;
 
-			if (atom_ringbond(x, &anum)) {
-				if (x->error)
+			if ((rc = atom_ringbond(x, &anum))) {
+				if (rc == -1)
 					goto err;
 			} else {
 				x->error = strdup("atom must follow dot");
@@ -287,8 +288,8 @@ coho_smiles_parse(struct coho_smiles *x, const char *smi, size_t sz)
 		 */
 		case BOND_READ:
 
-			if (atom_ringbond(x, &anum)) {
-				if (x->error)
+			if ((rc = atom_ringbond(x, &anum))) {
+				if (rc == -1)
 					goto err;
 			} else {
 				x->error = strdup("atom must follow bond");
@@ -309,14 +310,14 @@ coho_smiles_parse(struct coho_smiles *x, const char *smi, size_t sz)
 				goto err;
 			}
 
-			else if (atom_ringbond(x, &anum)) {
-				if (x->error)
+			else if ((rc = atom_ringbond(x, &anum))) {
+				if (rc == -1)
 					goto err;
 				state = ATOM_READ;
 			}
 
-			else if (bond(x, &b)) {
-				if (x->error)
+			else if ((rc = bond(x, &b))) {
+				if (rc == -1)
 					goto err;
 				state = BOND_READ;
 			}
@@ -342,14 +343,14 @@ coho_smiles_parse(struct coho_smiles *x, const char *smi, size_t sz)
 				goto done;
 			}
 
-			else if (atom_ringbond(x, &anum)) {
-				if (x->error)
+			else if ((rc = atom_ringbond(x, &anum))) {
+				if (rc == -1)
 					goto err;
 				state = ATOM_READ;
 			}
 
-			else if (bond(x, &b)) {
-				if (x->error)
+			else if ((rc = bond(x, &b))) {
+				if (rc == -1)
 					goto err;
 				state = BOND_READ;
 			}
@@ -362,8 +363,8 @@ coho_smiles_parse(struct coho_smiles *x, const char *smi, size_t sz)
 				state = OPEN_PAREN_READ;
 			}
 
-			else if (close_paren(x, &b)) {
-				if (x->error)
+			else if ((rc = close_paren(x, &b))) {
+				if (rc == -1)
 					goto err;
 				state = CLOSE_PAREN_READ;
 			}
@@ -651,12 +652,13 @@ static int
 atom(struct coho_smiles *x, int *anum)
 {
 	struct coho_smiles_atom a;
+	int rc;
 
-	if (bracket_atom(x, &a) ||
-	    aliphatic_organic(x, &a) ||
-	    aromatic_organic(x, &a) ||
-	    wildcard(x, &a)) {
-		if (x->error)
+	if ((rc = bracket_atom(x, &a)) ||
+	    (rc = aliphatic_organic(x, &a)) ||
+	    (rc = aromatic_organic(x, &a)) ||
+	    (rc = wildcard(x, &a))) {
+		if (rc == -1)
 			return -1;
 	} else
 		return 0;
@@ -674,15 +676,17 @@ atom(struct coho_smiles *x, int *anum)
 static int
 atom_ringbond(struct coho_smiles *x, int *anum)
 {
-	if (atom(x, anum)) {
-		if (x->error)
+	int rc;
+
+	if ((rc = atom(x, anum))) {
+		if (rc == -1 )
 			return -1;
 	} else {
 		return 0;
 	}
 
-	while (ringbond(x, *anum))
-		if (x->error)
+	while ((rc = ringbond(x, *anum)))
+		if (rc == -1 )
 			return -1;
 
 	return 1;
@@ -1096,14 +1100,15 @@ ringbond(struct coho_smiles *x, int anum)
 {
 	struct token t;
 	struct coho_smiles_bond b;
+	int rc;
 	int rnum;
 	int saved = x->position;
 
 	coho_smiles_bond_init(&b);
 	b.atom0 = anum;
 
-	if (bond(x, &b)) {
-		if (x->error)
+	if ((rc = bond(x, &b))) {
+		if (rc == -1)
 			return -1;
 	} else {
 		b.order = COHO_SMILES_BOND_UNSPECIFIED;
