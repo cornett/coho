@@ -62,7 +62,7 @@ struct coho_smiles_paren {
 };
 
 struct coho_smiles {
-	const char			*smi;
+	const char			*smiles;
 	int				 position;
 	int				 end;
 	char				*error;

@@ -123,7 +123,7 @@ coho_smiles_init(struct coho_smiles *x)
 {
 	size_t i;
 
-	x->smi = NULL;
+	x->smiles = NULL;
 	x->position = 0;
 	x->end = 0;
 	x->error = NULL;
@@ -139,7 +139,7 @@ coho_smiles_init(struct coho_smiles *x)
 }
 
 int
-coho_smiles_parse(struct coho_smiles *x, const char *smi, size_t sz)
+coho_smiles_parse(struct coho_smiles *x, const char *smiles, size_t sz)
 {
 	struct coho_smiles_bond b;
 	int anum;			/* index of last atom read */
@@ -156,12 +156,12 @@ coho_smiles_parse(struct coho_smiles *x, const char *smi, size_t sz)
 		CLOSE_PAREN_READ,
 	} state;
 
-	end = sz ? sz : strlen(smi);
+	end = sz ? sz : strlen(smiles);
 	if (sz > INT_MAX) {
 		x->error = strdup("SMILES too long");
 		return -1;
 	}
-	coho_smiles_reinit(x, smi, end);
+	coho_smiles_reinit(x, smiles, end);
 
 	b.atom0 = -1;		/* no previous atom to bond to */
 	anum = -1;
@@ -1208,14 +1208,14 @@ coho_smiles_bond_init(struct coho_smiles_bond *x)
 
 /*
  * Reinitializes struct coho_smiles prior to parsing a new SMILES.
- * The given number of bytes of smi will be parsed.
+ * The given number of bytes of smiles will be parsed.
  */
 static void
-coho_smiles_reinit(struct coho_smiles *x, const char *smi, size_t end)
+coho_smiles_reinit(struct coho_smiles *x, const char *smiles, size_t end)
 {
 	size_t i;
 
-	x->smi = smi;
+	x->smiles = smiles;
 	x->position = 0;
 	x->end = end;
 	free(x->error);
@@ -1310,7 +1310,7 @@ lex(struct coho_smiles *x, struct token *t, int inbracket)
 	if (x->position == x->end)
 		return 0;
 
-	s = x->smi + x->position;
+	s = x->smiles + x->position;
 	c0 = s[0];
 	c1 = 0;
 
