@@ -7,17 +7,17 @@ C API
 SMILES
 ------
 
-The :func:`smi_parse()` function parses
+The :func:`smiles_parse()` function parses
 `SMILES <https://en.wikipedia.org/wiki/Simplified_molecular-input_line-entry_system>`_
 as specified by the
 `OpenSMILES <http://opensmiles.org/>`_ standard.
 
 Parsing requires a context, which has type
-:type:`struct smi <smi>` and
-is initialized using :func:`smi_init()`.
-Once initialized, a context can be used with :func:`smi_parse()`
+:type:`struct smiles <smiles>` and
+is initialized using :func:`smiles_init()`.
+Once initialized, a context can be used with :func:`smiles_parse()`
 to parse one or more SMILES strings.
-:func:`smi_free()` releases any resources acquired during parsing.
+:func:`smiles_free()` releases any resources acquired during parsing.
 
 Note that the data structures contained in the context
 are intended to represent parsed SMILES strings, not molecules.
@@ -25,64 +25,64 @@ Conformance of a particular string to the SMILES grammar does
 not imply description of a chemically-meaningful structure.
 
 
-.. type:: struct smi
+.. type:: struct smiles
 
     ::
 
-        struct smi {
+        struct smiles {
                 char                        *error;
                 int                          error_position;
-                struct smi_atom             *atoms;
+                struct smiles_atom             *atoms;
                 size_t                       atoms_sz;
-                struct smi_bond             *bonds;
+                struct smiles_bond             *bonds;
                 size_t                       bonds_sz;
         }
 
     The following fields of the context are public and can
     be used to examine the results of a
-    call to :func:`smi_parse()`:
+    call to :func:`smiles_parse()`:
 
     .. member:: char \*error
 
-        If :func:`smi_parse()` fails, ``error``
+        If :func:`smiles_parse()` fails, ``error``
         will point to an error message, otherwise it will be ``NULL``.
 
     .. member:: int error_position
 
-        If :func:`smi_parse()` fails, ``error_position`` will contain the offset
+        If :func:`smiles_parse()` fails, ``error_position`` will contain the offset
         into the SMILES string where the
         error was detected, otherwise it will be -1.
 
-    .. member:: struct smi_atom \*atoms
+    .. member:: struct smiles_atom \*atoms
 
         Each parsed atom is represented by an instance of
-        :type:`struct smi_atom <smi_atom>`
+        :type:`struct smiles_atom <smiles_atom>`
         described below.
 
     .. member:: size_t atoms_sz
 
-        Length of :member:`atoms <smi.atoms>`.
+        Length of :member:`atoms <smiles.atoms>`.
 
-    .. member:: struct smi_bond \*bonds
+    .. member:: struct smiles_bond \*bonds
 
         Each parsed bond is represented by an instance of
-        :type:`struct smi_bond <smi_bond>`
+        :type:`struct smiles_bond <smiles_bond>`
         described below.
 
     .. member:: size_t bonds_sz
 
-        Length of :member:`bonds <smi.bonds>`.
+        Length of :member:`bonds <smiles.bonds>`.
 
-If :func:`smi_parse()` fails, the only valid access is to the
-:member:`error <smi.error>` and :member:`error_position <smi.error_position>`
+If :func:`smiles_parse()` fails, the only valid access is to the
+:member:`error <smiles.error>` and :member:`error_position <smiles.error_position>`
 fields.
 
 
-.. type:: struct smi_atom
+.. type:: struct smiles_atom
 
     ::
 
-        struct smi_atom {
+        struct smiles_atom {
                 int                      atomic_number;
                 char                     symbol[4];
                 int                      isotope;
@@ -99,7 +99,7 @@ fields.
         };
 
     Each atom parsed from the input is represented
-    by an instance of :type:`struct smi_atom <smi_atom>`.
+    by an instance of :type:`struct smiles_atom <smiles_atom>`.
     Its fields are described below:
 
     .. member:: int atomic_number
@@ -170,11 +170,11 @@ fields.
         Length of the atom's token.
 
 
-.. type:: struct smi_bond
+.. type:: struct smiles_bond
 
     ::
 
-        struct smi_bond {
+        struct smiles_bond {
                 int                      atom0;
                 int                      atom1;
                 int                      order;
@@ -186,28 +186,28 @@ fields.
         };
 
     Each bond parsed from the input produces an
-    instance of :type:`struct smi_bond <smi_bond>`.
+    instance of :type:`struct smiles_bond <smiles_bond>`.
     Its fields are described below:
 
     .. member:: int atom0
 
-        The atom number (offset into :member:`atoms <smi.atoms>`)
+        The atom number (offset into :member:`atoms <smiles.atoms>`)
         of the first member of the bond pair.
 
     .. member:: int atom1
 
-        The atom number (offset into :member:`atoms <smi.atoms>`)
+        The atom number (offset into :member:`atoms <smiles.atoms>`)
         of the second member of the bond pair.
 
     .. member:: int order
 
         Bond order, with values from the following enumeration:
 
-        * SMI_BOND_SINGLE
-        * SMI_BOND_DOUBLE
-        * SMI_BOND_TRIPLE
-        * SMI_BOND_QUAD
-        * SMI_BOND_AROMATIC
+        * SMILES_BOND_SINGLE
+        * SMILES_BOND_DOUBLE
+        * SMILES_BOND_TRIPLE
+        * SMILES_BOND_QUAD
+        * SMILES_BOND_AROMATIC
 
     .. member:: int stereo
 
@@ -215,12 +215,12 @@ fields.
         around double bonds.
         Takes values from the following enumeration:
 
-        ``SMI_BOND_STEREO_UNSPECIFIED``
+        ``SMILES_BOND_STEREO_UNSPECIFIED``
             Bond has no stereochemistry
-        ``SMI_BOND_STEREO_UP``
-            lies "up" from :member:`atom0 <smi_bond.atom0>`
-        ``SMI_BOND_STEREO_DOWN``
-            lies "down" from :member:`atom0 <smi_bond.atom0>`
+        ``SMILES_BOND_STEREO_UP``
+            lies "up" from :member:`atom0 <smiles_bond.atom0>`
+        ``SMILES_BOND_STEREO_DOWN``
+            lies "down" from :member:`atom0 <smiles_bond.atom0>`
 
     .. member:: int implicit
 
@@ -247,22 +247,22 @@ fields.
         Length of the bond's token, or zero if implicit.
 
 
-.. function:: void smi_init(struct smi \*)
+.. function:: void smiles_init(struct smiles \*)
 
     Initializes a SMILES parsing context.
 
-.. function:: void smi_free(struct smi \*)
+.. function:: void smiles_free(struct smiles \*)
 
     Releases resources held by the context.
     This only needs to be called once, after all parsing is complete.
 
-.. function:: int smi_parse(struct smi \*smi, const char \*str, size_t sz)
+.. function:: int smiles_parse(struct smiles \*smiles, const char \*str, size_t sz)
 
     Parses a SMILES string.
-    If successful, the fields of :type:`smi <smi>` will contain
+    If successful, the fields of :type:`smiles <smiles>` will contain
     the results.
 
-    :param smi: Parsing context, initialized by :func:`smi_init()`
+    :param smiles: Parsing context, initialized by :func:`smiles_init()`
     :param str: SMILES string
     :param sz: Amount of string to read.  If zero, the entire string is parsed.
     :return: Returns 0 on success, -1 on failure
@@ -273,39 +273,39 @@ Example
 The following example shows how to parse a SMILES string::
 
     #include <stdio.h>
-    #include <coho/smi.h>
+    #include <coho/smiles.h>
 
     int
     main(void)
     {
             size_t i;
-            struct smi smi;
+            struct smiles smiles;
 
-            smi_init(&smi);
+            smiles_init(&smiles);
 
-            if (smi_parse(&smi, "CNCC", 0)) {
-                    fprintf(stderr, "failed: %s\n", smi.error);
-                    smi_free(&smi);
+            if (smiles_parse(&smiles, "CNCC", 0)) {
+                    fprintf(stderr, "failed: %s\n", smiles.error);
+                    smiles_free(&smiles);
                     return 1;
             }
 
-            printf("# atoms: %zi\n", smi.atoms_sz);
-            printf("# bonds: %zi\n", smi.bonds_sz);
+            printf("# atoms: %zi\n", smiles.atoms_sz);
+            printf("# bonds: %zi\n", smiles.bonds_sz);
             printf("\n");
 
-            for (i = 0; i < smi.atoms_sz; i++) {
-                    printf("%zi: %s\n", i, smi.atoms[i].symbol);
+            for (i = 0; i < smiles.atoms_sz; i++) {
+                    printf("%zi: %s\n", i, smiles.atoms[i].symbol);
             }
             printf("\n");
 
-            for (i = 0; i < smi.bonds_sz; i++) {
+            for (i = 0; i < smiles.bonds_sz; i++) {
                     printf("%zi-%zi %i\n",
-                           smi.bonds[i].atom0,
-                           smi.bonds[i].atom1,
-                           smi.bonds[i].order);
+                           smiles.bonds[i].atom0,
+                           smiles.bonds[i].atom1,
+                           smiles.bonds[i].order);
             }
 
-            smi_free(&smi);
+            smiles_free(&smiles);
 
             return 0;
     }

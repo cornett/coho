@@ -1,37 +1,37 @@
 .Dd July 5, 2017
-.Dt SMI_PARSE 3
+.Dt SMILES_PARSE 3
 .Os
 .Sh NAME
-.Nm smi_free ,
-.Nm smi_init ,
-.Nm smi_parse
+.Nm smiles_free ,
+.Nm smiles_init ,
+.Nm smiles_parse
 .Nd parse SMILES
 .Sh LIBRARY
 .Lb libcoho
 .Sh SYNOPSIS
-.In coho/smi.h
+.In coho/smiles.h
 .Ft void
-.Fn smi_free "struct smi *"
+.Fn smiles_free "struct smiles *"
 .Ft void
-.Fn smi_init "struct smi *"
+.Fn smiles_init "struct smiles *"
 .Ft int
-.Fn smi_parse "struct smi *, const char *smiles, size_t sz"
+.Fn smiles_parse "struct smiles *, const char *smiles, size_t sz"
 .Sh DESCRIPTION
 These functions parse SMILES as specified by the
 .Lk http://opensmiles.org/ "OpenSMILES"
 specification.
 .Pp
-.Fn smi_init
+.Fn smiles_init
 initializes a parsing context, which has type
-.Vt struct smi .
+.Vt struct smiles .
 Once initialized,
 a context can be used with
-.Fn smi_parse
+.Fn smiles_parse
 to parse one or more SMILES strings.
 The
 .Fa sz
 parameter to
-.Fn smi_parse
+.Fn smiles_parse
 controls how much of
 .Fa smiles
 is read.
@@ -40,7 +40,7 @@ If
 is zero, the entire string is parsed.
 .Pp
 After all parsing is complete,
-.Fn smi_free
+.Fn smiles_free
 should be called to release acquired resources.
 .Pp
 Note that the data structures contained in the context
@@ -50,42 +50,42 @@ not imply description of a chemically-meaningful structure.
 .Pp
 The following fields of the context can be used to examine
 the results of a call to
-.Fn smi_parse .
+.Fn smiles_parse .
 .Bd -literal
-struct smi {
+struct smiles {
 	char			*error;
 	int			 error_position;
-	struct smi_atom		*atoms;
+	struct smiles_atom	*atoms;
 	size_t			 atoms_sz;
-	struct smi_bond		*bonds;
+	struct smiles_bond	*bonds;
 	size_t			 bonds_sz;
 }
 .Ed
 .Bl -tag -width atoms_sz
 .It Fa error
 If
-.Fn smi_parse
+.Fn smiles_parse
 fails,
 .Fa error
 will point to an error message, otherwise it will be
 .Dv NULL .
 .It Fa error_position
 If
-.Fn smi_parse
+.Fn smiles_parse
 fails,
 .Fa error_position
 will contain the offset into the SMILES string where the
 error was detected, otherwise it will be -1.
 .It Fa atoms
 Each parsed atom is represented by an instance of
-.Vt "struct smi_atom" ,
+.Vt "struct smiles_atom" ,
 described below.
 .It Fa atoms_sz
 Length of
 .Fa atoms .
 .It Fa bonds
 Each parsed bond is represented by an instance of
-.Vt "struct smi_bond" ,
+.Vt "struct smiles_bond" ,
 described below.
 .It Fa bonds_sz
 Length of
@@ -93,7 +93,7 @@ Length of
 .El
 .Pp
 If
-.Fn smi_parse
+.Fn smiles_parse
 fails, the only valid access is to the
 .Fa error
 and
@@ -102,10 +102,10 @@ fields.
 .Ss ATOMS
 Each atom parsed from the input is represented
 by an instance of
-.Vt struct smi_atom .
+.Vt struct smiles_atom .
 Its fields are described below.
 .Bd -literal
-struct smi_atom {
+struct smiles_atom {
 	int			 atomic_number;
 	char			 symbol[4];
 	int			 isotope;
@@ -168,10 +168,10 @@ Length of the atom's token.
 .El
 .Ss BONDS
 Each bond parsed from the input produces an instance of
-.Vt struct smi_bond .
+.Vt struct smiles_bond .
 Its fields are described below.
 .Bd -literal
-struct smi_bond {
+struct smiles_bond {
 	int			 atom0;
 	int			 atom1;
 	int			 order;
@@ -194,24 +194,24 @@ of the second member of the bond pair.
 .It Fa order
 Bond order, with values from the following enumeration:
 .Bl -compact -tag
-.It SMI_BOND_SINGLE
-.It SMI_BOND_DOUBLE
-.It SMI_BOND_TRIPLE
-.It SMI_BOND_QUAD
-.It SMI_BOND_AROMATIC
+.It SMILES_BOND_SINGLE
+.It SMILES_BOND_DOUBLE
+.It SMILES_BOND_TRIPLE
+.It SMILES_BOND_QUAD
+.It SMILES_BOND_AROMATIC
 .El
 .It Fa stereo
 Used to indicate the cis/trans configuration of atoms around double bonds.
 Takes values from the following enumeration:
-.Bl -compact -tag -width SMI_BOND_STEREO_UNSPECIFIED
-.It SMI_BOND_STEREO_UNSPECIFIED
+.Bl -compact -tag -width SMILES_BOND_STEREO_UNSPECIFIED
+.It SMILES_BOND_STEREO_UNSPECIFIED
 Bond has no stereochemistry
-.It SMI_BOND_STEREO_UP
+.It SMILES_BOND_STEREO_UP
 Atom
 .Fa atom1
 lies "up" from
 .Fa atom0
-.It SMI_BOND_STEREO_DOWN
+.It SMILES_BOND_STEREO_DOWN
 Atom
 .Fa atom1
 lies "down" from
@@ -234,30 +234,30 @@ implicit.
 Length of the bond's token, or zero if implicit.
 .El
 .Sh RETURN VALUES
-.Fn smi_init
+.Fn smiles_init
 and
-.Fn smi_free
+.Fn smiles_free
 do not return values.
-.Fn smi_parse
+.Fn smiles_parse
 returns 0 on success, -1 on failure.
 .Sh EXAMPLES
 The following example shows how to parse a SMILES string.
 .Bd -literal -offset indent
 
 #include <stdio.h>
-#include <coho/smi.h>
+#include <coho/smiles.h>
 
 int
 main(void)
 {
 	size_t i;
-	struct smi smi;
+	struct smiles smi;
 
-	smi_init(&smi);
+	smiles_init(&smi);
 
-	if (smi_parse(&smi, "CNCC", 0)) {
+	if (smiles_parse(&smi, "CNCC", 0)) {
 		fprintf(stderr, "failed: %s\n", smi.error);
-		smi_free(&smi);
+		smiles_free(&smi);
 		return 1;
 	}
 
@@ -277,7 +277,7 @@ main(void)
 		       smi.bonds[i].order);
 	}
 
-	smi_free(&smi);
+	smiles_free(&smi);
 
 	return 0;
 }
