@@ -14,12 +14,13 @@ with open("version.txt") as f:
 ext = [
     Extension(
         "coho.__init__",
-        extra_compile_args=['-DVERSION="{}"'.format(version)],
+        define_macros=[("VERSION", '"{}"'.format(version))],
+        include_dirs=["src"],
         sources=["coho/__init__.c"],
     ),
     Extension(
         "coho.smiles",
-        extra_compile_args=["-I", "src"],
+        include_dirs=["src"],
         sources=["coho/smiles.c", "src/smiles.c", "src/vec.c", "src/compat.c"],
     ),
 ]
@@ -27,12 +28,15 @@ ext = [
 setup(
     name="coho",
     version=version,
+    packages=["coho"],
     ext_modules=ext,
     author="Ben Cornett",
     author_email="ben@lantern.is",
     description="SMILES parser",
     license="ISC",
+    package_data={"coho": ["py.typed", "*.pyi"]},
     keywords="smiles opensmiles cheminformatics",
     python_requires=">= 3.3",
     url="https://github.com/cornett/coho",
+    include_package_data=True,
 )

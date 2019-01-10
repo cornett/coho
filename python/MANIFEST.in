@@ -1,3 +1,4 @@
-include coho/*.c
-include src/*.[ch]
+recursive-include . *.[ch]
+recursive-include . *.pyi
+recursive-include . py.typed
 include version.txt
