@@ -2,7 +2,6 @@
 #include <stdio.h>
 
 #include "coho.h"
-#include "smiles.h"
 
 
 static void

@@ -19,8 +19,8 @@ SRC_C		= compat.c \
 		  smiles.c \
 		  vec.c
 
-SRC_H		= $(SRC_C:.c=.h) \
-		  coho.h
+SRC_H		= coho.h \
+		  vec.h
 
 PYTHON_SRC_PYX	= python/coho/__init__.pyx \
 		  python/coho/smiles.pyx
@@ -63,7 +63,7 @@ install:			libcoho.a
 	install -d $(DESTDIR)$(PREFIX)/include/coho
 	install -d $(DESTDIR)$(MANPREFIX)/man3
 	install -m 0444 libcoho.a $(DESTDIR)$(PREFIX)/lib
-	install -m 0444 smiles.h $(DESTDIR)$(PREFIX)/include/coho
+	install -m 0444 coho.h $(DESTDIR)$(PREFIX)/include/coho
 	install -m 0444 man/smiles_parse.3 $(DESTDIR)$(MANPREFIX)/man3
 
 
@@ -72,10 +72,8 @@ $(AFL) $(TEST):			libcoho.a \
 	$(CC) $(CFLAGS) $(CPPFLAGS) -I. -o $@ $@.c libcoho.a
 
 
-$(OBJ_O):			coho.h \
-				compat.h
-smiles.o:			smiles.h \
-				vec.h
+$(OBJ_O):			coho.h
+smiles.o:			vec.h
 vec.o:				vec.h
 
 
@@ -114,7 +112,7 @@ python.wheel:			python.pre.setup.py \
 
 
 python/coho/smiles.c:		python/coho/smiles.pxd
-python/coho/smiles.o:		smiles.h
+python/coho/smiles.o:		coho.h
 
 python/coho/__init__.o:		PYTHON_CFLAGS += -DVERSION='"$(VERSION)"'
 

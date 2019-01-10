@@ -273,7 +273,7 @@ Example
 The following example shows how to parse a SMILES string::
 
     #include <stdio.h>
-    #include <coho/smiles.h>
+    #include <coho/coho.h>
 
     int
     main(void)

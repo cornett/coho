@@ -26,8 +26,6 @@
 #include <stdlib.h>
 
 #include "coho.h"
-#include "smiles.h"
-#include "compat.h"
 #include "vec.h"
 
 #define ALIPHATIC_ORGANIC	0x00001

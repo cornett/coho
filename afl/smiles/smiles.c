@@ -1,6 +1,6 @@
 #include <stdio.h>
 
-#include "smiles.h"
+#include "coho.h"
 
 
 int

@@ -17,8 +17,8 @@
 #include <err.h>
 #include <stdlib.h>
 
+#include "coho.h"
 #include "vec.h"
-#include "compat.h"
 
 
 void *
