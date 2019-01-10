@@ -20,8 +20,7 @@ enum coho_status {
 	COHO_NOMEM,
 };
 
-/*
- * Compatibility functions {{{
+/* Compatibility functions {{{
  */
 
 #undef strlcpy
@@ -32,9 +31,7 @@ void	*reallocarray(void *, size_t, size_t);
 
 /* }}} */
 
-
-/*
- * SMILES parsing {{{
+/* SMILES parsing {{{
  */
 enum {
 	COHO_SMILES_BOND_UNSPECIFIED	= 0,
