@@ -93,7 +93,7 @@ python.clean:
 	cd python && \
 	rm -f version.txt && \
 	rm -rf __pycache__ *.egg-info && \
-	rm -rf dist src
+	rm -rf build dist src
 
 
 python.pre.setup.py:		python.clean
