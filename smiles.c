@@ -26,7 +26,6 @@
 #include <stdlib.h>
 
 #include "coho.h"
-#include "vec.h"
 
 #define ALIPHATIC_ORGANIC	0x00001
 #define AROMATIC		0x00002
@@ -73,11 +72,13 @@ static int check_ring_closures(struct coho_smiles *);
 static int chirality(struct coho_smiles *, struct coho_smiles_atom *);
 static int close_paren(struct coho_smiles *, struct coho_smiles_bond *);
 static int dot(struct coho_smiles *);
+static int ensure_array_capacities(struct coho_smiles *, size_t);
 static int hydrogen_count(struct coho_smiles *, struct coho_smiles_atom *);
 static int integer(struct coho_smiles *, size_t, int *);
 static int isotope(struct coho_smiles *, struct coho_smiles_atom *);
 static unsigned int lex(struct coho_smiles *, struct token *, int);
 static int match(struct coho_smiles *, struct token *, int, unsigned int);
+static size_t next_array_capacity(size_t);
 static int open_paren(struct coho_smiles *, struct coho_smiles_bond *);
 static int pop_paren_stack(struct coho_smiles *, int, struct coho_smiles_bond *);
 static void push_paren_stack(struct coho_smiles *, int, struct coho_smiles_bond *);
@@ -128,9 +129,15 @@ coho_smiles_init(struct coho_smiles *x)
 	x->error = NULL;
 	x->error_position = -1;
 
-	VEC_INIT(x->atoms);
-	VEC_INIT(x->bonds);
-	VEC_INIT(x->paren_stack);
+	x->atom_count = 0;
+	x->bond_count = 0;
+
+	x->atoms = NULL;
+	x->atoms_alloc = 0;
+	x->bonds = NULL;
+	x->bonds_alloc = 0;
+	x->paren_stack = NULL;
+	x->paren_stack_alloc = 0;
 
 	for (i = 0; i < 100; i++)
 		coho_smiles_bond_init(&x->rbonds[i]);
@@ -161,6 +168,10 @@ coho_smiles_parse(struct coho_smiles *x, const char *smiles, size_t sz)
 		return COHO_NOMEM;
 	}
 	coho_smiles_reinit(x, smiles, end);
+
+	if (ensure_array_capacities(x, end)) {
+		return COHO_NOMEM;
+	}
 
 	b.atom0 = -1;		/* no previous atom to bond to */
 	anum = -1;
@@ -439,7 +450,6 @@ atom_class(struct coho_smiles *x, struct coho_smiles_atom *a)
 static int
 add_atom(struct coho_smiles *x, struct coho_smiles_atom *a)
 {
-	XVEC_ENSURE_APPEND(x->atoms, 1);
 	x->atoms[x->atoms_sz] = *a;
 	return x->atoms_sz++;
 }
@@ -492,8 +502,6 @@ add_bond(struct coho_smiles *x, struct coho_smiles_bond *bond)
 			return -1;
 		}
 	}
-
-	XVEC_ENSURE_APPEND(x->bonds, 1);
 
 	move = x->bonds_sz - i;			/* # elements to shift */
 	if (move) {
@@ -930,6 +938,38 @@ dot(struct coho_smiles *x)
 	return match(x, &t, 0, DOT);
 }
 
+static int
+ensure_array_capacities(struct coho_smiles *x, size_t smiles_length)
+{
+	size_t new_capacity;
+	void *p;
+
+	/*
+	 * Maximum required storage is bounded by length of SMILES string.
+	 */
+	if (x->atoms_alloc >= smiles_length)
+		return 0;
+
+	new_capacity = next_array_capacity(smiles_length);
+
+#define GROW(name)						\
+	do {							\
+		p = reallocarray(x->name,			\
+				 new_capacity,			\
+				 sizeof(x->name[0]));		\
+		if (p == NULL)					\
+			return -1;				\
+		x->name = p;					\
+		x->name##_alloc = new_capacity;			\
+	} while (0)
+
+	GROW(atoms);
+	GROW(bonds);
+	GROW(paren_stack);
+
+#undef GROW
+	return 0;
+}
 /*
  * Parses hydrogen count inside a bracket atom.
  * If successful, sets a->hydrogen_count and increments a->length.
@@ -1020,6 +1060,20 @@ match(struct coho_smiles *x, struct token *t, int inbracket, unsigned int ttype)
 }
 
 /*
+ * Returns a new array capacity that is larger than
+ * its previous capacity.
+ */
+static size_t
+next_array_capacity(size_t previous_capacity)
+{
+	size_t cap = 2 * previous_capacity - 1;
+
+	while (cap & (cap - 1))
+		cap = cap & (cap - 1);
+	return cap;
+}
+
+/*
  * Matches an opening parenthesis that begins a branch.
  * On success, pushes the parenthesis stack and returns 1.
  * Returns 0 if there was no match.
@@ -1077,7 +1131,6 @@ push_paren_stack(struct coho_smiles *x, int position, struct coho_smiles_bond *b
 
 	assert(b->atom0 != -1);
 
-	XVEC_ENSURE_APPEND(x->paren_stack, 1);
 	p = &x->paren_stack[x->paren_stack_sz++];
 	p->position = position;
 	p->bond = *b;

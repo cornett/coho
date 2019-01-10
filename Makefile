@@ -16,11 +16,9 @@ PYTHON_LIBS	= $(shell $(PYTHON_CONFIG) --libs)
 -include config.mk
 
 SRC_C		= compat.c \
-		  smiles.c \
-		  vec.c
+		  smiles.c
 
-SRC_H		= coho.h \
-		  vec.h
+SRC_H		= coho.h
 
 PYTHON_SRC_PYX	= python/coho/__init__.pyx \
 		  python/coho/smiles.pyx
@@ -73,8 +71,6 @@ $(AFL) $(TEST):			libcoho.a \
 
 
 $(OBJ_O):			coho.h
-smiles.o:			vec.h
-vec.o:				vec.h
 
 
 libcoho.a:			$(OBJ_O)

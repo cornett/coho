@@ -21,7 +21,7 @@ ext = [
     Extension(
         "coho.smiles",
         include_dirs=["src"],
-        sources=["coho/smiles.c", "src/smiles.c", "src/vec.c", "src/compat.c"],
+        sources=["coho/smiles.c", "src/smiles.c", "src/compat.c"],
     ),
 ]
 
