@@ -96,7 +96,7 @@ struct coho_smiles {
 	struct coho_smiles_bond		*bonds;
 	size_t				 bonds_capacity;
 
-	struct coho_smiles_bond		 rbonds[100];
+	struct coho_smiles_bond		 ring_bonds[100];
 	size_t				 open_ring_closures;
 
 	struct coho_smiles_paren	*paren_stack;

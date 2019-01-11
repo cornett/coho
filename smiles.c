@@ -140,7 +140,7 @@ coho_smiles_init(struct coho_smiles *x)
 	x->paren_stack_capacity = 0;
 
 	for (i = 0; i < 100; i++)
-		coho_smiles_bond_init(&x->rbonds[i]);
+		coho_smiles_bond_init(&x->ring_bonds[i]);
 	x->open_ring_closures = 0;
 }
 
@@ -532,7 +532,7 @@ add_ringbond(struct coho_smiles *x, int rnum, struct coho_smiles_bond *b)
 	if (b->order == COHO_SMILES_BOND_UNSPECIFIED)
 		assert(b->stereo == COHO_SMILES_BOND_STEREO_UNSPECIFIED);
 
-	rb = &x->rbonds[rnum];
+	rb = &x->ring_bonds[rnum];
 
 	if (rb->atom0 == -1) {
 		rb->atom0	= b->atom0;
@@ -831,8 +831,8 @@ check_ring_closures(struct coho_smiles *x)
 	x->error = strdup("unclosed ring bond");
 
 	for (i = 0; i < 100; i++) {
-		if (x->rbonds[i].atom0 != -1) {
-			x->error_position = x->rbonds[i].position;
+		if (x->ring_bonds[i].atom0 != -1) {
+			x->error_position = x->ring_bonds[i].position;
 			break;
 		}
 	}
@@ -1277,7 +1277,7 @@ coho_smiles_reinit(struct coho_smiles *x, const char *smiles, size_t end)
 	x->paren_stack_count = 0;
 
 	for (i = 0; i < 100; i++)
-		coho_smiles_bond_init(&x->rbonds[i]);
+		coho_smiles_bond_init(&x->ring_bonds[i]);
 	x->open_ring_closures = 0;
 }
 
