@@ -408,8 +408,6 @@ err:
  * If successful, sets a->atom_class and increments a->length.
  * Returns 1 if atom class was read, else 0.
  * On error, sets x->error and returns -1.
- *
- * class ::= ':' NUMBER
  */
 static int
 atom_class(struct coho_smiles *x, struct coho_smiles_atom *a)
@@ -641,8 +639,6 @@ assign_implicit_hydrogen_count(struct coho_smiles *x)
  * Matches an atom or returns 0 if not found.
  * If successful, stores the index of the new atom in *anum and returns 1.
  * On error, sets x->error and returns -1.
- *
- * atom ::= bracket_atom | aliphatic_organic | aromatic_organic | '*'
  */
 static int
 atom(struct coho_smiles *x, int *atom_index)
@@ -740,8 +736,6 @@ atom_valence(struct coho_smiles *x, size_t idx)
  * token (order, stereo, position, and length).
  * Clears implicit flag.
  * Doesn't set bond atoms.
- *
- * bond ::= '-' | '=' | '#' | '$' | ':' | '/' | '\'
  */
 static int
 bond(struct coho_smiles *x, struct coho_smiles_bond *b)
@@ -763,8 +757,6 @@ bond(struct coho_smiles *x, struct coho_smiles_bond *b)
  * Matches a bracket atom or returns 0 if not found.
  * If found, initializes the atom, sets its fields, and returns 1.
  * On error, sets x->error and returns -1.
- *
- * bracket_atom ::= '[' isotope? symbol chiral? hydrogen_count? charge? class? ']'
  */
 static int
 bracket_atom(struct coho_smiles *x, struct coho_smiles_atom *a)
@@ -836,13 +828,6 @@ check_ring_closures(struct coho_smiles *x)
  * If successful, sets a->charge and increments a->length.
  * Returns 1 if charge was read, else 0.
  * On error, sets x->error and returns -1.
- *
- * charge ::=   '-'
- *            | '-' DIGIT? DIGIT
- *            | '+'
- *            | '+' DIGIT? DIGIT
- *            | '--' deprecated
- *            | '++' deprecated
  */
 static int
 charge(struct coho_smiles *x, struct coho_smiles_atom *a)
@@ -981,8 +966,6 @@ finalize_implicit_bond_order(struct coho_smiles *x, struct coho_smiles_bond *b)
  * Parses hydrogen count inside a bracket atom.
  * If successful, sets a->hydrogen_count and increments a->length.
  * Returns 1 if hydrogen_count was read, else 0.
- *
- * hydrogen_count ::= 'H' | 'H' DIGIT
  */
 static int
 hydrogen_count(struct coho_smiles *x, struct coho_smiles_atom *a)
@@ -1153,8 +1136,6 @@ push_paren_stack(struct coho_smiles *x,
  * If the parsed ring bond ID is in use, closes it and adds a new bond
  * to the bond list.
  * Otherwise, marks the ring ID as open.
- *
- * ringbond ::= bond? DIGIT | bond? '%' DIGIT DIGIT
  */
 static int
 ringbond(struct coho_smiles *x, int anum)
@@ -1295,8 +1276,6 @@ coho_smiles_reinit(struct coho_smiles *x, const char *smiles, size_t end)
  * Parses atom symbol inside a bracket atom.
  * If successful, sets a->symbol, a->is_aromatic, and increments a->length.
  * Returns 1 if symbol was read, else 0.
- *
- * symbol ::= element_symbols | aromatic_symbols | '*'
  */
 static int
 symbol(struct coho_smiles *x, struct coho_smiles_atom *a)
