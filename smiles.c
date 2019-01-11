@@ -133,11 +133,11 @@ coho_smiles_init(struct coho_smiles *x)
 	x->bond_count = 0;
 
 	x->atoms = NULL;
-	x->atoms_alloc = 0;
+	x->atoms_capacity = 0;
 	x->bonds = NULL;
-	x->bonds_alloc = 0;
+	x->bonds_capacity = 0;
 	x->paren_stack = NULL;
-	x->paren_stack_alloc = 0;
+	x->paren_stack_capacity = 0;
 
 	for (i = 0; i < 100; i++)
 		coho_smiles_bond_init(&x->rbonds[i]);
@@ -946,7 +946,7 @@ ensure_array_capacities(struct coho_smiles *x, size_t smiles_length)
 	/*
 	 * Maximum required storage is bounded by length of SMILES string.
 	 */
-	if (x->atoms_alloc >= smiles_length)
+	if (x->atoms_capacity >= smiles_length)
 		return 0;
 
 	new_capacity = next_array_capacity(smiles_length);
@@ -959,7 +959,7 @@ ensure_array_capacities(struct coho_smiles *x, size_t smiles_length)
 		if (p == NULL)					\
 			return -1;				\
 		x->name = p;					\
-		x->name##_alloc = new_capacity;			\
+		x->name##_capacity = new_capacity;			\
 	} while (0)
 
 	GROW(atoms);
