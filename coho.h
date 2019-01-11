@@ -87,19 +87,20 @@ struct coho_smiles {
 	char				*error;
 	int				 error_position;
 
+	int				 atom_count;
+	int				 bond_count;
+
 	struct coho_smiles_atom		*atoms;
-	size_t				 atoms_sz;
 	size_t				 atoms_alloc;
 
 	struct coho_smiles_bond		*bonds;
-	size_t				 bonds_sz;
 	size_t				 bonds_alloc;
 
 	struct coho_smiles_bond		 rbonds[100];
 	size_t				 open_ring_closures;
 
 	struct coho_smiles_paren	*paren_stack;
-	size_t				 paren_stack_sz;
+	int				 paren_stack_count;
 	size_t				 paren_stack_alloc;
 };
 

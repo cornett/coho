@@ -394,7 +394,7 @@ done:
 	if (check_ring_closures(x))
 		goto err;
 
-	if (x->paren_stack_sz > 0) {
+	if (x->paren_stack_count > 0) {
 		x->error = strdup("unbalanced parenthesis");
 		x->error_position = x->paren_stack[0].position;
 		goto err;
@@ -450,8 +450,8 @@ atom_class(struct coho_smiles *x, struct coho_smiles_atom *a)
 static int
 add_atom(struct coho_smiles *x, struct coho_smiles_atom *a)
 {
-	x->atoms[x->atoms_sz] = *a;
-	return x->atoms_sz++;
+	x->atoms[x->atom_count] = *a;
+	return x->atom_count++;
 }
 
 /*
@@ -485,7 +485,7 @@ add_bond(struct coho_smiles *x, struct coho_smiles_bond *bond)
 	 * Start search from end, since bonds are
 	 * mostly generated in the correct order.
 	 */
-	for (i = x->bonds_sz; i > 0; i--) {
+	for (i = x->bond_count; i > 0; i--) {
 		b = &x->bonds[i-1];
 
 		if (nb.atom0 > b->atom0)
@@ -503,7 +503,7 @@ add_bond(struct coho_smiles *x, struct coho_smiles_bond *bond)
 		}
 	}
 
-	move = x->bonds_sz - i;			/* # elements to shift */
+	move = x->bond_count - i;			/* # elements to shift */
 	if (move) {
 		memmove(x->bonds + i + 1,
 			x->bonds + i,
@@ -511,7 +511,7 @@ add_bond(struct coho_smiles *x, struct coho_smiles_bond *bond)
 	}
 
 	x->bonds[i] = nb;
-	return x->bonds_sz++;
+	return x->bond_count++;
 }
 
 /*
@@ -626,11 +626,10 @@ aromatic_organic(struct coho_smiles *x, struct coho_smiles_atom *a)
 static int
 assign_implicit_hydrogen_count(struct coho_smiles *x)
 {
-	size_t i;
-	int valence, std;
+	int i, valence, std;
 	struct coho_smiles_atom *a;
 
-	for (i = 0; i < x->atoms_sz; i++) {
+	for (i = 0; i < x->atom_count; i++) {
 		a = &x->atoms[i];
 
 		if (!a->is_organic)
@@ -708,14 +707,14 @@ atom_ringbond(struct coho_smiles *x, int *anum)
 static int
 atom_valence(struct coho_smiles *x, size_t idx)
 {
-	size_t i;
+	int i;
 	int valence, neighbors;
 	struct coho_smiles_bond *b;
 
 	valence = 0;
 	neighbors = 0;
 
-	for (i = 0; i < x->bonds_sz; i++) {
+	for (i = 0; i < x->bond_count; i++) {
 		b = &x->bonds[i];
 		if (b->atom0 > (int)idx)
 			break;
@@ -1104,13 +1103,13 @@ open_paren(struct coho_smiles *x, struct coho_smiles_bond *b)
 static int
 pop_paren_stack(struct coho_smiles *x, int position, struct coho_smiles_bond *b)
 {
-	if (!x->paren_stack_sz) {
+	if (!x->paren_stack_count) {
 		x->error = strdup("unbalanced parenthesis");
 		x->error_position = position;
 		return -1;
 	}
 
-	*b = x->paren_stack[--x->paren_stack_sz].bond;
+	*b = x->paren_stack[--x->paren_stack_count].bond;
 	return 0;
 }
 
@@ -1131,7 +1130,7 @@ push_paren_stack(struct coho_smiles *x, int position, struct coho_smiles_bond *b
 
 	assert(b->atom0 != -1);
 
-	p = &x->paren_stack[x->paren_stack_sz++];
+	p = &x->paren_stack[x->paren_stack_count++];
 	p->position = position;
 	p->bond = *b;
 }
@@ -1273,9 +1272,9 @@ coho_smiles_reinit(struct coho_smiles *x, const char *smiles, size_t end)
 	free(x->error);
 	x->error = NULL;
 	x->error_position = -1;
-	x->atoms_sz = 0;
-	x->bonds_sz = 0;
-	x->paren_stack_sz = 0;
+	x->atom_count = 0;
+	x->bond_count = 0;
+	x->paren_stack_count = 0;
 
 	for (i = 0; i < 100; i++)
 		coho_smiles_bond_init(&x->rbonds[i]);

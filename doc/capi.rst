@@ -33,9 +33,9 @@ not imply description of a chemically-meaningful structure.
                 char                        *error;
                 int                          error_position;
                 struct smiles_atom             *atoms;
-                size_t                       atoms_sz;
+                size_t                       atom_count;
                 struct smiles_bond             *bonds;
-                size_t                       bonds_sz;
+                size_t                       bond_count;
         }
 
     The following fields of the context are public and can
@@ -59,7 +59,7 @@ not imply description of a chemically-meaningful structure.
         :type:`struct smiles_atom <smiles_atom>`
         described below.
 
-    .. member:: size_t atoms_sz
+    .. member:: size_t atom_count
 
         Length of :member:`atoms <smiles.atoms>`.
 
@@ -69,7 +69,7 @@ not imply description of a chemically-meaningful structure.
         :type:`struct smiles_bond <smiles_bond>`
         described below.
 
-    .. member:: size_t bonds_sz
+    .. member:: size_t bond_count
 
         Length of :member:`bonds <smiles.bonds>`.
 
@@ -289,16 +289,16 @@ The following example shows how to parse a SMILES string::
                     return 1;
             }
 
-            printf("# atoms: %zi\n", smiles.atoms_sz);
-            printf("# bonds: %zi\n", smiles.bonds_sz);
+            printf("# atoms: %zi\n", smiles.atom_count);
+            printf("# bonds: %zi\n", smiles.bond_count);
             printf("\n");
 
-            for (i = 0; i < smiles.atoms_sz; i++) {
+            for (i = 0; i < smiles.atom_count; i++) {
                     printf("%zi: %s\n", i, smiles.atoms[i].symbol);
             }
             printf("\n");
 
-            for (i = 0; i < smiles.bonds_sz; i++) {
+            for (i = 0; i < smiles.bond_count; i++) {
                     printf("%zi-%zi %i\n",
                            smiles.bonds[i].atom0,
                            smiles.bonds[i].atom1,

@@ -5,11 +5,11 @@
 
 
 static void
-check_cnts(struct coho_smiles *x, const char *smi, size_t acnt, size_t bcnt)
+check_cnts(struct coho_smiles *x, const char *smi, int acnt, int bcnt)
 {
 	assert(coho_smiles_parse(x, smi, 0) == COHO_OK);
-	assert(x->atoms_sz == acnt);
-	assert(x->bonds_sz == bcnt);
+	assert(x->atom_count == acnt);
+	assert(x->bond_count == bcnt);
 }
 
 
@@ -32,8 +32,8 @@ main(void)
 	assert(x.atoms[1].atomic_number == 6);
 
 	assert(coho_smiles_parse(&x, "[*](C)^", 6) == COHO_OK);
-	assert(x.atoms_sz == 2);
-	assert(x.bonds_sz == 1);
+	assert(x.atom_count == 2);
+	assert(x.bond_count == 1);
 
 	assert(coho_smiles_parse(&x, "[,*](C)^", 0) == COHO_ERROR);
 	assert(x.error_position == 1);

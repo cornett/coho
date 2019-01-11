@@ -64,7 +64,7 @@ cdef class Parser:
         x = []
         def noneif(x, mark):
             return None if x == mark else x
-        for i in range(self._x.atoms_sz):
+        for i in range(self._x.atom_count):
             a = self._x.atoms[i]
             x.append({
                 "atomic_number": a.atomic_number,
@@ -90,7 +90,7 @@ cdef class Parser:
         if self._x.error != NULL:
             return None
         x = []
-        for i in range(self._x.bonds_sz):
+        for i in range(self._x.bond_count):
             b = self._x.bonds[i]
             x.append({
                 "atom0": b.atom0,

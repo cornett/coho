@@ -51,10 +51,10 @@ cdef extern from "coho.h":
         int                 length
 
     struct coho_smiles:
+        int                 atom_count
+        int                 bond_count
         coho_smiles_atom   *atoms
-        size_t              atoms_sz
         coho_smiles_bond   *bonds
-        size_t              bonds_sz
         char               *error
         int                 error_position
 

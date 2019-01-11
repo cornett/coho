@@ -56,12 +56,12 @@ struct smiles {
 	char			*error;
 	int			 error_position;
 	struct smiles_atom	*atoms;
-	size_t			 atoms_sz;
+	size_t			 atom_count;
 	struct smiles_bond	*bonds;
-	size_t			 bonds_sz;
+	size_t			 bond_count;
 }
 .Ed
-.Bl -tag -width atoms_sz
+.Bl -tag -width atom_count
 .It Fa error
 If
 .Fn smiles_parse
@@ -80,14 +80,14 @@ error was detected, otherwise it will be -1.
 Each parsed atom is represented by an instance of
 .Vt "struct smiles_atom" ,
 described below.
-.It Fa atoms_sz
+.It Fa atom_count
 Length of
 .Fa atoms .
 .It Fa bonds
 Each parsed bond is represented by an instance of
 .Vt "struct smiles_bond" ,
 described below.
-.It Fa bonds_sz
+.It Fa bond_count
 Length of
 .Fa bonds .
 .El
@@ -261,16 +261,16 @@ main(void)
 		return 1;
 	}
 
-	printf("# atoms: %zi\n", smi.atoms_sz);
-	printf("# bonds: %zi\n", smi.bonds_sz);
+	printf("# atoms: %zi\n", smi.atom_count);
+	printf("# bonds: %zi\n", smi.bond_count);
 	printf("\n");
 
-	for (i = 0; i < smi.atoms_sz; i++) {
+	for (i = 0; i < smi.atom_count; i++) {
 		printf("%zi: %s\n", i, smi.atoms[i].symbol);
 	}
 	printf("\n");
 
-	for (i = 0; i < smi.bonds_sz; i++) {
+	for (i = 0; i < smi.bond_count; i++) {
 		printf("%zi-%zi %i\n",
 		       smi.bonds[i].atom0,
 		       smi.bonds[i].atom1,
