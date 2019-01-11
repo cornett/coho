@@ -34,16 +34,19 @@ cdef class Parser:
     def __dealloc__(self):
         coho_smiles_free(&self._x)
 
+    cdef _has_error(self):
+        return self._x.error_position >= 0
+
     def error(self):
         """Error message if last parse failed"""
-        if self._x.error != NULL:
+        if self._has_error():
             return self._x.error.decode()
 
     error = property(error, doc=error.__doc__)
 
     def error_position(self):
         """Error position if last parse failed"""
-        if self._x.error != NULL:
+        if self._has_error():
             return self._x.error_position
 
     error_position = property(error_position, doc=error_position.__doc__)
@@ -59,7 +62,7 @@ cdef class Parser:
 
     def atoms(self):
         """Atom information produced by the last parse."""
-        if self._x.error != NULL:
+        if self._has_error():
             return None
         x = []
         def noneif(x, mark):
@@ -87,7 +90,7 @@ cdef class Parser:
 
     def bonds(self):
         """Bond information produced by the last parse."""
-        if self._x.error != NULL:
+        if self._has_error():
             return None
         x = []
         for i in range(self._x.bond_count):

@@ -84,7 +84,7 @@ struct coho_smiles {
 	const char			*smiles;
 	int				 position;
 	int				 end;
-	char				*error;
+	char				 error[32];
 	int				 error_position;
 
 	int				 atom_count;

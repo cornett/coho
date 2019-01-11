@@ -55,7 +55,7 @@ cdef extern from "coho.h":
         int                 bond_count
         coho_smiles_atom   *atoms
         coho_smiles_bond   *bonds
-        char               *error
+        char                error[32]
         int                 error_position
 
     void coho_smiles_free(coho_smiles *)
