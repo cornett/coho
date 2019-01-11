@@ -71,6 +71,8 @@ static int chirality(struct coho_smiles *, struct coho_smiles_atom *);
 static int close_paren(struct coho_smiles *, struct coho_smiles_bond *);
 static int dot(struct coho_smiles *);
 static int ensure_array_capacities(struct coho_smiles *, size_t);
+static void finalize_implicit_bond_order(struct coho_smiles *,
+					 struct coho_smiles_bond *);
 static int hydrogen_count(struct coho_smiles *, struct coho_smiles_atom *);
 static int integer(struct coho_smiles *, size_t, int *);
 static int isotope(struct coho_smiles *, struct coho_smiles_atom *);
@@ -211,17 +213,9 @@ coho_smiles_parse(struct coho_smiles *x, const char *smiles, size_t sz)
 			 */
 			if (b.atom0 != -1) {
 				b.atom1 = anum;
-				/*
-				 * Finalize order of implicit bonds, which
-				 * depends on atom aromaticity.
-				 */
-				if (b.is_implicit) {
-					if (x->atoms[b.atom0].is_aromatic &&
-					    x->atoms[b.atom1].is_aromatic)
-						b.order = COHO_SMILES_BOND_AROMATIC;
-					else
-						b.order = COHO_SMILES_BOND_SINGLE;
-				}
+
+				finalize_implicit_bond_order(x, &b);
+
 				if (add_bond(x, &b) == -1)
 					goto err;
 			}
@@ -965,6 +959,22 @@ ensure_array_capacities(struct coho_smiles *x, size_t smiles_length)
 
 #undef GROW
 	return 0;
+}
+
+/*
+ * Sets the order of an implicit bond according to 
+ * the aromaticity of the two atoms.
+ */
+static void
+finalize_implicit_bond_order(struct coho_smiles *x, struct coho_smiles_bond *b)
+{
+	if (!b->is_implicit)
+		return;
+
+	if (x->atoms[b->atom0].is_aromatic && x->atoms[b->atom1].is_aromatic)
+		b->order = COHO_SMILES_BOND_AROMATIC;
+	else
+		b->order = COHO_SMILES_BOND_SINGLE;
 }
 
 /*
