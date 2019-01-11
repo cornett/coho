@@ -25,24 +25,24 @@
 
 #include "coho.h"
 
-#define ALIPHATIC_ORGANIC	0x00001
-#define AROMATIC		0x00002
-#define AROMATIC_ORGANIC	0x00004
-#define BOND			0x00008
-#define BRACKET_CLOSE		0x00010
-#define BRACKET_OPEN		0x00020
-#define CHIRALITY		0x00040
-#define COLON			0x00080
-#define DIGIT			0x00100
-#define DOT			0x00200
-#define ELEMENT			0x00400
-#define HYDROGEN		0x00800
-#define MINUS			0x01000
-#define PAREN_CLOSE		0x02000
-#define PAREN_OPEN		0x04000
-#define PERCENT			0x08000
-#define PLUS			0x10000
-#define WILDCARD		0x20000
+#define ALIPHATIC_ORGANIC		0x00001
+#define AROMATIC			0x00002
+#define AROMATIC_ORGANIC		0x00004
+#define BOND				0x00008
+#define BRACKET_CLOSE			0x00010
+#define BRACKET_OPEN			0x00020
+#define CHIRALITY			0x00040
+#define COLON				0x00080
+#define DIGIT				0x00100
+#define DOT				0x00200
+#define ELEMENT				0x00400
+#define HYDROGEN			0x00800
+#define MINUS				0x01000
+#define PAREN_CLOSE			0x02000
+#define PAREN_OPEN			0x04000
+#define PERCENT				0x08000
+#define PLUS				0x10000
+#define WILDCARD			0x20000
 
 struct token {
 	int		 type;
@@ -94,17 +94,17 @@ static int wildcard(struct coho_smiles *, struct coho_smiles_atom *);
  * <atomic number> <valence>...
  */
 static int standard_valences[][4] = {
-	{5,	3,	-1,	-1},	/* B */
-	{6,	4,	-1,	-1},	/* C */
-	{7,	3,	5,	-1},	/* N */
-	{8,	2,	-1,	-1},	/* O */
-	{9,	1,	-1,	-1},	/* F */
-	{15,	3,	5,	-1},	/* P */
-	{16,	2,	4,	6},	/* S */
-	{17,	1,	-1,	-1},	/* Cl */
-	{35,	1,	-1,	-1},	/* Br */
-	{53,	1,	-1,	-1},	/* I */
-	{-1,	-1,	-1,	-1},
+	{5, 3, -1, -1},		/* B */
+	{6, 4, -1, -1},		/* C */
+	{7, 3, 5, -1},		/* N */
+	{8, 2, -1, -1},		/* O */
+	{9, 1, -1, -1},		/* F */
+	{15, 3, 5, -1},		/* P */
+	{16, 2, 4, 6},		/* S */
+	{17, 1, -1, -1},	/* Cl */
+	{35, 1, -1, -1},	/* Br */
+	{53, 1, -1, -1},	/* I */
+	{-1, -1, -1, -1},
 };
 
 void
@@ -121,21 +121,21 @@ coho_smiles_init(struct coho_smiles *x)
 {
 	size_t i;
 
-	x->smiles = NULL;
-	x->position = 0;
-	x->end = 0;
-	x->error = NULL;
-	x->error_position = -1;
+	x->smiles			= NULL;
+	x->position			= 0;
+	x->end				= 0;
+	x->error			= NULL;
+	x->error_position		= -1;
 
-	x->atom_count = 0;
-	x->bond_count = 0;
+	x->atom_count			= 0;
+	x->bond_count			= 0;
 
-	x->atoms = NULL;
-	x->atoms_capacity = 0;
-	x->bonds = NULL;
-	x->bonds_capacity = 0;
-	x->paren_stack = NULL;
-	x->paren_stack_capacity = 0;
+	x->atoms			= NULL;
+	x->atoms_capacity		= 0;
+	x->bonds			= NULL;
+	x->bonds_capacity		= 0;
+	x->paren_stack			= NULL;
+	x->paren_stack_capacity		= 0;
 
 	for (i = 0; i < 100; i++)
 		coho_smiles_bond_init(&x->ring_bonds[i]);
@@ -232,8 +232,8 @@ coho_smiles_parse(struct coho_smiles *x, const char *smiles, size_t sz)
 			 * Store this state in an incomplete bond.
 			 */
 			coho_smiles_bond_init(&b);
-			b.atom0 = anum;
-			b.is_implicit = 1;
+			b.atom0		= anum;
+			b.is_implicit	= 1;
 
 			if (eos) {
 				goto done;
@@ -336,7 +336,7 @@ coho_smiles_parse(struct coho_smiles *x, const char *smiles, size_t sz)
 
 			else {
 				x->error = strdup("atom, bond, or dot "
-						"expected");
+						  "expected");
 				goto err;
 			}
 			break;
@@ -381,9 +381,7 @@ coho_smiles_parse(struct coho_smiles *x, const char *smiles, size_t sz)
 				goto unexpected;
 			}
 			break;
-
 		}
-
 	}
 
 done:
@@ -533,13 +531,13 @@ add_ringbond(struct coho_smiles *x, int rnum, struct coho_smiles_bond *b)
 	rb = &x->ring_bonds[rnum];
 
 	if (rb->atom0 == -1) {
-		rb->atom0	= b->atom0;
-		rb->order	= b->order;
-		rb->stereo	= b->stereo;
-		rb->is_implicit	= 0;
-		rb->is_ring	= 1;
-		rb->position	= b->position;
-		rb->length	= b->length;
+		rb->atom0		= b->atom0;
+		rb->order		= b->order;
+		rb->stereo		= b->stereo;
+		rb->is_implicit		= 0;
+		rb->is_ring		= 1;
+		rb->position		= b->position;
+		rb->length		= b->length;
 		x->open_ring_closures++;
 		return 0;
 	}
@@ -588,10 +586,10 @@ aliphatic_organic(struct coho_smiles *x, struct coho_smiles_atom *a)
 	if (!match(x, &t, 0, ALIPHATIC_ORGANIC))
 		return 0;
 	coho_smiles_atom_init(a);
-	a->position = t.position;
-	a->atomic_number = t.intval;
-	a->is_organic = 1;
-	a->length = t.n;
+	a->position		= t.position;
+	a->atomic_number	= t.intval;
+	a->is_organic		= 1;
+	a->length		= t.n;
 	tokcpy(a->symbol, &t, sizeof(a->symbol));
 	return 1;
 }
@@ -608,11 +606,11 @@ aromatic_organic(struct coho_smiles *x, struct coho_smiles_atom *a)
 	if (!match(x, &t, 0, AROMATIC_ORGANIC))
 		return 0;
 	coho_smiles_atom_init(a);
-	a->position = t.position;
-	a->atomic_number = t.intval;
-	a->is_organic = 1;
-	a->is_aromatic = 1;
-	a->length = t.n;
+	a->position		= t.position;
+	a->atomic_number	= t.intval;
+	a->is_organic		= 1;
+	a->is_aromatic		= 1;
+	a->length		= t.n;
 	tokcpy(a->symbol, &t, sizeof(a->symbol));
 	return 1;
 }
@@ -658,9 +656,9 @@ atom(struct coho_smiles *x, int *anum)
 	struct coho_smiles_atom a;
 	int rc;
 
-	if ((rc = bracket_atom(x, &a)) ||
-	    (rc = aliphatic_organic(x, &a)) ||
-	    (rc = aromatic_organic(x, &a)) ||
+	if ((rc = bracket_atom(x, &a))		||
+	    (rc = aliphatic_organic(x, &a))	||
+	    (rc = aromatic_organic(x, &a))	||
 	    (rc = wildcard(x, &a))) {
 		if (rc == -1)
 			return -1;
@@ -758,11 +756,11 @@ bond(struct coho_smiles *x, struct coho_smiles_bond *b)
 	if (!match(x, &t, 0, BOND))
 		return 0;
 
-	b->order = t.intval;
-	b->stereo = t.flags;
-	b->is_implicit = 0;
-	b->position = t.position;
-	b->length = t.n;
+	b->order		= t.intval;
+	b->stereo		= t.flags;
+	b->is_implicit		= 0;
+	b->position		= t.position;
+	b->length		= t.n;
 	return 1;
 }
 
@@ -782,9 +780,9 @@ bracket_atom(struct coho_smiles *x, struct coho_smiles_atom *a)
 		return 0;
 
 	coho_smiles_atom_init(a);
-	a->is_bracket = 1;
-	a->position = t.position;
-	a->length = t.n;
+	a->is_bracket		= 1;
+	a->position		= t.position;
+	a->length		= t.n;
 
 	if (isotope(x, a) == -1)
 		return -1;
@@ -859,7 +857,7 @@ charge(struct coho_smiles *x, struct coho_smiles_atom *a)
 	int n;
 	int length;
 
-	if (!match(x, &t, 1, PLUS|MINUS))
+	if (!match(x, &t, 1, PLUS | MINUS))
 		return 0;
 	sign = t.intval;
 	length = t.n;
@@ -873,7 +871,7 @@ charge(struct coho_smiles *x, struct coho_smiles_atom *a)
 	} else {
 		a->charge = sign;
 
-		if (lex(x, &t, 1) & (PLUS|MINUS)) {
+		if (lex(x, &t, 1) & (PLUS | MINUS)) {
 			if (t.intval == sign) {
 				x->position += t.n;
 				a->charge *= 2;
@@ -967,6 +965,7 @@ ensure_array_capacities(struct coho_smiles *x, size_t smiles_length)
 #undef GROW
 	return 0;
 }
+
 /*
  * Parses hydrogen count inside a bracket atom.
  * If successful, sets a->hydrogen_count and increments a->length.
@@ -1122,15 +1121,17 @@ pop_paren_stack(struct coho_smiles *x, int position, struct coho_smiles_bond *b)
  * to support error messages.
  */
 static void
-push_paren_stack(struct coho_smiles *x, int position, struct coho_smiles_bond *b)
+push_paren_stack(struct coho_smiles *x,
+		 int position,
+		 struct coho_smiles_bond *b)
 {
 	struct coho_smiles_paren *p;
 
 	assert(b->atom0 != -1);
 
-	p = &x->paren_stack[x->paren_stack_count++];
-	p->position = position;
-	p->bond = *b;
+	p		= &x->paren_stack[x->paren_stack_count++];
+	p->position	= position;
+	p->bond		= *b;
 }
 
 /*
@@ -1160,11 +1161,11 @@ ringbond(struct coho_smiles *x, int anum)
 		if (rc == -1)
 			return -1;
 	} else {
-		b.order = COHO_SMILES_BOND_UNSPECIFIED;
-		b.position = x->position;
+		b.order		= COHO_SMILES_BOND_UNSPECIFIED;
+		b.position	= x->position;
 	}
 
-	if (!match(x, &t, 0, PERCENT|DIGIT)) {
+	if (!match(x, &t, 0, PERCENT | DIGIT)) {
 		x->position = saved;
 		return 0;
 	}
@@ -1224,19 +1225,19 @@ round_valence(int atomic_number, int valence, int lowest_only)
 static void
 coho_smiles_atom_init(struct coho_smiles_atom *x)
 {
-	x->atomic_number = 0;
-	x->symbol[0] = '\0';
-	x->isotope = -1;
-	x->charge = 0;
-	x->hydrogen_count = -1;
-	x->implicit_hydrogen_count = -1;
-	x->is_bracket = 0;
-	x->is_organic = 0;
-	x->is_aromatic = 0;
-	x->chirality[0] = '\0';
-	x->atom_class = -1;
-	x->position = -1;
-	x->length = 0;
+	x->atomic_number		= 0;
+	x->symbol[0]			= '\0';
+	x->isotope			= -1;
+	x->charge			= 0;
+	x->hydrogen_count		= -1;
+	x->implicit_hydrogen_count	= -1;
+	x->is_bracket			= 0;
+	x->is_organic			= 0;
+	x->is_aromatic			= 0;
+	x->chirality[0]			= '\0';
+	x->atom_class			= -1;
+	x->position			= -1;
+	x->length			= 0;
 }
 
 /*
@@ -1245,14 +1246,14 @@ coho_smiles_atom_init(struct coho_smiles_atom *x)
 static void
 coho_smiles_bond_init(struct coho_smiles_bond *x)
 {
-	x->atom0 = -1;
-	x->atom1 = -1;
-	x->order = -1;
-	x->stereo = COHO_SMILES_BOND_STEREO_UNSPECIFIED;
-	x->is_implicit = 0;
-	x->is_ring = 0;
-	x->position = -1;
-	x->length = 0;
+	x->atom0			= -1;
+	x->atom1			= -1;
+	x->order			= -1;
+	x->stereo			= COHO_SMILES_BOND_STEREO_UNSPECIFIED;
+	x->is_implicit			= 0;
+	x->is_ring			= 0;
+	x->position			= -1;
+	x->length			= 0;
 }
 
 /*
@@ -1264,15 +1265,15 @@ coho_smiles_reinit(struct coho_smiles *x, const char *smiles, size_t end)
 {
 	size_t i;
 
-	x->smiles = smiles;
-	x->position = 0;
-	x->end = end;
+	x->smiles			= smiles;
+	x->position			= 0;
+	x->end				= end;
 	free(x->error);
-	x->error = NULL;
-	x->error_position = -1;
-	x->atom_count = 0;
-	x->bond_count = 0;
-	x->paren_stack_count = 0;
+	x->error			= NULL;
+	x->error_position		= -1;
+	x->atom_count			= 0;
+	x->bond_count			= 0;
+	x->paren_stack_count		= 0;
 
 	for (i = 0; i < 100; i++)
 		coho_smiles_bond_init(&x->ring_bonds[i]);
@@ -1291,7 +1292,7 @@ symbol(struct coho_smiles *x, struct coho_smiles_atom *a)
 {
 	struct token t;
 
-	if (!match(x, &t, 1, ELEMENT|AROMATIC|WILDCARD))
+	if (!match(x, &t, 1, ELEMENT | AROMATIC | WILDCARD))
 		return 0;
 	a->atomic_number = t.intval;
 	a->is_aromatic = t.type & AROMATIC ? 1 : 0;
@@ -1334,9 +1335,9 @@ wildcard(struct coho_smiles *x, struct coho_smiles_atom *a)
 	if (!match(x, &t, 0, WILDCARD))
 		return 0;
 	coho_smiles_atom_init(a);
-	a->position = t.position;
-	a->atomic_number = 0;
-	a->length = t.n;
+	a->position		= t.position;
+	a->atomic_number	= 0;
+	a->length		= t.n;
 	tokcpy(a->symbol, &t, sizeof(a->symbol));
 	return 1;
 }
@@ -1348,7 +1349,7 @@ wildcard(struct coho_smiles *x, struct coho_smiles_atom *a)
  * Returns the token type or zero if no token could be read.
  * The token type is a bitmask since a particular token can belong
  * to multiple categories.  For example, the symbol for
- * hydrogen will have type ELEMENT|HYDROGEN.
+ * hydrogen will have type ELEMENT | HYDROGEN.
  */
 static unsigned int
 lex(struct coho_smiles *x, struct token *t, int inbracket)
@@ -1366,12 +1367,12 @@ lex(struct coho_smiles *x, struct token *t, int inbracket)
 	if (x->position < x->end)
 		c1 = s[1];
 
-	t->s = s;
-	t->position = x->position;
-	t->n = 1;
-	t->type = 0;
-	t->intval = -1;
-	t->flags = 0;
+	t->s			= s;
+	t->position		= x->position;
+	t->n			= 1;
+	t->type			= 0;
+	t->intval		= -1;
+	t->flags		= 0;
 
 	switch (c0) {
 	case 'a':
