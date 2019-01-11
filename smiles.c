@@ -651,7 +651,7 @@ assign_implicit_hydrogen_count(struct coho_smiles *x)
  * atom ::= bracket_atom | aliphatic_organic | aromatic_organic | '*'
  */
 static int
-atom(struct coho_smiles *x, int *anum)
+atom(struct coho_smiles *x, int *atom_index)
 {
 	struct coho_smiles_atom a;
 	int rc;
@@ -662,10 +662,11 @@ atom(struct coho_smiles *x, int *anum)
 	    (rc = wildcard(x, &a))) {
 		if (rc == -1)
 			return -1;
-	} else
+	} else {
 		return 0;
+	}
 
-	*anum = add_atom(x, &a);
+	*atom_index = add_atom(x, &a);
 	return 1;
 }
 
