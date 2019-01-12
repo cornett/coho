@@ -90,20 +90,19 @@ python.clean:
 	rm -rf build dist src
 
 
-python.pre.setup.py:		python.clean
+python.pre.setup.py:		python.clean \
+				$(PYTHON_OBJ_C)
 	echo $(VERSION) > python/version.txt
 	rm -rf python/src
 	install -d python/src
 	install -m 0644 $(SRC_C) $(SRC_H) python/src
 
 
-python.sdist:			python.pre.setup.py \
-				$(PYTHON_OBJ_C)
+python.sdist:			python.pre.setup.py
 	$(PYTHON) python/setup.py sdist
 
 
-python.wheel:			python.pre.setup.py \
-				$(PYTHON_OBJ_C)
+python.wheel:			python.pre.setup.py
 	$(PYTHON) python/setup.py bdist_wheel
 
 
