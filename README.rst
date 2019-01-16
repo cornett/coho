@@ -6,7 +6,7 @@
    :target: https://pypi.org/project/coho/
    :alt: Package on PyPI
 
-=======
+====
 Coho
 ====
 

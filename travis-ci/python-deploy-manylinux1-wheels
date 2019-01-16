@@ -1,0 +1,10 @@
+#!/bin/bash
+set -e -x
+
+pip install twine
+
+twine upload \
+	-u $PYPI_USER \
+	-p $PYPI_PASSWORD \
+	--skip-existing \
+	python/wheelhouse/*

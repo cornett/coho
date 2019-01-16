@@ -1,2 +1,30 @@
-language: c
-script: make libcoho.a
+language: python
+
+python:
+  - "3.6"
+
+matrix:
+  include:
+  - sudo: required
+    services:
+      - docker
+    env: DOCKER_IMAGE=quay.io/pypa/manylinux1_x86_64
+
+install:
+  - docker pull $DOCKER_IMAGE
+
+script:
+  - >
+    docker run --rm -v `pwd`:/io $DOCKER_IMAGE
+    /io/travis-ci/python-build-manylinux1-wheels
+
+deploy:
+  provider: script
+  script: travis-ci/python-deploy-manylinux1-wheels
+  on:
+    branch: wip
+
+env:
+  global:
+  - secure: "Zv4yn3T5VATl4F5HSIkw7bNiCKkPxuXFjxHHCWKPup7JTwiRmhSy3ASo6g6HORCgjN/TEbcXaT0peqVus2ceGpjrw31fwXVIq9KtWBcWTdnmsLmG81yLmT3gFrSBBR9OfLQAviWC7utMl91UK/h56UZxHQTAZVi9Lp2s4W6pF84kb5y6MOYfR4otcT+KP249N4zzW9yEs77U79JqG04lTBoexyn0eAL655C/N57nQJgpEEPPOfKQNGLM8R2tost2xfxysUrKppHD59Gof0sZ8AQ0Qzig2AKGbPyAfdFEKnChaIqIeneywNxu0dy2J9qCf8Bz7PtJzsecDjIKL9VV9luRV927rj2h76zCKddnA5q/rqabnx6M+XajeBtMahnMSSMOgcMDL3yt15xER80qp21Igl4XmGy9fjcjcSlpwQLA511Qr4dpJsADZFQT+XQfXnoP12O79p4pDYgsPjFJdaq6oCyE8Gt8ouWuiXBZdMUg26vwDYotXOlX+zmqmFtvRGqFZ4rLPT9h29jzp4Ztno5EXG2fwPwNDymhc5rNG31JK6wFCBQ7wt4SEOu3RMbLIwLZZxemky3hvxArAtgzOqpYD1jYNQNq+Qjv7rk2TmO8bc+LgEVfxpTxBt+k7jFaW9w9skjrNywLZ1pDWoxj5hlDqETapTx6e0a46hJKEoQ="
+  - secure: "OsZvPqM97ssVj6vo/2xcsTt1QbTfMlPgRUs08ycCqfy31j1aiiBQBsXEA0NS4EHy4lVOu6nU+ntI1UOBBqnpXRC6xVie8rH2oyFOf381UOrBLrHB/WCgtt6TqdKBjO+9xFrms9n838pLifb0CdmK3BtMZpylV6FoSnx0lFVSKfpEu91VizCc7C8zLdUU+9vYDrZXY1GaDu9I4SA87Q6Ljy9pv/Qtav1SBKHEFZcRvNwi1rj/3XdlF/AblDetYutsPp/eNLpSHKSOh80tPT5s0pz4+BnDpgSSXx+Bf1urLu3COY6QvZ6ESGt8ALTDoyGJMXL4M62UNnJnYuBGqMB9yqYkrwmfLMAqkzcSQU20/gRNFq/SeNyFdG061oyRjWJy5e5sPL0mi9VEnCYW8NA1Fok+WA6+aDQCtZzGaM4Z8CpHp87+wXy0HbCz54CpH+C23rLNIBZE2prUnnizgCkV+Ah/HQ5xz8gExNIB6mq6tlOhBX+K8/ujP/kqrecLmjftmw8sO7Qqbof87n3lrVITMeWN3lNY2qp6QcmpFw32Z++OTaap0XhlY6IjQHcXkNHNZZFyK1Fqyz/E6VpDbp8lbBYY8tv0iy91V9hlgw96nljVVU+GTD1FyNoxThq8aZx20ZK+s13rxltp2uKdICJRZ1chhlRbelGp8U4dgwVbnhI="
