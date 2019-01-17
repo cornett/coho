@@ -36,7 +36,7 @@ setup(
     license="ISC",
     package_data={"coho": ["py.typed", "*.pyi"]},
     keywords="smiles opensmiles cheminformatics",
-    python_requires=">= 3.3",
+    python_requires=">= 3.4",
     url="https://github.com/cornett/coho",
     include_package_data=True,
 )
