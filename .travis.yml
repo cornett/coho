@@ -22,7 +22,8 @@ deploy:
   provider: script
   script: travis-ci/python-deploy-manylinux1-wheels
   on:
-    branch: wip
+    tags: true
+
 
 env:
   global:
