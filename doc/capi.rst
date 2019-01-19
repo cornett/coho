@@ -7,82 +7,87 @@ C API
 SMILES
 ------
 
-The :func:`smiles_parse()` function parses
+The :func:`coho_smiles_parse()` function parses
 `SMILES <https://en.wikipedia.org/wiki/Simplified_molecular-input_line-entry_system>`_
 as specified by the
 `OpenSMILES <http://opensmiles.org/>`_ standard.
 
 Parsing requires a context, which has type
-:type:`struct smiles <smiles>` and
-is initialized using :func:`smiles_init()`.
-Once initialized, a context can be used with :func:`smiles_parse()`
+:type:`struct coho_smiles <coho_smiles>` and
+is initialized using :func:`coho_smiles_init()`.
+Once initialized, a context can be used with :func:`coho_smiles_parse()`
 to parse one or more SMILES strings.
-:func:`smiles_free()` releases any resources acquired during parsing.
+:func:`coho_smiles_free()` releases any resources acquired during parsing.
 
+The results of a successful parse are stored in the context object,
+as described below.
 Note that the data structures contained in the context
 are intended to represent parsed SMILES strings, not molecules.
 Conformance of a particular string to the SMILES grammar does
 not imply description of a chemically-meaningful structure.
 
 
-.. type:: struct smiles
+.. type:: struct coho_smiles
 
     ::
 
-        struct smiles {
-                char                        *error;
+        struct coho_smiles {
+                char                         error[32];
                 int                          error_position;
-                struct smiles_atom             *atoms;
-                size_t                       atom_count;
-                struct smiles_bond             *bonds;
-                size_t                       bond_count;
-        }
+                int                          atom_count;
+                int                          bond_count;
+                struct coho_smiles_atom     *atoms;
+                struct coho_smiles_bond     *bonds;
+        };
 
     The following fields of the context are public and can
     be used to examine the results of a
-    call to :func:`smiles_parse()`:
+    call to :func:`coho_smiles_parse()`:
 
-    .. member:: char \*error
+    .. member:: char error\[32\]
 
-        If :func:`smiles_parse()` fails, ``error``
-        will point to an error message, otherwise it will be ``NULL``.
+        If :func:`coho_smiles_parse()` fails,
+        :member:`error <coho_smiles.error>`
+        will contain an error message, otherwise it will be empty.
 
     .. member:: int error_position
 
-        If :func:`smiles_parse()` fails, ``error_position`` will contain the offset
-        into the SMILES string where the
-        error was detected, otherwise it will be -1.
+        If :func:`coho_smiles_parse()` fails,
+        :member:`error_position <coho_smiles.error_position>` will
+        contain the offset into the SMILES string where the error was
+        detected, otherwise it will be -1.
 
-    .. member:: struct smiles_atom \*atoms
+    .. member:: struct coho_smiles_atom \*atoms
 
         Each parsed atom is represented by an instance of
-        :type:`struct smiles_atom <smiles_atom>`
+        :type:`struct coho_smiles_atom <coho_smiles_atom>`
         described below.
 
-    .. member:: size_t atom_count
+    .. member:: int atom_count
 
-        Length of :member:`atoms <smiles.atoms>`.
+        Length of :member:`atoms <coho_smiles.atoms>`.
 
-    .. member:: struct smiles_bond \*bonds
+    .. member:: struct coho_smiles_bond \*bonds
 
         Each parsed bond is represented by an instance of
-        :type:`struct smiles_bond <smiles_bond>`
+        :type:`struct coho_smiles_bond <coho_smiles_bond>`
         described below.
 
-    .. member:: size_t bond_count
+    .. member:: int bond_count
 
-        Length of :member:`bonds <smiles.bonds>`.
+        Length of :member:`bonds <coho_smiles.bonds>`.
 
-If :func:`smiles_parse()` fails, the only valid access is to the
-:member:`error <smiles.error>` and :member:`error_position <smiles.error_position>`
+If :func:`coho_smiles_parse()` fails, the only valid access is to the
+:member:`error <coho_smiles.error>` and
+:member:`error_position <coho_smiles.error_position>`
 fields.
 
 
-.. type:: struct smiles_atom
+.. type:: struct coho_smiles_atom
 
     ::
 
-        struct smiles_atom {
+        struct coho_smiles_atom {
                 int                      atomic_number;
                 char                     symbol[4];
                 int                      isotope;
@@ -99,12 +104,12 @@ fields.
         };
 
     Each atom parsed from the input is represented
-    by an instance of :type:`struct smiles_atom <smiles_atom>`.
+    by an instance of :type:`struct coho_smiles_atom <coho_smiles_atom>`.
     Its fields are described below:
 
     .. member:: int atomic_number
 
-        The atom's atomic number, deduced from the symbol.
+        The atom's atomic number, deduced from its symbol.
         The wildcard atom is assigned an atomic number of zero.
 
     .. member:: char symbol[4]
@@ -138,15 +143,17 @@ fields.
 
         1 if the atom was specified using bracket(``[]``) notation, else 0.
 
-    .. member:: int organic
+    .. member:: int is_organic
 
         1 if the atom was specified using the
         organic subset nomenclature, else 0.
         Wildcard atoms are not considered part of the organic subset.
-        If they occur outside of a bracket, their ``is_bracket`` and
-        ``organic`` fields will both be 0.
+        If they occur outside of a bracket, their
+        :member:`is_bracket <coho_smiles_atom.is_bracket>` and
+        :member:`is_organic <coho_smiles_atom.is_organic>`
+        fields will both be 0.
 
-    .. member:: int aromatic
+    .. member:: int is_aromatic
 
         1 if the atom's symbol is lowercase, indicating that it is
         aromatic, else 0.
@@ -170,11 +177,11 @@ fields.
         Length of the atom's token.
 
 
-.. type:: struct smiles_bond
+.. type:: struct coho_smiles_bond
 
     ::
 
-        struct smiles_bond {
+        struct coho_smiles_bond {
                 int                      atom0;
                 int                      atom1;
                 int                      order;
@@ -186,28 +193,28 @@ fields.
         };
 
     Each bond parsed from the input produces an
-    instance of :type:`struct smiles_bond <smiles_bond>`.
+    instance of :type:`struct coho_smiles_bond <coho_smiles_bond>`.
     Its fields are described below:
 
     .. member:: int atom0
 
-        The atom number (offset into :member:`atoms <smiles.atoms>`)
+        The atom number (offset into :member:`atoms <coho_smiles.atoms>`)
         of the first member of the bond pair.
 
     .. member:: int atom1
 
-        The atom number (offset into :member:`atoms <smiles.atoms>`)
+        The atom number (offset into :member:`atoms <coho_smiles.atoms>`)
         of the second member of the bond pair.
 
     .. member:: int order
 
         Bond order, with values from the following enumeration:
 
-        * SMILES_BOND_SINGLE
-        * SMILES_BOND_DOUBLE
-        * SMILES_BOND_TRIPLE
-        * SMILES_BOND_QUAD
-        * SMILES_BOND_AROMATIC
+        * COHO_SMILES_BOND_SINGLE
+        * COHO_SMILES_BOND_DOUBLE
+        * COHO_SMILES_BOND_TRIPLE
+        * COHO_SMILES_BOND_QUAD
+        * COHO_SMILES_BOND_AROMATIC
 
     .. member:: int stereo
 
@@ -215,14 +222,14 @@ fields.
         around double bonds.
         Takes values from the following enumeration:
 
-        ``SMILES_BOND_STEREO_UNSPECIFIED``
+        ``COHO_SMILES_BOND_STEREO_UNSPECIFIED``
             Bond has no stereochemistry
-        ``SMILES_BOND_STEREO_UP``
-            lies "up" from :member:`atom0 <smiles_bond.atom0>`
-        ``SMILES_BOND_STEREO_DOWN``
-            lies "down" from :member:`atom0 <smiles_bond.atom0>`
+        ``COHO_SMILES_BOND_STEREO_UP``
+            lies "up" from :member:`atom0 <coho_smiles_bond.atom0>`
+        ``COHO_SMILES_BOND_STEREO_DOWN``
+            lies "down" from :member:`atom0 <coho_smiles_bond.atom0>`
 
-    .. member:: int implicit
+    .. member:: int is_implicit
 
         1 if bond was produced implicitly by the presence of two
         adjacent atoms without an intervening bond symbol, else 0.
@@ -230,7 +237,7 @@ fields.
         An aromatic bond is implied by two adjacent aromatic atoms,
         otherwise implicit bonds are single.
 
-    .. member:: int ring
+    .. member:: int is_ring
 
         1 if the bond was produced using the ring bond nomenclature,
         else 0.
@@ -247,22 +254,22 @@ fields.
         Length of the bond's token, or zero if implicit.
 
 
-.. function:: void smiles_init(struct smiles \*)
+.. function:: void coho_smiles_init(struct coho_smiles \*)
 
     Initializes a SMILES parsing context.
 
-.. function:: void smiles_free(struct smiles \*)
+.. function:: void coho_smiles_free(struct coho_smiles \*)
 
     Releases resources held by the context.
     This only needs to be called once, after all parsing is complete.
 
-.. function:: int smiles_parse(struct smiles \*smiles, const char \*str, size_t sz)
+.. function:: int coho_smiles_parse(struct coho_smiles \*smiles, const char \*str, size_t sz)
 
     Parses a SMILES string.
-    If successful, the fields of :type:`smiles <smiles>` will contain
+    If successful, the fields of :type:`coho_smiles <coho_smiles>` will contain
     the results.
 
-    :param smiles: Parsing context, initialized by :func:`smiles_init()`
+    :param smiles: Parsing context, initialized by :func:`coho_smiles_init()`
     :param str: SMILES string
     :param sz: Amount of string to read.  If zero, the entire string is parsed.
     :return: Returns 0 on success, -1 on failure
@@ -272,20 +279,19 @@ Example
 
 The following example shows how to parse a SMILES string::
 
-    #include <stdio.h>
     #include <coho/coho.h>
 
     int
     main(void)
     {
             size_t i;
-            struct smiles smiles;
+            struct coho_smiles smiles;
 
-            smiles_init(&smiles);
+            coho_smiles_init(&smiles);
 
-            if (smiles_parse(&smiles, "CNCC", 0)) {
+            if (coho_smiles_parse(&smiles, "CNCC", 0)) {
                     fprintf(stderr, "failed: %s\n", smiles.error);
-                    smiles_free(&smiles);
+                    coho_smiles_free(&smiles);
                     return 1;
             }
 
@@ -305,7 +311,7 @@ The following example shows how to parse a SMILES string::
                            smiles.bonds[i].order);
             }
 
-            smiles_free(&smiles);
+            coho_smiles_free(&smiles);
 
             return 0;
     }

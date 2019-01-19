@@ -1,18 +1,18 @@
 Python API
 ==========
 
-The Coho Python API is produced using `Cython <http://cython.org/>`_ and
-works with recent releases of Python 3.
+The Coho Python API is produced using `Cython <http://cython.org/>`_
+for Python 3.4+.
 
 The API is contained under a top-level package called ``coho``.
 
 
-coho.smi
---------
+coho.smiles
+-----------
 
-.. :py:module:: coho.smi
+.. :py:module:: coho.smiles
 
-The ``coho.smi`` module contains a parser for the
+The ``coho.smiles`` module contains a parser for the
 `OpenSMILES <http://opensmiles.org/>`_ language.
 
 .. class:: Parser
@@ -23,15 +23,17 @@ The ``coho.smi`` module contains a parser for the
     multiple SMILES strings.
     The results of each call are stored in the :attr:`atoms` and
     :attr:`bonds` attributes.
+    Each call to :meth:`parse` overwrites the previous
+    values of these attributes.
 
     Note that the data structures described below are intended to
     represent parsed SMILES strings, not molecules.
     Conformance of a particular string to the SMILES grammar does
     not imply description of a chemically-meaningful structure.
 
-    .. method:: parse(smiles)
+    .. method:: parse(smiles: str)
 
-        Parse a SMILES string.
+        Parses a SMILES string.
 
         :param str smiles: SMILES string
 
@@ -40,7 +42,7 @@ The ``coho.smi`` module contains a parser for the
     .. attribute:: error
 
         If :meth:`parse()` fails, ``error``
-        will be an error message, otherwise it will be ``None``.
+        will contain an error message, otherwise it will be ``None``.
 
     .. attribute:: error_position
 
@@ -50,7 +52,7 @@ The ``coho.smi`` module contains a parser for the
 
     .. attribute:: atoms
 
-        Return a list of parsed atoms.
+        Returns a list of parsed atoms.
         Each atom is represented as a dictionary with the following keys.
 
         ``atomic_number``
@@ -62,7 +64,7 @@ The ``coho.smi`` module contains a parser for the
             Atoms designated as aromatic will have lowercase symbols.
 
         ``isotope``
-            Isotope, or ``None`` if unspecified.
+            An integer isotope value, or ``None`` if none was specified.
             Note that the `OpenSMILES <http://opensmiles.org/>`_ specification
             states that zero is a valid isotope and that
             ``[0S]`` is not the same as ``[S]``.
@@ -71,12 +73,13 @@ The ``coho.smi`` module contains a parser for the
             Formal charge, or 0 if none was specified.
 
         ``hydrogen_count``
-            Number of explicit hydrogens, or ``None`` if none were specified.
+            Number of explicit hydrogens, or ``None`` if the hydrogen
+            count was not specified.
 
         ``implicit_hydrogen_count``
-            Number of implicit hydrogens required to bring atom to its
+            Number of implicit hydrogens required to bring the atom to its
             next standard valence state.
-            Set to ``None`` for atoms not specified using the organic
+            Set to ``None`` for atoms that were not specified using the organic
             subset nomenclature.
 
         ``is_bracket``
@@ -86,9 +89,10 @@ The ``coho.smi`` module contains a parser for the
         ``is_organic``
             True if the atom was specified using the
             organic subset nomenclature, else False.
+
             Wildcard atoms are not considered part of the organic subset.
-            If they occur outside of a bracket, their ``bracket``
-            and ``organic`` fields will both be False.
+            If they occur outside of a bracket, their ``is_bracket``
+            and ``is_organic`` fields will both be False.
 
         ``is_aromatic``
             True if the atom's symbol is lowercase, indicating that it is
@@ -111,7 +115,7 @@ The ``coho.smi`` module contains a parser for the
 
     .. attribute:: bonds
 
-        Return a list of parsed bonds.
+        Returns a list of parsed bonds.
         Each bond is represented as a dictionary with the following keys.
 
         ``atom0``
@@ -168,10 +172,10 @@ Example
 
 The following example shows how to parse a SMILES string::
 
-    import coho.smi
+    import coho.smiles
     from pprint import pprint
 
-    p = coho.smi.Parser()
+    p = coho.smiles.Parser()
     try:
         p.parse('CNCC')
     except ValueError as e:
