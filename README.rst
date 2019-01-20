@@ -1,4 +1,4 @@
-|Travis| |PyPI| |License|
+|travis| |sr.ht| |pypi| |license|
 
 ====
 Coho
@@ -13,14 +13,18 @@ Documentation is available at
 
 .. _OpenSMILES: http://opensmiles.org/
 
-.. |License| image:: https://img.shields.io/badge/license-ISC-brightgreen.svg
-   :target: LICENSE
+.. |license| image:: https://img.shields.io/badge/license-ISC-brightgreen.svg
+   :target: license
 
-.. |PyPI| image:: https://img.shields.io/pypi/v/coho.svg
+.. |pypi| image:: https://img.shields.io/pypi/v/coho.svg
    :target: https://pypi.org/project/coho/
-   :alt: Package on PyPI
+   :alt: package on PyPI
 
-.. |Travis| image:: https://travis-ci.com/cornett/coho.svg?branch=wip
+.. |sr.ht| image:: https://builds.sr.ht/~cornett/coho.svg
+   :target: https://builds.sr.ht/~cornett/coho
+   :alt: sr.ht build status
+
+.. |travis| image:: https://travis-ci.com/cornett/coho.svg?branch=wip
    :target: https://travis-ci.com/cornett/coho
-   :alt: Build Status (Travis CI)
+   :alt: travis ci build status
 
