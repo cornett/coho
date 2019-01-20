@@ -1,0 +1,19 @@
+image: freebsd/latest
+packages:
+  - python3
+sources:
+  - https://github.com/cornett/coho.git
+tasks:
+  - setup: |
+      cd coho
+      git checkout wip
+      python3 -mvenv pyenv
+      ./pyenv/bin/pip install cython wheel
+  - build: |
+      cd coho
+      . pyenv/bin/activate
+      make
+      make python.wheel
+  - test: |
+      cd coho
+      make test
