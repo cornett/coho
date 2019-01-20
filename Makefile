@@ -1,45 +1,123 @@
-VERSION		= 0.4
+.SUFFIXES:
+default:		all
 
-PREFIX		= /usr/local
-MANPREFIX	= $(PREFIX)/share/man
+VERSION			= 0.4
 
-CPPFLAGS	=
-CFLAGS		= -Wall -O2
+PREFIX			= /usr/local
+MANPREFIX		= $(PREFIX)/share/man
 
-PYTHON		= python3
-CYTHON		= cython
-PYTHON_CONFIG	= $(PYTHON)-config
-PYTHON_CFLAGS	= $(shell $(PYTHON_CONFIG) --cflags)
-PYTHON_LDFLAGS	= $(shell $(PYTHON_CONFIG) --ldflags)
-PYTHON_LIBS	= $(shell $(PYTHON_CONFIG) --libs)
+CPPFLAGS		=
+CFLAGS			= -Wall -O2
+
+PYTHON			= python3
+CYTHON			= cython
+PYTHON_CONFIG		= $(PYTHON)-config
+PYTHON_CFLAGS		= `$(PYTHON_CONFIG) --cflags`
+PYTHON_LDFLAGS		= `$(PYTHON_CONFIG) --ldflags`
+PYTHON_LIBS		= `$(PYTHON_CONFIG) --libs`
+
+CYTHON_FLAGS		= -3 -X embedsignature=True -I python/coho
 
 -include config.mk
 
-SRC_C		= compat.c \
-		  smiles.c
+CFLAGS			+= -fPIC $(CPPFLAGS) -I.
+PYTHON_CFLAGS		+= -fPIC -I.
+PYTHON_LDFLAGS		+= -shared
 
-SRC_H		= coho.h
+SRC_C			= compat.c \
+			  smiles.c
 
-PYTHON_SRC_PYX	= python/coho/__init__.pyx \
-		  python/coho/smiles.pyx
+SRC_H			= coho.h
 
-OBJ_O		= $(SRC_C:.c=.o)
+PYTHON_SRC_PYX		= python/coho/__init__.pyx \
+			  python/coho/smiles.pyx
 
-PYTHON_OBJ_C	= $(PYTHON_SRC_PYX:.pyx=.c)
-PYTHON_OBJ_O	= $(PYTHON_SRC_PYX:.pyx=.o)
-PYTHON_OBJ_SO	= $(PYTHON_SRC_PYX:.pyx=.so)
+OBJ_O			= $(SRC_C:c=o)
 
-PYTHON_OBJ	= $(PYTHON_OBJ_C) \
-		  $(PYTHON_OBJ_O) \
-		  $(PYTHON_OBJ_SO)
+PYTHON_OBJ_C		= $(PYTHON_SRC_PYX:pyx=c)
+PYTHON_OBJ_O		= $(PYTHON_SRC_PYX:pyx=o)
+PYTHON_OBJ_SO		= $(PYTHON_SRC_PYX:pyx=so)
 
-OBJ		= libcoho.a \
-		  $(OBJ_O) \
-		  $(PYTHON_OBJ)
+PYTHON_OBJ		= $(PYTHON_OBJ_C) \
+			  $(PYTHON_OBJ_O) \
+			  $(PYTHON_OBJ_SO)
 
-AFL		= afl/smiles/smiles
+OBJ			= libcoho.a \
+			  $(OBJ_O) \
+			  $(PYTHON_OBJ)
 
-TEST		= test/smiles
+AFL			= afl/smiles/smiles
+
+TEST			= test/smiles
+
+
+afl/smiles/smiles:		afl/smiles/smiles.c \
+				coho.h \
+				libcoho.a
+	$(CC) $(CFLAGS) -o $@ $@.c libcoho.a
+
+
+compat.o:			compat.c \
+				coho.h
+	$(CC) $(CFLAGS) -o $@ -c $(@:o=c)
+
+
+libcoho.a:			$(OBJ_O)
+	$(AR) -r $@ $?
+
+
+python/coho/__init__.c:		python/coho/__init__.pyx \
+				python/coho/__init__.pxd
+	$(CYTHON) $(CYTHON_FLAGS) $(@:c=pyx)
+
+
+python/coho/__init__.o:		python/coho/__init__.c \
+				coho.h
+	$(CC) $(PYTHON_CFLAGS) -DVERSION='"$(VERSION)"' -o $@ -c $(@:o=c)
+
+
+python/coho/__init__.so:	python/coho/__init__.o \
+				libcoho.a
+	$(CC) $(PYTHON_LDFLAGS) -o $@ $(@:so=o) libcoho.a $(PYTHON_LIBS)
+
+
+python/coho/smiles.c:		python/coho/smiles.pyx \
+				python/coho/smiles.pxd
+	$(CYTHON) $(CYTHON_FLAGS) $(@:c=pyx)
+
+
+python/coho/smiles.o:		python/coho/smiles.c \
+				coho.h
+	$(CC) $(PYTHON_CFLAGS) -o $@ -c $(@:o=c)
+
+
+python/coho/smiles.so:		python/coho/smiles.o \
+				libcoho.a
+	$(CC) $(PYTHON_LDFLAGS) -o $@ $(@:so=o) libcoho.a $(PYTHON_LIBS)
+
+
+smiles.o:			smiles.c \
+				coho.h
+	$(CC) $(CFLAGS) -o $@ -c $(@:o=c)
+
+
+test/smiles:			test/smiles.c \
+				coho.h \
+				libcoho.a
+	$(CC) $(CFLAGS) -o $@ $@.c libcoho.a
+
+
+
+.PHONY:				all \
+				clean \
+				default \
+				doc \
+				install \
+				python.clean \
+				python.pre.setup.py \
+				python.sdist \
+				python.wheel \
+				test
 
 
 all:				libcoho.a \
@@ -65,24 +143,6 @@ install:			libcoho.a
 	install -m 0444 man/smiles_parse.3 $(DESTDIR)$(MANPREFIX)/man3
 
 
-$(AFL) $(TEST):			libcoho.a \
-				coho.h
-	$(CC) $(CFLAGS) $(CPPFLAGS) -I. -o $@ $@.c libcoho.a
-
-
-$(OBJ_O):			coho.h
-
-
-libcoho.a:			$(OBJ_O)
-	$(AR) -r $@ $?
-
-
-%.o:				%.c
-	$(CC) $(CFLAGS) -fPIC $(CPPFLAGS) -I. -o $@ -c $<
-
-
-# Python {{{
-
 python.clean:
 	cd python && \
 	rm -f version.txt && \
@@ -106,43 +166,9 @@ python.wheel:			python.pre.setup.py
 	$(PYTHON) python/setup.py bdist_wheel
 
 
-python/coho/smiles.c:		python/coho/smiles.pxd
-python/coho/smiles.o:		coho.h
-
-python/coho/__init__.o:		PYTHON_CFLAGS += -DVERSION='"$(VERSION)"'
-
-
-python/coho/%.c:		python/coho/%.pyx
-	$(CYTHON) -3 -X embedsignature=True -I python/coho $<
-
-
-python/coho/%.o:		python/coho/%.c
-	$(CC) $(PYTHON_CFLAGS) -I. -o $@ -c $<
-
-
-python/coho/%.so:		python/coho/%.o \
-				libcoho.a
-	$(CC) -shared $(PYTHON_LDFLAGS) -o $@ $^ $(PYTHON_LIBS)
-
-# }}}
-
 test:				$(TEST)
 	@for t in $(TEST); do \
 		echo -n "./$${t}... " ; \
 		./$$t >/dev/null 2>&1 || { echo "fail"; exit 1; }; \
 		echo "ok"; \
 	done
-
-
-.PHONY:				all \
-				clean \
-				doc \
-				install \
-				python.clean \
-				python.pre.setup.py \
-				python.sdist \
-				python.wheel \
-				test
-
-
-.SUFFIXES:

@@ -16,7 +16,7 @@ the Coho C library.
 Requirements
 ------------
 
-Building requires GNU make and a C compiler.
+Building requires make and a C compiler.
 Compiler requirements are modest: C89 plus a
 few C99 features such as ``<stdint.h>``.
 
@@ -104,7 +104,7 @@ variable settings.
 Build
 -----
 
-To build Coho, type ``make`` (or ``gmake`` on some BSD systems).
+To build Coho, type ``make``.
 This will build ``libcoho.a`` and its Python bindings.
 Type ``make libcoho.a`` to only build the C library.
 

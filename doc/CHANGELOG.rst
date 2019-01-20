@@ -4,6 +4,11 @@ ChangeLog
 `Unreleased`_
 -------------
 
+
+Changed
+^^^^^^^
+* Enable building with both BSD and GNU Make.
+
 `v0.4`_ - 2019-01-17
 --------------------
 
