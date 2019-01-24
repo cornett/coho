@@ -1,4 +1,4 @@
-|travis| |sr.ht| |pypi| |license|
+|circleci| |sr.ht| |pypi| |license|
 
 ====
 Coho
@@ -24,7 +24,6 @@ Documentation is available at
    :target: https://builds.sr.ht/~cornett/coho
    :alt: sr.ht build status
 
-.. |travis| image:: https://travis-ci.com/cornett/coho.svg?branch=wip
-   :target: https://travis-ci.com/cornett/coho
-   :alt: travis ci build status
-
+.. |circleci| image:: https://img.shields.io/circleci/project/github/cornett/coho.svg
+    :target: https://circleci.com/gh/cornett/coho
+    :alt: circle ci build status

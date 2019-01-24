@@ -1,0 +1,21 @@
+#!/bin/bash
+set -e -x
+
+cd $(dirname $0)/../python
+
+for minor in 7 6 5 4; do
+    bin=(/opt/python/cp3$minor*/bin)
+    [ -d $bin ] || continue
+
+    $bin/pip install cython
+
+    PATH=$bin:$PATH make -C .. clean python.pre.setup.py
+
+    $bin/pip wheel -w wheelhouse .
+
+    auditwheel repair       wheelhouse/*-linux_*
+    rm -f                   wheelhouse/*-linux_*
+
+    $bin/pip install --no-index -f wheelhouse coho
+    (cd $HOME; $bin/python -c "import coho.smiles")
+done
