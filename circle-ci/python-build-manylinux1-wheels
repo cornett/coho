@@ -3,7 +3,7 @@ set -e -x
 
 cd $(dirname $0)/../python
 
-for minor in 7 6 5 4; do
+for minor in 7 6 5; do
     bin=(/opt/python/cp3$minor*/bin)
     [ -d $bin ] || continue
 

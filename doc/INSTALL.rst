@@ -54,7 +54,7 @@ variable settings.
     Path to the Python executable.
     This can be ignored if you are only building the C library.
     Otherwise, make sure it points to an installation of
-    (C)Python, version 3.4 or higher.
+    (C)Python, version 3.5 or higher.
     You may need to change this setting if multiple Python
     installations are available on your system.
 

@@ -36,7 +36,7 @@ setup(
     license="ISC",
     package_data={"coho": ["py.typed", "*.pyi"]},
     keywords="smiles opensmiles cheminformatics",
-    python_requires=">= 3.4",
+    python_requires=">= 3.5",
     url="https://github.com/cornett/coho",
     include_package_data=True,
     classifiers=[
@@ -47,7 +47,6 @@ setup(
         "Operating System :: POSIX :: BSD",
         "Operating System :: POSIX :: Linux",
         "Programming Language :: C",
-        "Programming Language :: Python :: 3.4",
         "Programming Language :: Python :: 3.5",
         "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",

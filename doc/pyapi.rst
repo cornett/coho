@@ -2,7 +2,7 @@ Python API
 ==========
 
 The Coho Python API is produced using `Cython <http://cython.org/>`_
-for Python 3.4+.
+for Python 3.5+.
 
 The API is contained under a top-level package called ``coho``.
 
