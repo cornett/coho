@@ -18,7 +18,7 @@ jobs:
       - image: quay.io/pypa/manylinux1_x86_64
     steps:
       - checkout
-      - run: circle-ci/python-build-manylinux1-wheels
+      - run: ci/python-build-manylinux1-wheels
 
 workflows:
   version: 2
