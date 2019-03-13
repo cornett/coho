@@ -4,9 +4,6 @@ import re
 import shutil
 from setuptools import setup, Extension
 
-# Work from directory containing setup.py
-os.chdir(os.path.abspath(os.path.dirname(__file__)))
-
 # Get version number
 with open("version.txt") as f:
     version = f.read().strip()
