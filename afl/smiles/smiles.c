@@ -1,10 +1,7 @@
 #include <stdio.h>
-
 #include "coho.h"
 
-
-int
-main(void)
+int main(void)
 {
 	struct coho_smiles smi;
 	char *line = NULL;

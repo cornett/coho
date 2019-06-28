@@ -3,18 +3,15 @@
 
 #include "coho.h"
 
-
-static void
-check_cnts(struct coho_smiles *x, const char *smi, int acnt, int bcnt)
+static void check_cnts(struct coho_smiles *x, const char *smi, int acnt,
+    int bcnt)
 {
 	assert(coho_smiles_parse(x, smi, 0) == COHO_OK);
 	assert(x->atom_count == acnt);
 	assert(x->bond_count == bcnt);
 }
 
-
-int
-main(void)
+int main(void)
 {
 	struct coho_smiles x;
 
