@@ -28,8 +28,9 @@ distsrc: $(OBJ_C)
 
 .PHONY: all clean distsrc sdist wheel
 
+$(OBJ_C): coho/__init__.pxd
+$(OBJ_O): ../coho.h
 $(OBJ_SO): ../libcoho.a
-$(OBJ_C) $(OBJ_O): ../coho.h
 
 coho/__init__.o: coho/__init__.c
 	$(CC) -I.. $(PYTHON_CFLAGS) -DVERSION='"$(VERSION)"' -o $@ -c $(@:o=c)
