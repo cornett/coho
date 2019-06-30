@@ -9,12 +9,13 @@ for minor in 7 6 5; do
 
     $bin/pip install cython
 
-    PATH=$bin:$PATH make -C .. clean python.pre.setup.py
+    PATH=$bin:$PATH make clean distsrc
 
+    rm -rf wheelhouse
     $bin/pip wheel -w wheelhouse .
 
-    auditwheel repair       wheelhouse/*-linux_*
-    rm -f                   wheelhouse/*-linux_*
+    auditwheel repair wheelhouse/*-linux_*
+    rm -f wheelhouse/*-linux_*
 
     $bin/pip install --no-index -f wheelhouse coho
     (cd $HOME; $bin/python -c "import coho.smiles")

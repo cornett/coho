@@ -10,7 +10,6 @@ jobs:
           command: |
             sudo pip install cython
             make
-            make python.wheel
             make test
 
   build-manylinux1:
