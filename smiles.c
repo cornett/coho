@@ -78,7 +78,7 @@ static int integer(struct coho_smiles *, size_t, int *);
 static int isotope(struct coho_smiles *, struct coho_smiles_atom *);
 static unsigned int lex(struct coho_smiles *, struct token *, int);
 static int match(struct coho_smiles *, struct token *, int, unsigned int);
-static size_t next_array_capacity(size_t);
+static size_t next_array_cap(size_t);
 static int open_paren(struct coho_smiles *, struct coho_smiles_bond *);
 static int pop_paren_stack(struct coho_smiles *, int, struct coho_smiles_bond *);
 static void push_paren_stack(struct coho_smiles *, int,
@@ -131,11 +131,11 @@ void coho_smiles_init(struct coho_smiles *x)
 	x->bond_count = 0;
 
 	x->atoms = NULL;
-	x->atoms_capacity = 0;
+	x->atoms_cap = 0;
 	x->bonds = NULL;
-	x->bonds_capacity = 0;
+	x->bonds_cap = 0;
 	x->paren_stack = NULL;
-	x->paren_stack_capacity = 0;
+	x->paren_stack_cap = 0;
 
 	for (i = 0; i < 100; i++)
 		coho_smiles_bond_init(&x->ring_bonds[i]);
@@ -840,24 +840,24 @@ static int dot(struct coho_smiles *x)
 
 static int ensure_array_capacities(struct coho_smiles *x, size_t smiles_length)
 {
-	size_t new_capacity;
+	size_t new_cap;
 	void *p;
 
 	/*
 	 * Maximum required storage is bounded by length of SMILES string.
 	 */
-	if (x->atoms_capacity >= smiles_length)
+	if (x->atoms_cap >= smiles_length)
 		return 0;
 
-	new_capacity = next_array_capacity(smiles_length);
+	new_cap = next_array_cap(smiles_length);
 
 #define GROW(name) \
 	do { \
-		p = reallocarray(x->name, new_capacity, sizeof(x->name[0])); \
+		p = reallocarray(x->name, new_cap, sizeof(x->name[0])); \
 		if (p == NULL) \
 			return -1; \
 		x->name = p; \
-		x->name##_capacity = new_capacity; \
+		x->name##_cap = new_cap; \
 	} while (0)
 
 	GROW(atoms);
@@ -972,9 +972,9 @@ static int match(struct coho_smiles *x, struct token *t, int inbracket,
  * Returns a new array capacity that is larger than
  * its previous capacity.
  */
-static size_t next_array_capacity(size_t previous_capacity)
+static size_t next_array_cap(size_t previous_cap)
 {
-	size_t cap = 2 * previous_capacity - 1;
+	size_t cap = 2 * previous_cap - 1;
 	while (cap & (cap - 1))
 		cap = cap & (cap - 1);
 	return cap;

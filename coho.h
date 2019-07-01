@@ -91,17 +91,17 @@ struct coho_smiles {
 	int bond_count;
 
 	struct coho_smiles_atom *atoms;
-	size_t atoms_capacity;
+	size_t atoms_cap;
 
 	struct coho_smiles_bond *bonds;
-	size_t bonds_capacity;
+	size_t bonds_cap;
 
 	struct coho_smiles_bond ring_bonds[100];
 	size_t open_ring_closures;
 
 	struct coho_smiles_paren *paren_stack;
 	int paren_stack_count;
-	size_t paren_stack_capacity;
+	size_t paren_stack_cap;
 };
 
 void coho_smiles_free(struct coho_smiles *);
