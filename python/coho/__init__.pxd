@@ -65,4 +65,4 @@ cdef extern from "coho.h":
 
     void coho_smiles_free(coho_smiles *)
     int coho_smiles_init(coho_smiles *)
-    int coho_smiles_parse(coho_smiles *, const char *, size_t)
+    int coho_smiles_read(coho_smiles *, const char *, size_t)

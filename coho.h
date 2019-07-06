@@ -106,6 +106,6 @@ struct coho_smiles {
 
 void coho_smiles_free(struct coho_smiles *);
 void coho_smiles_init(struct coho_smiles *);
-int coho_smiles_parse(struct coho_smiles *, const char *, size_t);
+int coho_smiles_read(struct coho_smiles *, const char *, size_t);
 
 /* }}} */

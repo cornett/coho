@@ -54,7 +54,7 @@ cdef class Parser:
     def parse(self, str smi):
         """Parse SMILES string."""
         cdef bytes s = smi.encode()
-        if coho_smiles_parse(&self._x, s, len(s)) != COHO_OK:
+        if coho_smiles_read(&self._x, s, len(s)) != COHO_OK:
             lead = "-" * self.error_position
             msg = f"{self.error}\n{smi}\n{lead}^\n"
             x = ValueError(msg)

@@ -142,7 +142,7 @@ void coho_smiles_init(struct coho_smiles *x)
 	x->open_ring_closures = 0;
 }
 
-int coho_smiles_parse(struct coho_smiles *x, const char *smiles, size_t sz)
+int coho_smiles_read(struct coho_smiles *x, const char *smiles, size_t sz)
 {
 	struct coho_smiles_bond b;
 	int anum;			/* index of last atom read */
