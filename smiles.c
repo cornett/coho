@@ -72,7 +72,7 @@ static int close_paren(struct coho_smiles *, struct coho_smiles_bond *);
 static int dot(struct coho_smiles *);
 static int ensure_array_capacities(struct coho_smiles *, size_t);
 static void finalize_implicit_bond_order(struct coho_smiles *,
-    struct coho_smiles_bond *);
+					 struct coho_smiles_bond *);
 static int hydrogen_count(struct coho_smiles *, struct coho_smiles_atom *);
 static int integer(struct coho_smiles *, size_t, int *);
 static int isotope(struct coho_smiles *, struct coho_smiles_atom *);
@@ -82,7 +82,7 @@ static size_t next_array_cap(size_t);
 static int open_paren(struct coho_smiles *, struct coho_smiles_bond *);
 static int pop_paren_stack(struct coho_smiles *, int, struct coho_smiles_bond *);
 static void push_paren_stack(struct coho_smiles *, int,
-    struct coho_smiles_bond *);
+			     struct coho_smiles_bond *);
 static int ringbond(struct coho_smiles *, int);
 static int round_valence(int, int, int);
 static void coho_smiles_atom_init(struct coho_smiles_atom *);
@@ -183,14 +183,14 @@ int coho_smiles_read(struct coho_smiles *x, const char *smiles, size_t sz)
 			/* Parsing has just begun.  */
 			if (eos) {
 				strlcpy(x->error, "empty SMILES",
-				    sizeof(x->error));
+					sizeof(x->error));
 				goto err;
 			} else if ((rc = atom_ringbond(x, &anum))) {
 				if (rc == -1)
 					goto err;
 			} else {
 				strlcpy(x->error, "atom expected",
-				    sizeof(x->error));
+					sizeof(x->error));
 				goto err;
 			}
 			state = ATOM_READ;
@@ -256,7 +256,7 @@ int coho_smiles_read(struct coho_smiles *x, const char *smiles, size_t sz)
 					goto err;
 			} else {
 				strlcpy(x->error, "atom must follow dot",
-				    sizeof(x->error));
+					sizeof(x->error));
 				goto err;
 			}
 			state = ATOM_READ;
@@ -272,7 +272,7 @@ int coho_smiles_read(struct coho_smiles *x, const char *smiles, size_t sz)
 					goto err;
 			} else {
 				strlcpy(x->error, "atom must follow bond",
-				    sizeof(x->error));
+					sizeof(x->error));
 				goto err;
 			}
 			state = ATOM_READ;
@@ -285,7 +285,7 @@ int coho_smiles_read(struct coho_smiles *x, const char *smiles, size_t sz)
 			 */
 			if (eos) {
 				strlcpy(x->error, "unbalanced parenthesis",
-				    sizeof(x->error));
+					sizeof(x->error));
 				x->error_position = x->position - 1;
 				goto err;
 			} else if ((rc = atom_ringbond(x, &anum))) {
@@ -300,7 +300,7 @@ int coho_smiles_read(struct coho_smiles *x, const char *smiles, size_t sz)
 				state = DOT_READ;
 			} else {
 				strlcpy(x->error, "atom, bond, or dot expected",
-				    sizeof(x->error));
+					sizeof(x->error));
 				goto err;
 			}
 			break;
@@ -343,7 +343,7 @@ done:
 
 	if (x->paren_stack_count > 0) {
 		strlcpy(x->error, "unbalanced parenthesis",
-		    sizeof(x->error));
+			sizeof(x->error));
 		x->error_position = x->paren_stack[0].position;
 		goto err;
 	}
@@ -448,7 +448,7 @@ static int add_bond(struct coho_smiles *x, struct coho_smiles_bond *bond)
 	move = x->bond_count - i;		/* # elements to shift */
 	if (move) {
 		memmove(x->bonds + i + 1, x->bonds + i,
-		    move * sizeof(x->bonds[0]));
+			move * sizeof(x->bonds[0]));
 	}
 
 	x->bonds[i] = nb;
@@ -464,7 +464,7 @@ static int add_bond(struct coho_smiles *x, struct coho_smiles_bond *bond)
  * On failure, sets x->error and returns -1.
  */
 static int add_ringbond(struct coho_smiles *x, int rnum,
-    struct coho_smiles_bond *b)
+			struct coho_smiles_bond *b)
 {
 	struct coho_smiles_bond *rb;
 
@@ -490,7 +490,7 @@ static int add_ringbond(struct coho_smiles *x, int rnum,
 	/* Close the open bond */
 	if (rb->atom0 == b->atom0) {
 		strlcpy(x->error, "atom ring-bonded to itself",
-		    sizeof(x->error));
+			sizeof(x->error));
 		x->error_position = x->atoms[b->atom0].position;
 		return -1;
 	}
@@ -501,7 +501,7 @@ static int add_ringbond(struct coho_smiles *x, int rnum,
 		; /* pass */
 	else if (rb->order != b->order) {
 		strlcpy(x->error, "conflicting ring bond orders",
-		    sizeof(x->error));
+			sizeof(x->error));
 		x->error_position = x->atoms[b->atom0].position;
 		return -1;
 	}
@@ -544,7 +544,7 @@ static int aliphatic_organic(struct coho_smiles *x, struct coho_smiles_atom *a)
  * Returns 1 on match, 0 if no match, or -1 on error.
  */
 static int aromatic_organic(struct coho_smiles *x,
-    struct coho_smiles_atom *a)
+			    struct coho_smiles_atom *a)
 {
 	struct token t;
 
@@ -873,7 +873,7 @@ static int ensure_array_capacities(struct coho_smiles *x, size_t smiles_length)
  * the aromaticity of the two atoms.
  */
 static void finalize_implicit_bond_order(struct coho_smiles *x,
-    struct coho_smiles_bond *b)
+					 struct coho_smiles_bond *b)
 {
 	if (!b->is_implicit)
 		return;
@@ -959,7 +959,7 @@ static int isotope(struct coho_smiles *x, struct coho_smiles_atom *a)
  * If not, returns 0 and the parsing position remains unchanged.
  */
 static int match(struct coho_smiles *x, struct token *t, int inbracket,
-    unsigned int ttype)
+		 unsigned int ttype)
 {
 	if (lex(x, t, inbracket) & ttype) {
 		x->position += t->n;
@@ -1008,7 +1008,7 @@ static int open_paren(struct coho_smiles *x, struct coho_smiles_bond *b)
  * On failure, sets x->error and returns -1.
  */
 static int pop_paren_stack(struct coho_smiles *x, int position,
-    struct coho_smiles_bond *b)
+			   struct coho_smiles_bond *b)
 {
 	if (!x->paren_stack_count) {
 		strlcpy(x->error, "unbalanced parenthesis", sizeof(x->error));
@@ -1031,7 +1031,7 @@ static int pop_paren_stack(struct coho_smiles *x, int position,
  * to support error messages.
  */
 static void push_paren_stack(struct coho_smiles *x, int position,
-    struct coho_smiles_bond *b)
+			     struct coho_smiles_bond *b)
 {
 	struct coho_smiles_paren *p;
 
@@ -1083,7 +1083,7 @@ static int ringbond(struct coho_smiles *x, int anum)
 
 		if (!match(x, &t, 0, DIGIT)) {
 			strlcpy(x->error, "2 digit ring bond expected",
-			    sizeof(x->error));
+				sizeof(x->error));
 			return -1;
 		}
 		rnum += t.intval;
@@ -1163,7 +1163,7 @@ static void coho_smiles_bond_init(struct coho_smiles_bond *x)
  * The given number of bytes of smiles will be parsed.
  */
 static void coho_smiles_reinit(struct coho_smiles *x, const char *smiles,
-    size_t end)
+			       size_t end)
 {
 	size_t i;
 
