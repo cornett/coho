@@ -1,0 +1,3 @@
+# Coho
+
+[Installation](install.html)

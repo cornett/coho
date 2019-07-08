@@ -1,0 +1,284 @@
+.Dd September 22, 2019
+.Dt COHO_SMILES_READ 3
+.Os
+.Sh NAME
+.Nm coho_smiles_free ,
+.Nm coho_smiles_init ,
+.Nm coho_smiles_read
+.Nd parse SMILES
+.Sh LIBRARY
+.Lb libcoho
+.Sh SYNOPSIS
+.In coho/coho.h
+.Ft void
+.Fn coho_smiles_free "struct coho_smiles *"
+.Ft void
+.Fn coho_smiles_init "struct coho_smiles *"
+.Ft int
+.Fn coho_smiles_read "struct coho_smiles *, const char *smiles, size_t sz"
+.Sh DESCRIPTION
+These functions parse SMILES as specified by the
+.Lk http://opensmiles.org/ "OpenSMILES"
+specification.
+.Pp
+.Fn coho_smiles_init
+initializes a parsing context, which has type
+.Vt struct coho_smiles .
+Once initialized,
+a context can be used with
+.Fn coho_smiles_read
+to parse one or more SMILES strings.
+The
+.Fa sz
+parameter to
+.Fn coho_smiles_read
+controls how much of
+.Fa smiles
+is read.
+If
+.Fa sz
+is zero, the entire string is parsed.
+.Pp
+After all parsing is complete,
+.Fn coho_smiles_free
+should be called to release acquired resources.
+.Pp
+Note that the data structures contained in the context
+are intended to represent parsed SMILES strings, not molecules.
+Conformance of a particular string to the SMILES grammar does
+not imply description of a chemically-meaningful structure.
+.Pp
+The following fields of the context can be used to examine
+the results of a call to
+.Fn coho_smiles_read .
+.Bd -literal
+struct coho_smiles {
+	char			*error;
+	int			 error_position;
+	struct coho_smiles_atom	*atoms;
+	size_t			 atom_count;
+	struct coho_smiles_bond	*bonds;
+	size_t			 bond_count;
+}
+.Ed
+.Bl -tag -width atom_count
+.It Fa error
+If
+.Fn coho_smiles_read
+fails,
+.Fa error
+will point to an error message, otherwise it will be
+.Dv NULL .
+.It Fa error_position
+If
+.Fn coho_smiles_read
+fails,
+.Fa error_position
+will contain the offset into the SMILES string where the
+error was detected, otherwise it will be -1.
+.It Fa atoms
+Each parsed atom is represented by an instance of
+.Vt "struct coho_smiles_atom" ,
+described below.
+.It Fa atom_count
+Length of
+.Fa atoms .
+.It Fa bonds
+Each parsed bond is represented by an instance of
+.Vt "struct coho_smiles_bond" ,
+described below.
+.It Fa bond_count
+Length of
+.Fa bonds .
+.El
+.Pp
+If
+.Fn coho_smiles_read
+fails, the only valid access is to the
+.Fa error
+and
+.Fa error_position
+fields.
+.Ss ATOMS
+Each atom parsed from the input is represented
+by an instance of
+.Vt struct coho_smiles_atom .
+Its fields are described below.
+.Bd -literal
+struct coho_smiles_atom {
+	int			 atomic_number;
+	char			 symbol[4];
+	int			 isotope;
+	int			 charge;
+	int			 hydrogen_count;
+	int			 implicit_hydrogen_count;
+	int			 is_bracket;
+	int			 is_organic;
+	int			 is_aromatic;
+	char			 chirality[8];
+	int			 atom_class;
+	int			 position;
+	int			 length;
+};
+.Ed
+.Bl -tag -width atomic_number
+.It Fa atomic_number
+The atom's atomic number, deduced from the symbol.
+The wildcard atom is assigned an atomic_number of zero.
+.It Fa symbol
+Element symbol as it appears in the SMILES string.
+Atoms designated as aromatic will have lowercase symbols.
+.It Fa isotope
+Isotope, or -1 if unspecified.
+Note that the OpenSMILES specification states that zero is a
+valid isotope and that [0S] is not the same as [S].
+.It Fa charge
+Formal charge, or 0 if none was specified.
+.It Fa hydrogen_count
+Number of explicit hydrogens, or -1 if none were specified.
+.It Fa implicit_hydrogen_count
+Number of implicit hydrogens required to bring atom to its
+next standard valence state.
+Set to -1 for atoms not specified using the organic
+subset nomenclature.
+.It Fa is_bracket
+1 if the atom was specified using bracket([]) notation, else 0.
+.It Fa is_organic
+1 if the atom was specified using the
+organic subset nomenclature, else 0.
+Wildcard atoms are not considered part of the organic subset.
+If they occur outside of a bracket, their
+.Fa is_bracket
+and
+.Fa is_organic
+fields will both be 0.
+.It Fa is_aromatic
+1 if the atom's symbol is lowercase, indicating that it is aromatic,
+else 0.
+.It Fa chirality
+The chirality label, if provided, else the empty string.
+Currently, parsing is limited to @ and @@.
+Use of other chirality designators will result in a parsing error.
+.It Fa atom_class
+Positive integer atom class if specified, else -1.
+.It Fa position
+Offset of the atom's token in the SMILES string.
+.It Fa length
+Length of the atom's token.
+.El
+.Ss BONDS
+Each bond parsed from the input produces an instance of
+.Vt struct coho_smiles_bond .
+Its fields are described below.
+.Bd -literal
+struct coho_smiles_bond {
+	int			 atom0;
+	int			 atom1;
+	int			 order;
+	int			 stereo;
+	int			 is_implicit;
+	int			 is_ring;
+	int			 position;
+	int			 length;
+};
+.Ed
+.Bl -tag -width implicit
+.It Fa atom0
+The atom number (offset into
+.Fa atoms )
+of the first member of the bond pair.
+.It Fa atom1
+The atom number (offset in
+.Fa atoms )
+of the second member of the bond pair.
+.It Fa order
+Bond order, with values from the following enumeration:
+.Bl -compact -tag
+.It COHO_SMILES_BOND_SINGLE
+.It COHO_SMILES_BOND_DOUBLE
+.It COHO_SMILES_BOND_TRIPLE
+.It COHO_SMILES_BOND_QUAD
+.It COHO_SMILES_BOND_AROMATIC
+.El
+.It Fa stereo
+Used to indicate the cis/trans configuration of atoms around double bonds.
+Takes values from the following enumeration:
+.Bl -compact -tag -width COHO_SMILES_BOND_STEREO_UNSPECIFIED
+.It COHO_SMILES_BOND_STEREO_UNSPECIFIED
+Bond has no stereochemistry
+.It COHO_SMILES_BOND_STEREO_UP
+Atom
+.Fa atom1
+lies "up" from
+.Fa atom0
+.It COHO_SMILES_BOND_STEREO_DOWN
+Atom
+.Fa atom1
+lies "down" from
+.Fa atom0
+.El
+.It Fa is_implicit
+1 if bond was produced implicitly by the presence of two adjacent atoms
+without an intervening bond symbol, else 0.
+Implicit bonds do not have a token position or length.
+An aromatic bond is implied by two adjacent aromatic atoms,
+otherwise implicit bonds are single.
+.It Fa is_ring
+1 if the bond was produced using the ring bond nomenclature, else 0.
+This does not imply anything about the number of rings in the molecule
+described by the SMILES string.
+.It Fa position
+Offset of the bond's token in the SMILES string, or -1 if the bond is
+implicit.
+.It Fa length
+Length of the bond's token, or zero if implicit.
+.El
+.Sh RETURN VALUES
+.Fn coho_smiles_init
+and
+.Fn coho_smiles_free
+do not return values.
+.Fn coho_smiles_read
+returns 0 on success, -1 on failure.
+.Sh EXAMPLES
+The following example shows how to parse a SMILES string.
+.Bd -literal -offset indent
+
+#include <stdio.h>
+#include <coho/coho.h>
+
+int
+main(void)
+{
+	size_t i;
+	struct coho_smiles smi;
+
+	coho_smiles_init(&smi);
+
+	if (coho_smiles_read(&smi, "CNCC", 0)) {
+		fprintf(stderr, "failed: %s\\n", smi.error);
+		coho_smiles_free(&smi);
+		return 1;
+	}
+
+	printf("# atoms: %zi\\n", smi.atom_count);
+	printf("# bonds: %zi\\n", smi.bond_count);
+	printf("\\n");
+
+	for (i = 0; i < smi.atom_count; i++) {
+		printf("%zi: %s\\n", i, smi.atoms[i].symbol);
+	}
+	printf("\\n");
+
+	for (i = 0; i < smi.bond_count; i++) {
+		printf("%zi-%zi %i\\n",
+		       smi.bonds[i].atom0,
+		       smi.bonds[i].atom1,
+		       smi.bonds[i].order);
+	}
+
+	coho_smiles_free(&smi);
+
+	return 0;
+}
+.Ed

@@ -24,5 +24,13 @@ workflows:
 
   build-and-test:
     jobs:
-      - build-and-test
-      - build-manylinux1
+      - build-and-test:
+          filters:
+            branches:
+              ignore:
+                - gh-pages
+      - build-manylinux1:
+          filters:
+            branches:
+              ignore:
+                - gh-pages

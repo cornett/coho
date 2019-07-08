@@ -1,0 +1,67 @@
+#!/usr/bin/env ruby
+
+require 'kramdown'
+require 'pathname'
+require 'erb'
+require 'nokogiri'
+require 'rouge'
+
+def highlight_code_blocks(doc)
+  formatter = Rouge::Formatters::HTML.new
+  lexer = Rouge::Lexers::C.new
+
+  doc.css('div.Bd pre').each do |x|
+    code = x.text
+    html = formatter.format(lexer.lex(code))
+    x.replace(%Q[<code><pre class="highlight">#{html}</pre></code>])
+  end
+end
+
+def process_markdown_html(html)
+  return html
+  doc = Nokogiri::HTML::DocumentFragment.parse(html)
+
+  # Replace header table with an h1
+  x = doc.at_css('table.head')
+  title = x.at_css('td').child.text.strip
+  x.replace("<h1>#{title}</h1>")
+
+  # Remove footer
+  doc.at_css('table.foot').remove
+
+  highlight_code_blocks(doc)
+
+  return doc.to_html
+
+end
+
+def layout(body)
+  readfile = -> path { Pathname.new(path).expand_path(__dir__).read }
+
+  # Get CSS for embedding
+  css = readfile.('style.css')
+  css += Rouge::Themes::Magritte.render(scope: '.highlight')
+
+  # Create template context
+  ctx = Object.new
+  ctx.instance_variable_set(:@content, body)
+  ctx.instance_variable_set(:@css, css)
+  b = ctx.instance_eval { binding }
+
+  # Evaluate template
+  tmpl = readfile.('layout.erb')
+  erb = ERB.new(tmpl)
+  erb.result(b)
+end
+
+def convert_markdown(path)
+  md = File.read(path)
+  raw = Kramdown::Document.new(md).to_html
+  html = process_markdown_html(raw)
+  layout(html)
+end
+
+ARGV.each do |path|
+  html = convert_markdown(path)
+  puts html
+end

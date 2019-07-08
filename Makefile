@@ -1,4 +1,5 @@
 .PHONY: all clean install
+.PHONY: doc doc.deploy
 .PHONY: python python.sdist python.wheel
 .SUFFIXES:
 
@@ -38,6 +39,44 @@ $B/compat.o: compat.c					; $(LIB.CC) compat.c
 $B/smiles.o: smiles.c					; $(LIB.CC) smiles.c
 
 $(LIB.O): coho.h
+
+#- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+DOC.MAN3	= doc/coho_smiles_read.3
+
+DOC.MAN3.HTML	= $B/doc/coho_smiles_read.3.html
+
+DOC.MD		= doc/CHANGELOG.md \
+		  doc/index.md \
+		  doc/install.md
+
+DOC.MD.HTML	= $B/doc/CHANGELOG.html \
+		  $B/doc/index.html \
+		  $B/doc/install.html
+
+DOC.HTML	= $(DOC.MAN3.HTML) \
+		  $(DOC.MD.HTML)
+
+DOC.OBJ		= $(DOC.HTML)
+
+doc: $(DOC.HTML)
+
+doc.deploy:
+	B=$B ./doc/deploy
+
+MAN2HTML = mkdir -p $(@D) && doc/man2html doc/$(@F:.html=) > $@
+
+$B/doc/coho_smiles_read.3.html:		doc/coho_smiles_read.3	; $(MAN2HTML)
+
+MD2HTML = mkdir -p $(@D) && doc/md2html doc/$(@F:html=md) > $@
+
+$B/doc/CHANGELOG.html:			doc/CHANGELOG.md	; $(MD2HTML)
+$B/doc/index.html:			doc/index.md		; $(MD2HTML)
+$B/doc/install.html:			doc/install.md		; $(MD2HTML)
+
+$(DOC.HTML):		doc/style.css doc/layout.erb
+$(DOC.MAN3.HTML):	doc/man2html
+$(DOC.MD.HTML):		doc/md2html
 
 #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -95,5 +134,7 @@ $(BP)/smiles.so:	$(BP)/smiles.o			; $(PY.LD)
 $(PY.C): $P/__init__.pxd
 $(PY.O): coho.h
 $(PY.SO): $B/libcoho.a
+
+#- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 $(OBJ): Makefile config.mk

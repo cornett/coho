@@ -1,12 +1,2 @@
-*.o
-*.so
+build
 .mypy_cache
-afl/smi/smi
-libcoho.a
-python/__pycache__
-python/coho.egg-info
-python/coho/*.c
-python/dist
-python/src
-python/version.txt
-test/*.t

@@ -1,0 +1,22 @@
+#!/bin/sh
+set -xe
+
+export B=${B:-build}
+origin=$(git config --get remote.origin.url)
+
+cd $(dirname $0)/..
+
+make doc
+tmp=$(mktemp -d $B/tmp.deploy-doc.XXXXXX)
+git clone --branch gh-pages --depth 1 "file://$PWD" $tmp
+(cd $tmp && git rm -rf .)
+cp -a .circleci $tmp
+rsync -amv --include='**.html' --include='*/' --exclude='*' $B/doc/ $tmp
+
+cd $tmp
+git add .
+git commit -m "deploy docs"
+git push --force $origin gh-pages
+cd -
+
+rm -rf $tmp
