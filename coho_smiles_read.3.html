@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <style>
+    :root {
+  box-sizing: border-box;
+}
+
+*, ::before, ::after {
+  box-sizing: inherit;
+}
+
+body {
+  font-family: 'Roboto Mono', 'Helvetica Neue', Helvetica, sans-serif;
+  font-size: 100%;
+  line-height: 1.5;
+}
+
+#content {
+  max-width: 50rem;
+  margin: 0 0 10rem 10rem;
+}
+
+.Nm {
+  font-style: normal;
+  font-family: inherit;
+  font-weight: bold;
+}
+
+.Fn {
+  font-family: inherit;
+  font-weight: bold;
+}
+
+h1.Sh {
+  margin-left: -2em;
+}
+
+h1 a, h2 a {
+  color: inherit;
+  text-decoration: none;
+}
+
+code pre {
+  padding: 1em;
+  border: 1px solid #ddd;
+}
+.highlight table td { padding: 5px; }
+.highlight table pre { margin: 0; }
+.highlight {
+  color: #000707;
+  background-color: #f3ffff;
+}
+.highlight .gl {
+  color: #f3ffff;
+  background-color: #000707;
+}
+.highlight .c, .highlight .ch, .highlight .cd, .highlight .cm, .highlight .cpf, .highlight .c1, .highlight .cs {
+  color: #006c6c;
+  font-style: italic;
+}
+.highlight .cp {
+  color: #920241;
+  font-weight: bold;
+}
+.highlight .err {
+  color: #f3ffff;
+  background-color: #f22700;
+}
+.highlight .gr {
+  color: #f22700;
+  font-weight: bold;
+  font-style: italic;
+}
+.highlight .k, .highlight .kd, .highlight .kv {
+  color: #19003a;
+  font-weight: bold;
+}
+.highlight .o, .highlight .ow {
+  color: #4c48fe;
+  font-weight: bold;
+}
+.highlight .p, .highlight .pi {
+  color: #4c48fe;
+}
+.highlight .gd {
+  color: #f22700;
+}
+.highlight .gi {
+  color: #007500;
+}
+.highlight .ge {
+  font-style: italic;
+}
+.highlight .gs {
+  font-weight: bold;
+}
+.highlight .gt {
+  color: #000000;
+  background-color: #d8d9ff;
+}
+.highlight .kc {
+  color: #007500;
+  font-weight: bold;
+}
+.highlight .kn {
+  color: #007500;
+  font-weight: bold;
+}
+.highlight .kp {
+  color: #007500;
+  font-weight: bold;
+}
+.highlight .kr {
+  color: #007500;
+  font-weight: bold;
+}
+.highlight .gh {
+  color: #007500;
+  font-weight: bold;
+}
+.highlight .gu {
+  color: #007500;
+  font-weight: bold;
+}
+.highlight .kt {
+  color: #920241;
+  font-weight: bold;
+}
+.highlight .no {
+  color: #920241;
+  font-weight: bold;
+}
+.highlight .nc {
+  color: #920241;
+  font-weight: bold;
+}
+.highlight .nd {
+  color: #920241;
+  font-weight: bold;
+}
+.highlight .nn {
+  color: #920241;
+  font-weight: bold;
+}
+.highlight .bp {
+  color: #920241;
+  font-weight: bold;
+}
+.highlight .ne {
+  color: #920241;
+  font-weight: bold;
+}
+.highlight .nl {
+  color: #840084;
+  font-weight: bold;
+}
+.highlight .nt {
+  color: #840084;
+  font-weight: bold;
+}
+.highlight .m, .highlight .mb, .highlight .mf, .highlight .mh, .highlight .mi, .highlight .il, .highlight .mo, .highlight .mx {
+  color: #007500;
+  font-weight: bold;
+}
+.highlight .ld {
+  color: #007500;
+  font-weight: bold;
+}
+.highlight .ss {
+  color: #007500;
+}
+.highlight .s, .highlight .sa, .highlight .sb, .highlight .dl, .highlight .sd, .highlight .s2, .highlight .sh, .highlight .sx, .highlight .sr, .highlight .s1 {
+  color: #7c0000;
+  font-weight: bold;
+}
+.highlight .se {
+  color: #840084;
+  font-weight: bold;
+}
+.highlight .sc {
+  color: #840084;
+  font-weight: bold;
+}
+.highlight .si {
+  color: #840084;
+  font-weight: bold;
+}
+.highlight .nb {
+  font-weight: bold;
+}
+.highlight .ni {
+  color: #999999;
+  font-weight: bold;
+}
+.highlight .w {
+  color: #BBBBBB;
+}
+.highlight .go {
+  color: #19003a;
+}
+.highlight .nf, .highlight .fm {
+  color: #ff0089;
+}
+.highlight .py {
+  color: #ff0089;
+}
+.highlight .na {
+  color: #ff0089;
+}
+.highlight .nv, .highlight .vc, .highlight .vg, .highlight .vi, .highlight .vm {
+  color: #ff0089;
+  font-weight: bold;
+}
+  </style>
+</head>
+<body>
+
+
+<div id="content">
+<h1>COHO_SMILES_READ(3)</h1>
+<div class="manual-text">
+<section class="Sh">
+<h1 class="Sh" id="NAME"><a class="permalink" href="#NAME">NAME</a></h1>
+<p class="Pp"><code class="Nm">coho_smiles_free</code>,
+    <code class="Nm">coho_smiles_init</code>,
+    <code class="Nm">coho_smiles_read</code> &#8212; <span class="Nd">parse
+    SMILES</span></p>
+</section>
+<section class="Sh">
+<h1 class="Sh" id="LIBRARY"><a class="permalink" href="#LIBRARY">LIBRARY</a></h1>
+<p class="Pp"><span class="Lb">library &#8220;libcoho&#8221;</span></p>
+</section>
+<section class="Sh">
+<h1 class="Sh" id="SYNOPSIS"><a class="permalink" href="#SYNOPSIS">SYNOPSIS</a></h1>
+<p class="Pp"><code class="In">#include
+    &lt;<a class="In">coho/coho.h</a>&gt;</code></p>
+<p class="Pp"><var class="Ft">void</var>
+  <br>
+  <code class="Fn">coho_smiles_free</code>(<var class="Fa" style="white-space: nowrap;">struct
+    coho_smiles *</var>);</p>
+<p class="Pp"><var class="Ft">void</var>
+  <br>
+  <code class="Fn">coho_smiles_init</code>(<var class="Fa" style="white-space: nowrap;">struct
+    coho_smiles *</var>);</p>
+<p class="Pp"><var class="Ft">int</var>
+  <br>
+  <code class="Fn">coho_smiles_read</code>(<var class="Fa" style="white-space: nowrap;">struct
+    coho_smiles *, const char *smiles, size_t sz</var>);</p>
+</section>
+<section class="Sh">
+<h1 class="Sh" id="DESCRIPTION"><a class="permalink" href="#DESCRIPTION">DESCRIPTION</a></h1>
+<p class="Pp">These functions parse SMILES as specified by the
+    <a class="Lk" href="http://opensmiles.org/">OpenSMILES</a>
+  specification.</p>
+<p class="Pp"><code class="Fn">coho_smiles_init</code>() initializes a parsing
+    context, which has type <var class="Vt">struct coho_smiles</var>. Once
+    initialized, a context can be used with
+    <code class="Fn">coho_smiles_read</code>() to parse one or more SMILES
+    strings. The <var class="Fa">sz</var> parameter to
+    <code class="Fn">coho_smiles_read</code>() controls how much of
+    <var class="Fa">smiles</var> is read. If <var class="Fa">sz</var> is zero,
+    the entire string is parsed.</p>
+<p class="Pp">After all parsing is complete,
+    <code class="Fn">coho_smiles_free</code>() should be called to release
+    acquired resources.</p>
+<p class="Pp">Note that the data structures contained in the context are
+    intended to represent parsed SMILES strings, not molecules. Conformance of a
+    particular string to the SMILES grammar does not imply description of a
+    chemically-meaningful structure.</p>
+<p class="Pp">The following fields of the context can be used to examine the
+    results of a call to <code class="Fn">coho_smiles_read</code>().</p>
+<div class="Bd Pp">
+<code><pre class="highlight">
+<span class="k">struct</span> <span class="n">coho_smiles</span> <span class="p">{</span>
+	<span class="kt">char</span>			<span class="o">*</span><span class="n">error</span><span class="p">;</span>
+	<span class="kt">int</span>			 <span class="n">error_position</span><span class="p">;</span>
+	<span class="k">struct</span> <span class="n">coho_smiles_atom</span>	<span class="o">*</span><span class="n">atoms</span><span class="p">;</span>
+	<span class="kt">size_t</span>			 <span class="n">atom_count</span><span class="p">;</span>
+	<span class="k">struct</span> <span class="n">coho_smiles_bond</span>	<span class="o">*</span><span class="n">bonds</span><span class="p">;</span>
+	<span class="kt">size_t</span>			 <span class="n">bond_count</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></code>
+</div>
+<dl class="Bl-tag">
+  <dt><var class="Fa">error</var></dt>
+  <dd>If <code class="Fn">coho_smiles_read</code>() fails,
+      <var class="Fa">error</var> will point to an error message, otherwise it
+      will be <code class="Dv">NULL</code>.</dd>
+  <dt><var class="Fa">error_position</var></dt>
+  <dd>If <code class="Fn">coho_smiles_read</code>() fails,
+      <var class="Fa">error_position</var> will contain the offset into the
+      SMILES string where the error was detected, otherwise it will be -1.</dd>
+  <dt><var class="Fa">atoms</var></dt>
+  <dd>Each parsed atom is represented by an instance of <var class="Vt">struct
+      coho_smiles_atom</var>, described below.</dd>
+  <dt><var class="Fa">atom_count</var></dt>
+  <dd>Length of <var class="Fa">atoms</var>.</dd>
+  <dt><var class="Fa">bonds</var></dt>
+  <dd>Each parsed bond is represented by an instance of <var class="Vt">struct
+      coho_smiles_bond</var>, described below.</dd>
+  <dt><var class="Fa">bond_count</var></dt>
+  <dd>Length of <var class="Fa">bonds</var>.</dd>
+</dl>
+<p class="Pp">If <code class="Fn">coho_smiles_read</code>() fails, the only
+    valid access is to the <var class="Fa">error</var> and
+    <var class="Fa">error_position</var> fields.</p>
+<section class="Ss">
+<h2 class="Ss" id="ATOMS"><a class="permalink" href="#ATOMS">ATOMS</a></h2>
+<p class="Pp">Each atom parsed from the input is represented by an instance of
+    <var class="Vt">struct coho_smiles_atom</var>. Its fields are described
+    below.</p>
+<div class="Bd Pp">
+<code><pre class="highlight">
+<span class="k">struct</span> <span class="n">coho_smiles_atom</span> <span class="p">{</span>
+	<span class="kt">int</span>			 <span class="n">atomic_number</span><span class="p">;</span>
+	<span class="kt">char</span>			 <span class="n">symbol</span><span class="p">[</span><span class="mi">4</span><span class="p">];</span>
+	<span class="kt">int</span>			 <span class="n">isotope</span><span class="p">;</span>
+	<span class="kt">int</span>			 <span class="n">charge</span><span class="p">;</span>
+	<span class="kt">int</span>			 <span class="n">hydrogen_count</span><span class="p">;</span>
+	<span class="kt">int</span>			 <span class="n">implicit_hydrogen_count</span><span class="p">;</span>
+	<span class="kt">int</span>			 <span class="n">is_bracket</span><span class="p">;</span>
+	<span class="kt">int</span>			 <span class="n">is_organic</span><span class="p">;</span>
+	<span class="kt">int</span>			 <span class="n">is_aromatic</span><span class="p">;</span>
+	<span class="kt">char</span>			 <span class="n">chirality</span><span class="p">[</span><span class="mi">8</span><span class="p">];</span>
+	<span class="kt">int</span>			 <span class="n">atom_class</span><span class="p">;</span>
+	<span class="kt">int</span>			 <span class="n">position</span><span class="p">;</span>
+	<span class="kt">int</span>			 <span class="n">length</span><span class="p">;</span>
+<span class="p">};</span>
+</pre></code>
+</div>
+<dl class="Bl-tag">
+  <dt><var class="Fa">atomic_number</var></dt>
+  <dd>The atom's atomic number, deduced from the symbol. The wildcard atom is
+      assigned an atomic_number of zero.</dd>
+  <dt><var class="Fa">symbol</var></dt>
+  <dd>Element symbol as it appears in the SMILES string. Atoms designated as
+      aromatic will have lowercase symbols.</dd>
+  <dt><var class="Fa">isotope</var></dt>
+  <dd>Isotope, or -1 if unspecified. Note that the OpenSMILES specification
+      states that zero is a valid isotope and that [0S] is not the same as
+    [S].</dd>
+  <dt><var class="Fa">charge</var></dt>
+  <dd>Formal charge, or 0 if none was specified.</dd>
+  <dt><var class="Fa">hydrogen_count</var></dt>
+  <dd>Number of explicit hydrogens, or -1 if none were specified.</dd>
+  <dt><var class="Fa">implicit_hydrogen_count</var></dt>
+  <dd>Number of implicit hydrogens required to bring atom to its next standard
+      valence state. Set to -1 for atoms not specified using the organic subset
+      nomenclature.</dd>
+  <dt><var class="Fa">is_bracket</var></dt>
+  <dd>1 if the atom was specified using bracket([]) notation, else 0.</dd>
+  <dt><var class="Fa">is_organic</var></dt>
+  <dd>1 if the atom was specified using the organic subset nomenclature, else 0.
+      Wildcard atoms are not considered part of the organic subset. If they
+      occur outside of a bracket, their <var class="Fa">is_bracket</var> and
+      <var class="Fa">is_organic</var> fields will both be 0.</dd>
+  <dt><var class="Fa">is_aromatic</var></dt>
+  <dd>1 if the atom's symbol is lowercase, indicating that it is aromatic, else
+      0.</dd>
+  <dt><var class="Fa">chirality</var></dt>
+  <dd>The chirality label, if provided, else the empty string. Currently,
+      parsing is limited to @ and @@. Use of other chirality designators will
+      result in a parsing error.</dd>
+  <dt><var class="Fa">atom_class</var></dt>
+  <dd>Positive integer atom class if specified, else -1.</dd>
+  <dt><var class="Fa">position</var></dt>
+  <dd>Offset of the atom's token in the SMILES string.</dd>
+  <dt><var class="Fa">length</var></dt>
+  <dd>Length of the atom's token.</dd>
+</dl>
+</section>
+<section class="Ss">
+<h2 class="Ss" id="BONDS"><a class="permalink" href="#BONDS">BONDS</a></h2>
+<p class="Pp">Each bond parsed from the input produces an instance of
+    <var class="Vt">struct coho_smiles_bond</var>. Its fields are described
+    below.</p>
+<div class="Bd Pp">
+<code><pre class="highlight">
+<span class="k">struct</span> <span class="n">coho_smiles_bond</span> <span class="p">{</span>
+	<span class="kt">int</span>			 <span class="n">atom0</span><span class="p">;</span>
+	<span class="kt">int</span>			 <span class="n">atom1</span><span class="p">;</span>
+	<span class="kt">int</span>			 <span class="n">order</span><span class="p">;</span>
+	<span class="kt">int</span>			 <span class="n">stereo</span><span class="p">;</span>
+	<span class="kt">int</span>			 <span class="n">is_implicit</span><span class="p">;</span>
+	<span class="kt">int</span>			 <span class="n">is_ring</span><span class="p">;</span>
+	<span class="kt">int</span>			 <span class="n">position</span><span class="p">;</span>
+	<span class="kt">int</span>			 <span class="n">length</span><span class="p">;</span>
+<span class="p">};</span>
+</pre></code>
+</div>
+<dl class="Bl-tag">
+  <dt><var class="Fa">atom0</var></dt>
+  <dd>The atom number (offset into <var class="Fa">atoms</var>) of the first
+      member of the bond pair.</dd>
+  <dt><var class="Fa">atom1</var></dt>
+  <dd>The atom number (offset in <var class="Fa">atoms</var>) of the second
+      member of the bond pair.</dd>
+  <dt><var class="Fa">order</var></dt>
+  <dd>Bond order, with values from the following enumeration:
+    <dl class="Bl-tag Bl-compact">
+      <dt>COHO_SMILES_BOND_SINGLE</dt>
+      <dd style="width: auto;">&#160;</dd>
+      <dt>COHO_SMILES_BOND_DOUBLE</dt>
+      <dd style="width: auto;">&#160;</dd>
+      <dt>COHO_SMILES_BOND_TRIPLE</dt>
+      <dd style="width: auto;">&#160;</dd>
+      <dt>COHO_SMILES_BOND_QUAD</dt>
+      <dd style="width: auto;">&#160;</dd>
+      <dt>COHO_SMILES_BOND_AROMATIC</dt>
+      <dd style="width: auto;">&#160;</dd>
+    </dl>
+  </dd>
+  <dt><var class="Fa">stereo</var></dt>
+  <dd>Used to indicate the cis/trans configuration of atoms around double bonds.
+      Takes values from the following enumeration:
+    <dl class="Bl-tag Bl-compact">
+      <dt>COHO_SMILES_BOND_STEREO_UNSPECIFIED</dt>
+      <dd>Bond has no stereochemistry</dd>
+      <dt>COHO_SMILES_BOND_STEREO_UP</dt>
+      <dd>Atom <var class="Fa">atom1</var> lies "up" from
+          <var class="Fa">atom0</var>
+</dd>
+      <dt>COHO_SMILES_BOND_STEREO_DOWN</dt>
+      <dd>Atom <var class="Fa">atom1</var> lies "down" from
+          <var class="Fa">atom0</var>
+</dd>
+    </dl>
+  </dd>
+  <dt><var class="Fa">is_implicit</var></dt>
+  <dd>1 if bond was produced implicitly by the presence of two adjacent atoms
+      without an intervening bond symbol, else 0. Implicit bonds do not have a
+      token position or length. An aromatic bond is implied by two adjacent
+      aromatic atoms, otherwise implicit bonds are single.</dd>
+  <dt><var class="Fa">is_ring</var></dt>
+  <dd>1 if the bond was produced using the ring bond nomenclature, else 0. This
+      does not imply anything about the number of rings in the molecule
+      described by the SMILES string.</dd>
+  <dt><var class="Fa">position</var></dt>
+  <dd>Offset of the bond's token in the SMILES string, or -1 if the bond is
+      implicit.</dd>
+  <dt><var class="Fa">length</var></dt>
+  <dd>Length of the bond's token, or zero if implicit.</dd>
+</dl>
+</section>
+</section>
+<section class="Sh">
+<h1 class="Sh" id="RETURN_VALUES"><a class="permalink" href="#RETURN_VALUES">RETURN
+  VALUES</a></h1>
+<p class="Pp"><code class="Fn">coho_smiles_init</code>() and
+    <code class="Fn">coho_smiles_free</code>() do not return values.
+    <code class="Fn">coho_smiles_read</code>() returns 0 on success, -1 on
+    failure.</p>
+</section>
+<section class="Sh">
+<h1 class="Sh" id="EXAMPLES"><a class="permalink" href="#EXAMPLES">EXAMPLES</a></h1>
+<p class="Pp">The following example shows how to parse a SMILES string.</p>
+<div class="Bd Pp Bd-indent">
+<code><pre class="highlight">
+
+<span class="cp">#include &lt;stdio.h&gt;
+#include &lt;coho/coho.h&gt;
+</span>
+<span class="kt">int</span>
+<span class="nf">main</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span>
+<span class="p">{</span>
+	<span class="kt">size_t</span> <span class="n">i</span><span class="p">;</span>
+	<span class="k">struct</span> <span class="n">coho_smiles</span> <span class="n">smi</span><span class="p">;</span>
+
+	<span class="n">coho_smiles_init</span><span class="p">(</span><span class="o">&amp;</span><span class="n">smi</span><span class="p">);</span>
+
+	<span class="k">if</span> <span class="p">(</span><span class="n">coho_smiles_read</span><span class="p">(</span><span class="o">&amp;</span><span class="n">smi</span><span class="p">,</span> <span class="s">"CNCC"</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span> <span class="p">{</span>
+		<span class="n">fprintf</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span> <span class="s">"failed: %s</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span> <span class="n">smi</span><span class="p">.</span><span class="n">error</span><span class="p">);</span>
+		<span class="n">coho_smiles_free</span><span class="p">(</span><span class="o">&amp;</span><span class="n">smi</span><span class="p">);</span>
+		<span class="k">return</span> <span class="mi">1</span><span class="p">;</span>
+	<span class="p">}</span>
+
+	<span class="n">printf</span><span class="p">(</span><span class="s">"# atoms: %zi</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span> <span class="n">smi</span><span class="p">.</span><span class="n">atom_count</span><span class="p">);</span>
+	<span class="n">printf</span><span class="p">(</span><span class="s">"# bonds: %zi</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span> <span class="n">smi</span><span class="p">.</span><span class="n">bond_count</span><span class="p">);</span>
+	<span class="n">printf</span><span class="p">(</span><span class="s">"</span><span class="se">\n</span><span class="s">"</span><span class="p">);</span>
+
+	<span class="k">for</span> <span class="p">(</span><span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">smi</span><span class="p">.</span><span class="n">atom_count</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+		<span class="n">printf</span><span class="p">(</span><span class="s">"%zi: %s</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">smi</span><span class="p">.</span><span class="n">atoms</span><span class="p">[</span><span class="n">i</span><span class="p">].</span><span class="n">symbol</span><span class="p">);</span>
+	<span class="p">}</span>
+	<span class="n">printf</span><span class="p">(</span><span class="s">"</span><span class="se">\n</span><span class="s">"</span><span class="p">);</span>
+
+	<span class="k">for</span> <span class="p">(</span><span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">smi</span><span class="p">.</span><span class="n">bond_count</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+		<span class="n">printf</span><span class="p">(</span><span class="s">"%zi-%zi %i</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span>
+		       <span class="n">smi</span><span class="p">.</span><span class="n">bonds</span><span class="p">[</span><span class="n">i</span><span class="p">].</span><span class="n">atom0</span><span class="p">,</span>
+		       <span class="n">smi</span><span class="p">.</span><span class="n">bonds</span><span class="p">[</span><span class="n">i</span><span class="p">].</span><span class="n">atom1</span><span class="p">,</span>
+		       <span class="n">smi</span><span class="p">.</span><span class="n">bonds</span><span class="p">[</span><span class="n">i</span><span class="p">].</span><span class="n">order</span><span class="p">);</span>
+	<span class="p">}</span>
+
+	<span class="n">coho_smiles_free</span><span class="p">(</span><span class="o">&amp;</span><span class="n">smi</span><span class="p">);</span>
+
+	<span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></code>
+</div>
+</section>
+</div>
+
+
+</div>
+
+
+</body>
+</html>

@@ -1,0 +1,36 @@
+version: 2.1
+jobs:
+
+  build-and-test:
+    docker:
+      - image: circleci/python
+    steps:
+      - checkout
+      - run:
+          command: |
+            sudo pip install cython
+            make
+            make test
+
+  build-manylinux1:
+    docker:
+      - image: quay.io/pypa/manylinux1_x86_64
+    steps:
+      - checkout
+      - run: ci/python-build-manylinux1-wheels
+
+workflows:
+  version: 2
+
+  build-and-test:
+    jobs:
+      - build-and-test:
+          filters:
+            branches:
+              ignore:
+                - gh-pages
+      - build-manylinux1:
+          filters:
+            branches:
+              ignore:
+                - gh-pages

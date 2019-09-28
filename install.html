@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <style>
+    :root {
+  box-sizing: border-box;
+}
+
+*, ::before, ::after {
+  box-sizing: inherit;
+}
+
+body {
+  font-family: 'Roboto Mono', 'Helvetica Neue', Helvetica, sans-serif;
+  font-size: 100%;
+  line-height: 1.5;
+}
+
+#content {
+  max-width: 50rem;
+  margin: 0 0 10rem 10rem;
+}
+
+.Nm {
+  font-style: normal;
+  font-family: inherit;
+  font-weight: bold;
+}
+
+.Fn {
+  font-family: inherit;
+  font-weight: bold;
+}
+
+h1.Sh {
+  margin-left: -2em;
+}
+
+h1 a, h2 a {
+  color: inherit;
+  text-decoration: none;
+}
+
+code pre {
+  padding: 1em;
+  border: 1px solid #ddd;
+}
+.highlight table td { padding: 5px; }
+.highlight table pre { margin: 0; }
+.highlight {
+  color: #000707;
+  background-color: #f3ffff;
+}
+.highlight .gl {
+  color: #f3ffff;
+  background-color: #000707;
+}
+.highlight .c, .highlight .ch, .highlight .cd, .highlight .cm, .highlight .cpf, .highlight .c1, .highlight .cs {
+  color: #006c6c;
+  font-style: italic;
+}
+.highlight .cp {
+  color: #920241;
+  font-weight: bold;
+}
+.highlight .err {
+  color: #f3ffff;
+  background-color: #f22700;
+}
+.highlight .gr {
+  color: #f22700;
+  font-weight: bold;
+  font-style: italic;
+}
+.highlight .k, .highlight .kd, .highlight .kv {
+  color: #19003a;
+  font-weight: bold;
+}
+.highlight .o, .highlight .ow {
+  color: #4c48fe;
+  font-weight: bold;
+}
+.highlight .p, .highlight .pi {
+  color: #4c48fe;
+}
+.highlight .gd {
+  color: #f22700;
+}
+.highlight .gi {
+  color: #007500;
+}
+.highlight .ge {
+  font-style: italic;
+}
+.highlight .gs {
+  font-weight: bold;
+}
+.highlight .gt {
+  color: #000000;
+  background-color: #d8d9ff;
+}
+.highlight .kc {
+  color: #007500;
+  font-weight: bold;
+}
+.highlight .kn {
+  color: #007500;
+  font-weight: bold;
+}
+.highlight .kp {
+  color: #007500;
+  font-weight: bold;
+}
+.highlight .kr {
+  color: #007500;
+  font-weight: bold;
+}
+.highlight .gh {
+  color: #007500;
+  font-weight: bold;
+}
+.highlight .gu {
+  color: #007500;
+  font-weight: bold;
+}
+.highlight .kt {
+  color: #920241;
+  font-weight: bold;
+}
+.highlight .no {
+  color: #920241;
+  font-weight: bold;
+}
+.highlight .nc {
+  color: #920241;
+  font-weight: bold;
+}
+.highlight .nd {
+  color: #920241;
+  font-weight: bold;
+}
+.highlight .nn {
+  color: #920241;
+  font-weight: bold;
+}
+.highlight .bp {
+  color: #920241;
+  font-weight: bold;
+}
+.highlight .ne {
+  color: #920241;
+  font-weight: bold;
+}
+.highlight .nl {
+  color: #840084;
+  font-weight: bold;
+}
+.highlight .nt {
+  color: #840084;
+  font-weight: bold;
+}
+.highlight .m, .highlight .mb, .highlight .mf, .highlight .mh, .highlight .mi, .highlight .il, .highlight .mo, .highlight .mx {
+  color: #007500;
+  font-weight: bold;
+}
+.highlight .ld {
+  color: #007500;
+  font-weight: bold;
+}
+.highlight .ss {
+  color: #007500;
+}
+.highlight .s, .highlight .sa, .highlight .sb, .highlight .dl, .highlight .sd, .highlight .s2, .highlight .sh, .highlight .sx, .highlight .sr, .highlight .s1 {
+  color: #7c0000;
+  font-weight: bold;
+}
+.highlight .se {
+  color: #840084;
+  font-weight: bold;
+}
+.highlight .sc {
+  color: #840084;
+  font-weight: bold;
+}
+.highlight .si {
+  color: #840084;
+  font-weight: bold;
+}
+.highlight .nb {
+  font-weight: bold;
+}
+.highlight .ni {
+  color: #999999;
+  font-weight: bold;
+}
+.highlight .w {
+  color: #BBBBBB;
+}
+.highlight .go {
+  color: #19003a;
+}
+.highlight .nf, .highlight .fm {
+  color: #ff0089;
+}
+.highlight .py {
+  color: #ff0089;
+}
+.highlight .na {
+  color: #ff0089;
+}
+.highlight .nv, .highlight .vc, .highlight .vg, .highlight .vi, .highlight .vm {
+  color: #ff0089;
+  font-weight: bold;
+}
+  </style>
+</head>
+<body>
+
+
+<div id="content">
+<h1 id="installation">Installation</h1>
+
+<p>A self-contained Python package is available on <a href="https://pypi.org/project/coho/">PyPI</a>.  It
+can be installed using pip:</p>
+
+<pre><code>pip install coho
+</code></pre>
+
+<p>Installing this package is sufficient to use Coho via Python.  The
+remainder of this document describes how to build and install the Coho C
+library.</p>
+
+<h2 id="build-requirements">Build Requirements</h2>
+
+<p>Building requires make and a C compiler.  Compiler requirements are
+modest: C89 plus a few C99 features such as <code>&lt;stdint.h&gt;</code>.</p>
+
+<p><a href="http://cython.org/">Cython</a> is required to build the Python bindings from
+source.</p>
+
+<p>Coho has been tested on the following platforms, but will likely work
+on any modern unix-like system.</p>
+
+<ul>
+  <li>OpenBSD 6.4</li>
+  <li>FreeBSD 11.2</li>
+  <li>Alpine Linux Edge</li>
+  <li>CentOS 7</li>
+  <li>OSX 10.12</li>
+</ul>
+
+<h2 id="configure">Configure</h2>
+
+<p>After unpacking the source distribution, customize <code>config.mk</code> to fit
+your system.  In particular, you may
+wish to adjust the following variable settings.</p>
+
+<dl>
+  <dt><code>PREFIX</code></dt>
+  <dd>The top-level directory under which Coho will be installed.</dd>
+  <dt><code>CPPFLAGS</code></dt>
+  <dd>Extra flags to pass to the C preprocessor.  This is not needed for
+most systems.</dd>
+  <dt><code>CFLAGS</code>:</dt>
+  <dd>Extra flags to pass to the C compiler.  The default is fine for most
+systems.</dd>
+  <dt><code>PYTHON</code>:</dt>
+  <dd>Path to the Python executable.  This can be ignored if you are only
+building the C library.  Otherwise, make sure it points to an
+installation of (C)Python, version {minpython} or higher.  You may
+need to change this setting if multiple Python installations are
+available on your system.</dd>
+  <dt><code>CYTHON</code>:</dt>
+  <dd>Path to the <a href="http://cython.org/">Cython</a> compiler, which is used to create
+the Python bindings.  This can be ignored if you are only building
+the C library.  The following procedure may be useful if Cython is
+not already installed on your system:
+
+    <pre><code>python3 -m venv pyenv
+./pyenv/bin/pip install cython
+</code></pre>
+
+    <p>The above installs Cython into a Python
+<a href="https://docs.python.org/3/library/venv.html">virtual environment</a>.  You should then set <code>CYTHON</code> to
+<code>./pyenv/bin/cython</code>.  Cython is required only at build time.</p>
+  </dd>
+  <dt><code>PYTHON_CONFIG</code>:</dt>
+  <dd>Python ships with a <code>python-config</code> script that can be used to
+determine the compiler and linker flags needed to build extension
+modules.  You may need to change the default setting of
+<code>PYTHON_CONFIG</code> if you set your <code>PYTHON</code> variable to an executable
+within a virtual env.  This variable is only used to set the
+<code>PYTHON_CFLAGS</code>, <code>PYTHON_LDFLAGS</code>, and <code>PYTHON_LIBS</code> variables, so
+it can be ignored if you choose to set those manually.</dd>
+  <dt><code>PYTHON_CFLAGS</code>:</dt>
+  <dd>Flags to pass to the C compiler when compiling Python extension
+modules.  The default will probably work if <code>PYTHON_CONFIG</code> is set
+correctly, but if relocation errors occur, check that <code>-fPIC</code> is
+being included in the flags.</dd>
+  <dt><code>PYTHON_LDFLAGS</code>:</dt>
+  <dd>Flags to pass to the C compiler when linking Python extension modules.
+The default will probably work if <code>PYTHON_CONFIG</code> is set correctly.</dd>
+  <dt><code>PYTHON_LIBS</code>:</dt>
+  <dd>Library flags (ex. <code>-lpython3.7m</code>) to pass to the C compiler when
+linking Python extension modules.  The default will probably work if
+<code>PYTHON_CONFIG</code> is set correctly.</dd>
+</dl>
+
+<h2 id="build">Build</h2>
+
+<p>To build Coho, type <code>make</code>.  This will build <code>libcoho.a</code> and its Python
+bindings.  Type <code>make libcoho.a</code> to only build the C library.</p>
+
+<h2 id="install">Install</h2>
+
+<p>To install Coho, type <code>make install</code>.</p>
+
+
+</div>
+
+
+</body>
+</html>
