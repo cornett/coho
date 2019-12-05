@@ -1,140 +1,81 @@
-.PHONY: all clean install
-.PHONY: doc doc.deploy
-.PHONY: python python.sdist python.wheel
+default: all
+.PHONY: all default dep install lib
+.PHONY: python python.stage python.sdist python.wheel
 .SUFFIXES:
 
-include config.mk
+BUILD_DIR	= build
+PREFIX		= /usr/local
+CFLAGS		= -Wall -Wextra -fPIC -O2
+CYTHON		= cython
+CYTHON_FLAGS	= -3 -X embedsignature=True
+PYTHON		= python3
+PYTHON_CONFIG	= $(PYTHON)-config
+CFLAGS_PY	= `$(PYTHON_CONFIG) --cflags` -fPIC
 
-LIB.SRC		= $(LIB.H) \
-		  $(LIB.C)
+-include config.mk
 
-LIB.H		= coho.h
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-LIB.C		= compat.c \
-		  smiles.c
+version		= 0.4
 
-LIB.O		= $B/compat.o \
-		  $B/smiles.o
+b		= ${BUILD_DIR}
 
-OBJ		= $(LIB.O) \
-		  $(PY.OBJ) \
-		  $(DOC.OBJ)
+src.lib		= src/compat.c \
+		  src/smiles.c
 
-all: $B/libcoho.a python
+py.pyx		= python/coho/__init__.pyx \
+		  python/coho/smiles.pyx
 
-clean:
-	rm -rf $B
+src		= ${src.lib} \
+		  ${py.pyx}
 
-install: $B/libcoho.a
-	install -d $(DESTDIR)$(PREFIX)/{include,lib}
-	install -m 0644 coho.h $(DESTDIR)$(PREFIX)/include
-	install -m 0644 $B/libcoho.a $(DESTDIR)$(PREFIX)/lib
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-$B/libcoho.a: $(LIB.O)
-	$(AR) -rs $@ $?
+include auto.mk
 
-LIB.CC = mkdir -p $(@D) && $(CC) -I. $(CFLAGS) $(CPPFLAGS) -o $@ -c
+CFLAGS_PY.__INIT__ = -DVERSION='"${version}"'
 
-$B/compat.o: compat.c					; $(LIB.CC) compat.c
-$B/smiles.o: smiles.c					; $(LIB.CC) smiles.c
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-$(LIB.O): coho.h
+$b/libcoho.a:
+	${AR} -rs $@ $?
 
-#- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-DOC.MAN3	= doc/coho_smiles_read.3
+python:		${py.so}
 
-DOC.MAN3.HTML	= $B/doc/coho_smiles_read.3.html
 
-DOC.MD		= doc/CHANGELOG.md \
-		  doc/index.md \
-		  doc/install.md
+python.sdist:	python.stage
+	cd $b/python && ${PYTHON} setup.py sdist
 
-DOC.MD.HTML	= $B/doc/CHANGELOG.html \
-		  $B/doc/index.html \
-		  $B/doc/install.html
 
-DOC.HTML	= $(DOC.MAN3.HTML) \
-		  $(DOC.MD.HTML)
+python.wheel:	python.stage
+	cd $b/python && ${PYTHON} setup.py bdist_wheel
 
-DOC.OBJ		= $(DOC.HTML)
 
-doc: $(DOC.HTML)
-
-doc.deploy:
-	B=$B ./doc/deploy
-
-MAN2HTML = mkdir -p $(@D) && doc/man2html doc/$(@F:.html=) > $@
-
-$B/doc/coho_smiles_read.3.html:		doc/coho_smiles_read.3	; $(MAN2HTML)
-
-MD2HTML = mkdir -p $(@D) && doc/md2html doc/$(@F:html=md) > $@
-
-$B/doc/CHANGELOG.html:			doc/CHANGELOG.md	; $(MD2HTML)
-$B/doc/index.html:			doc/index.md		; $(MD2HTML)
-$B/doc/install.html:			doc/install.md		; $(MD2HTML)
-
-$(DOC.HTML):		doc/style.css doc/layout.erb
-$(DOC.MAN3.HTML):	doc/man2html
-$(DOC.MD.HTML):		doc/md2html
+python.stage:	${py.c} ${py.pyi}
+	rm -rf $b/python/{src,build,dist}
+	install -m 0755 -d $b/python/src
+	echo ${version} > $b/python/version.txt
+	touch $b/python/coho/py.typed
+	install -m 0644 src/coho.h ${src.lib} $b/python/src
+	install -m 0644 python/MANIFEST.in python/setup.py $b/python
 
 #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-P		= python/coho
-BP		= $B/$P
+all:		lib \
+		python
 
-PY.PYX		= $P/__init__.pyx \
-		  $P/smiles.pyx
 
-PY.C		= $(BP)/__init__.c \
-		  $(BP)/smiles.c
+dep:
+	./auto.pl Makefile > $@
 
-PY.O		= $(BP)/__init__.o \
-		= $(BP)/smiles.o
 
-PY.SO		= $(BP)/__init__.so \
-		= $(BP)/smiles.so
+install:	$b/libcoho.a
+	install -d ${DESTDIR}${PREFIX}/include
+	install -d ${DESTDIR}${PREFIX}/lib
+	install -m0644 coho.h ${DESTDIR}${PREFIX}/include
+	install -m0644 $b/libcoho.a ${DESTDIR}${PREFIX}/lib
 
-PY.OBJ		= $(PY.C) \
-		  $(PY.O) \
-		  $(PY.SO)
 
-python: $(PY.SO)
-
-python.sdist: python.stage
-	cd $B/python && $(PYTHON) setup.py sdist
-
-python.wheel: python.stage
-	cd $B/python && $(PYTHON) setup.py bdist_wheel
-
-.PHONY: python.stage
-
-python.stage: $(PY.C)
-	rm -rf $B/python/{src,build,dist}
-	install -m 0755 -d $B/python/src
-	echo $(VERSION) > $B/python/version.txt
-	install -m 0644 $(LIB.SRC) $B/python/src
-	install -m 0644 python/MANIFEST.in python/setup.py $B/python
-
-PY.CYTHON = mkdir -p $(@D) && $(CYTHON) $(CYTHON_FLAGS) -I$P -o $@ $P/$(@F:c=pyx)
-
-$(BP)/__init__.c:	$P/__init__.pyx			; $(PY.CYTHON)
-$(BP)/smiles.c:		$P/smiles.pyx			; $(PY.CYTHON)
-
-PY.CC = $(CC) -I. $(PYTHON_CFLAGS) -o $@ -DVERSION='"$(VERSION)"' -c $(@:o=c)
-
-$(BP)/__init__.o:	$(BP)/__init__.c		; $(PY.CC)
-$(BP)/smiles.o:		$(BP)/smiles.c			; $(PY.CC)
-
-PY.LD = $(CC) -shared -o $@ $(@:so=o) $B/libcoho.a
-
-$(BP)/__init__.so:	$(BP)/__init__.o		; $(PY.LD)
-$(BP)/smiles.so:	$(BP)/smiles.o			; $(PY.LD)
-
-$(PY.C): $P/__init__.pxd
-$(PY.O): coho.h
-$(PY.SO): $B/libcoho.a
-
-#- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-$(OBJ): Makefile config.mk
+lib:		$b/libcoho.a

@@ -9,6 +9,7 @@ jobs:
       - run:
           command: |
             sudo pip install cython
+            make dep
             make
             make test
 
