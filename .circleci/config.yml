@@ -20,6 +20,13 @@ jobs:
       - checkout
       - run: ci/python-build-manylinux1-wheels
 
+  deploy-manylinux1:
+    docker:
+      - image: quay.io/pypa/manylinux1_x86_64
+    steps:
+      - checkout
+      - run: ci/python-deploy-manylinux1-wheels
+
 workflows:
   version: 2
 
@@ -32,6 +39,16 @@ workflows:
                 - gh-pages
       - build-manylinux1:
           filters:
+            branches:
+              ignore:
+                - gh-pages
+
+      - deploy-manylinux1:
+          requires:
+            - build-manylinux1
+          filters:
+            tags:
+              only: /^v.*/
             branches:
               ignore:
                 - gh-pages

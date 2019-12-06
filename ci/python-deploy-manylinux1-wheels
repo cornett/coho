@@ -1,10 +1,31 @@
 #!/bin/bash
 set -e -x
 
-pip install twine
+cat <<EOF > ~/.pypirc
+[pypi]
+    username = __token__
+    password = $PYPI_COHO_TOKEN
 
-twine upload \
-    -u $PYPI_USER \
-    -p $PYPI_PASSWORD \
-    --skip-existing \
-    python/wheelhouse/*
+[testpypi]
+    username = __token__
+    password = $PYPI_COHO_TEST_TOKEN
+EOF
+
+
+exit 1
+
+cd $(dirname $0)/..
+
+for minor in 8 7 6 5; do
+    bin=(/opt/python/cp3$minor*/bin)
+    [ -d $bin ] || continue
+
+    b="$PWD/build-$minor"
+
+    $bin/pip install twine
+
+    $bin/twine upload \
+        --repository testpypi \
+        --skip-existing \
+        $b/python/wheelhouse/*
+done

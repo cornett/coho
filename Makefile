@@ -16,7 +16,7 @@ CFLAGS_PY	= `$(PYTHON_CONFIG) --cflags` -fPIC
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-version		= 0.4
+version		= 0.5.dev1
 
 b		= ${BUILD_DIR}
 
