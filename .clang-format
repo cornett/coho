@@ -1,0 +1,100 @@
+---
+Language:                                                   Cpp
+AlignAfterOpenBracket:                                      Align
+AlignConsecutiveAssignments:                                true
+AlignConsecutiveDeclarations:                               false
+#AlignConsecutiveMacros:                                    true
+AlignEscapedNewlines:                                       Right
+AlignOperands:                                              true
+AlignTrailingComments:                                      true
+#AllowAllArgumentsOnNextLine:                                false
+AllowAllParametersOfDeclarationOnNextLine:                  false
+#AllowShortBlocksOnASingleLine:                              Empty
+AllowShortBlocksOnASingleLine:                              false
+AllowShortCaseLabelsOnASingleLine:                          false
+AllowShortFunctionsOnASingleLine:                           None
+#AllowShortIfStatementsOnASingleLine:                        Never
+AllowShortIfStatementsOnASingleLine:                        false
+AllowShortLoopsOnASingleLine:                               false
+AlwaysBreakAfterDefinitionReturnType:                       None
+AlwaysBreakAfterReturnType:                                 AllDefinitions
+AlwaysBreakBeforeMultilineStrings:                          false
+BinPackArguments:                                           false
+BinPackParameters:                                          false
+BraceWrapping:
+# AfterCaseLabel:                                           false
+#  AfterControlStatement:                                    Never
+  AfterControlStatement:                                    false
+  AfterEnum:                                                false
+  AfterFunction:                                            true
+  AfterStruct:                                              false
+  AfterUnion:                                               false
+  BeforeElse:                                               true
+  IndentBraces:                                             false
+  SplitEmptyFunction:                                       false
+  SplitEmptyRecord:                                         false
+BreakBeforeBinaryOperators:                                 None
+BreakBeforeBraces:                                          Custom
+BreakBeforeTernaryOperators:                                true
+BreakStringLiterals:                                        true
+ColumnLimit:                                                80
+ContinuationIndentWidth:                                    4
+#DeriveLineEnding:                                          false
+DerivePointerAlignment:                                     false
+DisableFormat:                                              false
+ForEachMacros:
+  - LIST_FOREACH
+  - RB_FOREACH
+  - SLIST_FOREACH
+  - TAILQ_FOREACH
+IncludeBlocks:                                              Regroup
+IncludeCategories:
+  - Regex:                                                  '^<sys'
+    Priority:                                               1
+  - Regex:                                                  '^<'
+    Priority:                                               2
+  - Regex:                                                  '^"'
+    Priority:                                               3
+  - Regex:                                                  '.*'
+    Priority:                                               4
+#IncludeIsMainRegex:                                         '(Test)?$'
+IndentCaseLabels:                                           false
+#IndentGotoLabels:                                          false
+#IndentPPDirectives:                                        BeforeHash
+IndentWidth:                                                4
+IndentWrappedFunctionNames:                                 false
+KeepEmptyLinesAtTheStartOfBlocks:                           true
+MacroBlockBegin:                                            ''
+MacroBlockEnd:                                              ''
+MaxEmptyLinesToKeep:                                        1
+PenaltyBreakAssignment:                                     2
+PenaltyBreakBeforeFirstCallParameter:                       19
+PenaltyBreakComment:                                        300
+PenaltyBreakFirstLessLess:                                  120
+PenaltyBreakString:                                         1000
+PenaltyExcessCharacter:                                     1000000
+PenaltyReturnTypeOnItsOwnLine:                              100
+PointerAlignment:                                           Right
+ReflowComments:                                             true
+SortIncludes:                                               true
+SpaceAfterCStyleCast:                                       false
+#SpaceAfterLogicalNot:                                       false
+SpaceBeforeAssignmentOperators:                             true
+SpaceBeforeParens:                                          ControlStatements
+#SpaceBeforeSquareBrackets:                                  false;
+#SpaceInEmptyBlock:                                          false
+SpaceInEmptyParentheses:                                    false
+SpacesBeforeTrailingComments:                               1
+SpacesInCStyleCastParentheses:                              false
+#SpacesInConditionalStatement:                               true
+SpacesInContainerLiterals:                                  false
+SpacesInParentheses:                                        false
+SpacesInSquareBrackets:                                     false
+#Standard:                                                   Latest
+Standard:                                                   Cpp11
+#StatementMacros:
+#  -
+TabWidth:                                                   8
+UseTab:                                                     Never
+...
+# vim: ft=yaml
